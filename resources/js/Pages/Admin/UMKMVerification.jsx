@@ -1,0 +1,341 @@
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { Head, useForm } from "@inertiajs/react";
+import { useState } from "react";
+
+// Komponen Modal
+const Modal = ({ children, show, onClose }) => {
+    if (!show) return null;
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+            <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                {children}
+            </div>
+        </div>
+    );
+};
+
+export default function UMKMVerification({
+    auth,
+    pendingUmkmProfiles = [],
+    verifiedUmkmProfiles = [],
+    registrations = [],
+}) {
+    const [viewingUmkm, setViewingUmkm] = useState(null);
+    const { post, processing } = useForm();
+
+    const handleVerifyProfile = (id) => {
+        if (confirm("Yakin ingin verifikasi profil UMKM ini?")) {
+            post(route("admin.umkm.verify", id), {
+                onSuccess: () => setViewingUmkm(null),
+            });
+        }
+    };
+
+    const handleRejectProfile = (id) => {
+        if (confirm("Yakin ingin menolak profil UMKM ini?")) {
+            post(route("admin.umkm.reject", id), {
+                onSuccess: () => setViewingUmkm(null),
+            });
+        }
+    };
+
+    const handleFinalizeRegistration = (registrationId) => {
+        if (
+            confirm(
+                "Setujui pendaftaran ini? UMKM akan resmi menjadi peserta event."
+            )
+        ) {
+            post(route("admin.registrations.finalize", registrationId));
+        }
+    };
+
+    return (
+        <AuthenticatedLayout
+            user={auth.user}
+            header={
+                <h2 className="font-semibold text-xl text-gray-800 leading-tight">
+                    Verifikasi UMKM
+                </h2>
+            }
+        >
+            <Head title="Verifikasi UMKM" />
+
+            <div className="py-12">
+                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+                    {/* Verifikasi Profil UMKM Baru */}
+                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div className="p-6 border-b border-gray-200">
+                            <h3 className="text-xl font-bold text-gray-900">
+                                Verifikasi Profil UMKM Baru
+                            </h3>
+                            <p className="text-gray-600 mt-1">
+                                Verifikasi profil UMKM yang baru mendaftar ke
+                                platform.
+                            </p>
+                        </div>
+                        <div className="overflow-x-auto">
+                            {pendingUmkmProfiles.length > 0 ? (
+                                <table className="min-w-full bg-white">
+                                    <thead className="bg-gray-200">
+                                        <tr>
+                                            <th className="py-3 px-6 text-left">
+                                                Nama Usaha
+                                            </th>
+                                            <th className="py-3 px-6 text-left">
+                                                Pemilik
+                                            </th>
+                                            <th className="py-3 px-6 text-left">
+                                                Tanggal Daftar
+                                            </th>
+                                            <th className="py-3 px-6 text-left">
+                                                Status
+                                            </th>
+                                            <th className="py-3 px-6 text-left">
+                                                Aksi
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {pendingUmkmProfiles.map((profile) => (
+                                            <tr
+                                                key={profile.id}
+                                                className="border-b"
+                                            >
+                                                <td className="py-3 px-6">
+                                                    {profile.business_name}
+                                                </td>
+                                                <td className="py-3 px-6">
+                                                    {profile.user.name}
+                                                </td>
+                                                <td className="py-3 px-6">
+                                                    {new Date(
+                                                        profile.created_at
+                                                    ).toLocaleDateString(
+                                                        "id-ID"
+                                                    )}
+                                                </td>
+                                                <td className="py-3 px-6">
+                                                    <span className="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-200 text-yellow-800">
+                                                        {profile.status}
+                                                    </span>
+                                                </td>
+                                                <td className="py-3 px-6">
+                                                    <button
+                                                        onClick={() =>
+                                                            setViewingUmkm(
+                                                                profile
+                                                            )
+                                                        }
+                                                        className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-md hover:bg-blue-700"
+                                                    >
+                                                        Lihat Detail
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            ) : (
+                                <p className="text-center text-gray-500 p-6">
+                                    Tidak ada profil UMKM baru yang perlu
+                                    diverifikasi.
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Daftar UMKM Terverifikasi */}
+                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div className="p-6 border-b border-gray-200">
+                            <h3 className="text-xl font-bold text-gray-900">
+                                Daftar Riwayat UMKM
+                            </h3>
+                            <p className="text-gray-600 mt-1">
+                                Berikut adalah riwayat semua profil UMKM yang
+                                telah diproses.
+                            </p>
+                        </div>
+                        <div className="overflow-x-auto">
+                            {verifiedUmkmProfiles.length > 0 ? (
+                                <table className="min-w-full bg-white">
+                                    <thead className="bg-gray-200">
+                                        <tr>
+                                            <th className="py-3 px-6 text-left">
+                                                Nama Usaha
+                                            </th>
+                                            <th className="py-3 px-6 text-left">
+                                                Pemilik
+                                            </th>
+                                            <th className="py-3 px-6 text-left">
+                                                Tanggal Diproses
+                                            </th>
+                                            <th className="py-3 px-6 text-left">
+                                                Status
+                                            </th>
+                                            <th className="py-3 px-6 text-left">
+                                                Aksi
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {verifiedUmkmProfiles.map((profile) => (
+                                            <tr
+                                                key={profile.id}
+                                                className="border-b"
+                                            >
+                                                <td className="py-3 px-6 font-medium">
+                                                    {profile.business_name}
+                                                </td>
+                                                <td className="py-3 px-6 text-gray-500">
+                                                    {profile.user.name}
+                                                </td>
+                                                <td className="py-3 px-6 text-sm text-gray-500">
+                                                    {new Date(
+                                                        profile.updated_at
+                                                    ).toLocaleDateString(
+                                                        "id-ID"
+                                                    )}
+                                                </td>
+                                                <td className="py-3 px-6">
+                                                    <span
+                                                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                                            profile.status ===
+                                                            "verified"
+                                                                ? "bg-green-100 text-green-800"
+                                                                : "bg-red-100 text-red-800"
+                                                        }`}
+                                                    >
+                                                        {profile.status ===
+                                                        "verified"
+                                                            ? "Terverifikasi"
+                                                            : "Ditolak"}
+                                                    </span>
+                                                </td>
+                                                <td className="py-3 px-6">
+                                                    <button
+                                                        onClick={() =>
+                                                            setViewingUmkm(
+                                                                profile
+                                                            )
+                                                        }
+                                                        className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-md hover:bg-blue-700"
+                                                    >
+                                                        Lihat Detail
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            ) : (
+                                <p className="text-center text-gray-500 p-6">
+                                    Belum ada riwayat verifikasi UMKM.
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Modal Detail */}
+            <Modal show={!!viewingUmkm} onClose={() => setViewingUmkm(null)}>
+                {viewingUmkm && (
+                    <div className="space-y-4">
+                        <h3 className="text-xl font-bold mb-2">
+                            {viewingUmkm.business_name}
+                        </h3>
+
+                        <div className="border-t pt-4">
+                            <p className="text-sm font-medium text-gray-500">
+                                Pemilik
+                            </p>
+                            <p>
+                                {viewingUmkm.user.name} (
+                                {viewingUmkm.user.email})
+                            </p>
+                        </div>
+
+                        <div>
+                            <p className="text-sm font-medium text-gray-500">
+                                Jenis Usaha
+                            </p>
+                            <p>{viewingUmkm.business_type}</p>
+                        </div>
+
+                        <div>
+                            <p className="text-sm font-medium text-gray-500">
+                                Alamat
+                            </p>
+                            <p>{viewingUmkm.address}</p>
+                        </div>
+
+                        <div>
+                            <p className="text-sm font-medium text-gray-500">
+                                Deskripsi
+                            </p>
+                            <p className="text-sm">{viewingUmkm.description}</p>
+                        </div>
+
+                        {/* Dokumen */}
+                        <div className="pt-4 border-t">
+                            <h4 className="font-bold mb-2">
+                                Dokumen & Lampiran
+                            </h4>
+                            <div className="space-y-1">
+                                {viewingUmkm.logo_path && (
+                                    <a
+                                        href={`/storage/${viewingUmkm.logo_path}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 hover:underline block"
+                                    >
+                                        Lihat Logo Usaha
+                                    </a>
+                                )}
+                                <a
+                                    href={`/storage/${viewingUmkm.ktp_path}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline block"
+                                >
+                                    Lihat Dokumen KTP
+                                </a>
+                            </div>
+                        </div>
+
+                        <div className="mt-6 flex justify-end space-x-2 border-t pt-6">
+                            <button
+                                onClick={() => setViewingUmkm(null)}
+                                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                            >
+                                Tutup
+                            </button>
+                            {viewingUmkm.status === "pending" && (
+                                <>
+                                    <button
+                                        onClick={() =>
+                                            handleRejectProfile(viewingUmkm.id)
+                                        }
+                                        disabled={processing}
+                                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                                    >
+                                        Tolak
+                                    </button>
+                                    <button
+                                        onClick={() =>
+                                            handleVerifyProfile(viewingUmkm.id)
+                                        }
+                                        disabled={processing}
+                                        className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                                    >
+                                        Verifikasi
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </Modal>
+        </AuthenticatedLayout>
+    );
+}

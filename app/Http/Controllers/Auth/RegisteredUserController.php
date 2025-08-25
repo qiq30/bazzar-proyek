@@ -1,0 +1,67 @@
+<?php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class RegisteredUserController extends Controller
+{
+    /**
+     * Display the registration view.
+     */
+    public function create(): Response
+    {
+        return Inertia::render('Auth/Register');
+    }
+
+    /**
+     * Handle an incoming registration request.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function store(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'role' => 'sometimes|in:umkm,penyelenggara',
+        ]);
+
+        $isPenyelenggara = $request->input('role') === 'penyelenggara';
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'is_penyelenggara' => $isPenyelenggara,
+        ]);
+
+        event(new Registered($user));
+
+        Auth::login($user);
+
+        // 🔽 PERUBAHAN LOGIKA REDIRECT DI SINI 🔽
+        // Logika ini disamakan dengan yang ada di AuthenticatedSessionController
+
+        if ($user->is_admin) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        if ($user->is_penyelenggara) {
+            return redirect()->route('penyelenggara.dashboard');
+        }
+
+        return redirect(route('dashboard', absolute: false));
+        // 🔼 AKHIR DARI PERUBAHAN 🔼
+    }
+}
