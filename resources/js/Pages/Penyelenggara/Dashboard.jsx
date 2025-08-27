@@ -1,6 +1,104 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link } from "@inertiajs/react";
 
+// --- Komponen Ikon SVG untuk Dashboard Penyelenggara ---
+const ProfileIcon = (props) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={1.5}
+        stroke="currentColor"
+        {...props}
+    >
+        <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+        />
+    </svg>
+);
+const ProposalIcon = (props) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={1.5}
+        stroke="currentColor"
+        {...props}
+    >
+        <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+        />
+    </svg>
+);
+const PublishedIcon = (props) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={1.5}
+        stroke="currentColor"
+        {...props}
+    >
+        <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+    </svg>
+);
+const AddIcon = (props) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={1.5}
+        stroke="currentColor"
+        {...props}
+    >
+        <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+    </svg>
+);
+const VerifyIcon = (props) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={1.5}
+        stroke="currentColor"
+        {...props}
+    >
+        <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"
+        />
+    </svg>
+);
+const HomeIcon = (props) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={1.5}
+        stroke="currentColor"
+        {...props}
+    >
+        <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+        />
+    </svg>
+);
+
 // Komponen badge status DITINGKATKAN untuk menampilkan status baru
 const StatusBadge = ({ proposalStatus, eventStatus }) => {
     let config = { text: "Unknown", className: "bg-gray-100 text-gray-800" };
@@ -129,7 +227,9 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
                                         </span>
                                     </p>
                                 </div>
-                                <div className="text-blue-600 text-3xl">👤</div>
+                                <div className="text-blue-500 bg-blue-100 p-3 rounded-full">
+                                    <ProfileIcon className="h-6 w-6" />
+                                </div>
                             </div>
                             {profileStatus.actionLink ? (
                                 <Link
@@ -155,8 +255,8 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
                                         {events.length}
                                     </p>
                                 </div>
-                                <div className="text-green-600 text-3xl">
-                                    🎪
+                                <div className="text-green-500 bg-green-100 p-3 rounded-full">
+                                    <ProposalIcon className="h-6 w-6" />
                                 </div>
                             </div>
                             <p className="mt-4 text-sm text-gray-400">
@@ -178,8 +278,8 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
                                         }
                                     </p>
                                 </div>
-                                <div className="text-purple-600 text-3xl">
-                                    ✔️
+                                <div className="text-purple-500 bg-purple-100 p-3 rounded-full">
+                                    <PublishedIcon className="h-6 w-6" />
                                 </div>
                             </div>
                             <p className="mt-4 text-sm text-gray-400">
@@ -201,8 +301,8 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
                                     )}
                                     className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition group"
                                 >
-                                    <div className="text-blue-600 text-2xl mr-3 group-hover:scale-110 transition-transform">
-                                        ➕
+                                    <div className="text-blue-600 mr-3">
+                                        <AddIcon className="w-8 h-8 transition-transform group-hover:scale-110" />
                                     </div>
                                     <div>
                                         <p className="font-medium text-gray-900">
@@ -215,8 +315,8 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
                                 </Link>
                             ) : (
                                 <div className="flex items-center p-4 border border-gray-200 rounded-lg bg-gray-50 text-gray-400 cursor-not-allowed">
-                                    <div className="text-gray-400 text-2xl mr-3">
-                                        ➕
+                                    <div className="text-gray-400 mr-3">
+                                        <AddIcon className="w-8 h-8" />
                                     </div>
                                     <div>
                                         <p className="font-medium">
@@ -236,8 +336,8 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
                                     )}
                                     className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition group"
                                 >
-                                    <div className="text-green-600 text-2xl mr-3 group-hover:scale-110 transition-transform">
-                                        ✔️
+                                    <div className="text-green-600 mr-3">
+                                        <VerifyIcon className="w-8 h-8 transition-transform group-hover:scale-110" />
                                     </div>
                                     <div>
                                         <p className="font-medium">
@@ -250,8 +350,8 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
                                 </Link>
                             ) : (
                                 <div className="flex items-center p-4 border border-gray-200 rounded-lg bg-gray-50 text-gray-400 cursor-not-allowed">
-                                    <div className="text-gray-400 text-2xl mr-3">
-                                        ✔️
+                                    <div className="text-gray-400 mr-3">
+                                        <VerifyIcon className="w-8 h-8" />
                                     </div>
                                     <div>
                                         <p className="font-medium">
@@ -268,8 +368,8 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
                                 href="/"
                                 className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition group"
                             >
-                                <div className="text-orange-600 text-2xl mr-3 group-hover:scale-110 transition-transform">
-                                    🏠
+                                <div className="text-orange-600 mr-3">
+                                    <HomeIcon className="w-8 h-8 transition-transform group-hover:scale-110" />
                                 </div>
                                 <div>
                                     <p className="font-medium text-gray-900">
@@ -354,6 +454,9 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
                                 </table>
                             ) : (
                                 <div className="text-center p-12">
+                                    <div className="text-gray-400 mb-4">
+                                        <ProposalIcon className="w-16 h-16 mx-auto" />
+                                    </div>
                                     <p className="text-gray-500">
                                         Anda belum pernah mengajukan proposal
                                         event.
