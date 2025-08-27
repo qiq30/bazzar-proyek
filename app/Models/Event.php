@@ -83,7 +83,7 @@ class Event extends Model
     public function verifiedParticipants()
     {
         return $this->umkmProfiles()
-            ->wherePivot('status', 'approved')
+            ->wherePivotIn('status', ['approved', 'sudah_check_in'])
             ->where('umkm_profiles.status', 'verified');
     }
 

@@ -45,7 +45,7 @@ class PenyelenggaraController extends Controller
             'nama_event' => 'required|string|max:255',
             'deskripsi_event' => 'required|string',
             'poster_event' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'tanggal_mulai' => 'required|date',
+            'tanggal_mulai' => 'required|date|after_or_equal:today',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
             'lokasi_event' => 'required|string|max:255',
             'biaya_pendaftaran_umkm' => 'required|numeric|min:0',
@@ -140,9 +140,7 @@ class PenyelenggaraController extends Controller
             $query->where('user_id', $user->id);
         })
             ->with(['umkmProfile', 'event'])
-            // --- ▼▼▼ UBAH BARIS DI BAWAH INI ▼▼▼ ---
             ->whereIn('status', ['pembayaran_terkonfirmasi', 'approved', 'rejected', 'sudah_check_in'])
-            // --- ▲▲▲ AKHIR DARI PERUBAHAN ▲▲▲ ---
             ->orderBy('updated_at', 'desc')
             ->get();
 

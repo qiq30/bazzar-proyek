@@ -17,6 +17,13 @@ export default function CreateProposal({ auth }) {
         nomor_rekening_penyelenggara: "",
         nama_pemilik_rekening: "",
     });
+    const getTodayDate = () => {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
+        const day = String(today.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+    };
 
     const submit = (e) => {
         e.preventDefault();
@@ -37,8 +44,8 @@ export default function CreateProposal({ auth }) {
                 <div className="max-w-4xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                         <form onSubmit={submit} className="space-y-6">
-                            {/* ... (Isi form lengkap ada di bawah) ... */}
-                            {/* Nama Event & Lokasi */}
+                            {}
+                            {}
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-sm font-medium">
@@ -112,6 +119,9 @@ export default function CreateProposal({ auth }) {
                                     <input
                                         type="date"
                                         value={data.tanggal_mulai}
+                                        // --- ▼▼▼ TAMBAHKAN KODE DI BAWAH INI ▼▼▼ ---
+                                        min={getTodayDate()}
+                                        // --- ▲▲▲ AKHIR DARI PERUBAHAN ▲▲▲ ---
                                         onChange={(e) =>
                                             setData(
                                                 "tanggal_mulai",
@@ -129,6 +139,11 @@ export default function CreateProposal({ auth }) {
                                     <input
                                         type="date"
                                         value={data.tanggal_selesai}
+                                        // --- ▼▼▼ TAMBAHKAN KODE DI BAWAH INI ▼▼▼ ---
+                                        min={
+                                            data.tanggal_mulai || getTodayDate()
+                                        }
+                                        // --- ▲▲▲ AKHIR DARI PERUBAHAN ▲▲▲ ---
                                         onChange={(e) =>
                                             setData(
                                                 "tanggal_selesai",
@@ -140,6 +155,7 @@ export default function CreateProposal({ auth }) {
                                     />
                                 </div>
                             </div>
+                            {/* ... (Sisa form tidak berubah) ... */}
                             {/* Biaya & Kuota */}
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div>
