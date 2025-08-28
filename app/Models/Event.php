@@ -19,14 +19,16 @@ class Event extends Model
      *
      * @var array<int, string>
      */
-    // --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ ---
+    // --- ▼▼▼ PERUBAHAN DI SINI ▼▼▼ ---
     protected $fillable = [
         'user_id',
         'nama_event',
         'deskripsi_event',
         'poster_event',
-        'tanggal_mulai',
-        'tanggal_selesai',
+        'pendaftaran_dibuka',         // TAMBAHKAN INI
+        'pendaftaran_ditutup',        // TAMBAHKAN INI
+        'tanggal_mulai_acara',        // UBAH NAMA KOLOM
+        'tanggal_selesai_acara',      // UBAH NAMA KOLOM
         'lokasi_event',
         'biaya_pendaftaran_umkm',
         'kuota_umkm',
@@ -36,7 +38,7 @@ class Event extends Model
         'status_proposal',
         'status',
         'panitia_pin',
-        'rejection_reason', // Tambahkan ini
+        'rejection_reason',
     ];
     // --- ▲▲▲ AKHIR DARI PERUBAHAN ---
 
@@ -45,12 +47,16 @@ class Event extends Model
      *
      * @var array<string, string>
      */
+    // --- ▼▼▼ PERUBAHAN DI SINI ▼▼▼ ---
     protected $casts = [
-        'tanggal_mulai' => 'date',
-        'tanggal_selesai' => 'date',
+        'pendaftaran_dibuka' => 'date',      // TAMBAHKAN INI
+        'pendaftaran_ditutup' => 'date',     // TAMBAHKAN INI
+        'tanggal_mulai_acara' => 'date',     // UBAH NAMA KOLOM
+        'tanggal_selesai_acara' => 'date',   // UBAH NAMA KOLOM
         'biaya_pendaftaran_umkm' => 'decimal:2',
         'kuota_umkm' => 'integer',
     ];
+    // --- ▲▲▲ AKHIR DARI PERUBAHAN ---
 
     /**
      * Relasi ke user penyelenggara yang mengajukan event.
@@ -99,13 +105,29 @@ class Event extends Model
     /**
      * Accessor untuk mendapatkan rentang tanggal yang sudah diformat.
      */
-    public function getDateRangeAttribute()
+    // --- ▼▼▼ PERUBAHAN DI SINI ▼▼▼ ---
+    public function getEventDateRangeAttribute()
     {
-        if ($this->tanggal_mulai->equalTo($this->tanggal_selesai)) {
-            return $this->tanggal_mulai->format('d M Y');
+        if ($this->tanggal_mulai_acara->equalTo($this->tanggal_selesai_acara)) {
+            return $this->tanggal_mulai_acara->format('d M Y');
         }
-        return $this->tanggal_mulai->format('d M') . ' - ' . $this->tanggal_selesai->format('d M Y');
+        return $this->tanggal_mulai_acara->format('d M') . ' - ' . $this->tanggal_selesai_acara->format('d M Y');
     }
+    // --- ▲▲▲ AKHIR DARI PERUBAHAN ---
+
+    // --- ▼▼▼ TAMBAHKAN ACCESSOR BARU INI ▼▼▼ ---
+    /**
+     * Accessor untuk mendapatkan rentang tanggal pendaftaran yang sudah diformat.
+     */
+    public function getRegistrationDateRangeAttribute()
+    {
+        if ($this->pendaftaran_dibuka->equalTo($this->pendaftaran_ditutup)) {
+            return $this->pendaftaran_dibuka->format('d M Y');
+        }
+        return $this->pendaftaran_dibuka->format('d M') . ' - ' . $this->pendaftaran_ditutup->format('d M Y');
+    }
+    // --- ▲▲▲ AKHIR DARI PENAMBAHAN ---
+
 
     /**
      * Check if event is active.
@@ -113,7 +135,7 @@ class Event extends Model
     public function isActive()
     {
         $now = Carbon::now()->toDateString();
-        return $this->tanggal_mulai <= $now && $this->tanggal_selesai >= $now;
+        return $this->tanggal_mulai_acara <= $now && $this->tanggal_selesai_acara >= $now;
     }
 
     /**
@@ -121,7 +143,7 @@ class Event extends Model
      */
     public function isUpcoming()
     {
-        return $this->tanggal_mulai > Carbon::now()->toDateString();
+        return $this->tanggal_mulai_acara > Carbon::now()->toDateString();
     }
 
     public function prunable()

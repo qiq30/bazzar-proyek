@@ -43,12 +43,15 @@ class PenyelenggaraController extends Controller
 
     public function storeProposal(Request $request)
     {
+        // --- ▼▼▼ PERBAIKAN LOGIKA VALIDASI DI SINI ▼▼▼ ---
         $request->validate([
             'nama_event' => 'required|string|max:255',
             'deskripsi_event' => 'required|string',
             'poster_event' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'tanggal_mulai' => 'required|date|after_or_equal:today',
-            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
+            'pendaftaran_dibuka' => 'required|date|after_or_equal:today',
+            'pendaftaran_ditutup' => 'required|date|after_or_equal:pendaftaran_dibuka',
+            'tanggal_mulai_acara' => 'required|date|after:pendaftaran_ditutup',
+            'tanggal_selesai_acara' => 'required|date|after_or_equal:tanggal_mulai_acara',
             'lokasi_event' => 'required|string|max:255',
             'biaya_pendaftaran_umkm' => 'required|numeric|min:0',
             'kuota_umkm' => 'required|integer|min:1',
@@ -64,8 +67,10 @@ class PenyelenggaraController extends Controller
             'nama_event' => $request->nama_event,
             'deskripsi_event' => $request->deskripsi_event,
             'poster_event' => $posterPath,
-            'tanggal_mulai' => $request->tanggal_mulai,
-            'tanggal_selesai' => $request->tanggal_selesai,
+            'pendaftaran_dibuka' => $request->pendaftaran_dibuka,
+            'pendaftaran_ditutup' => $request->pendaftaran_ditutup,
+            'tanggal_mulai_acara' => $request->tanggal_mulai_acara,
+            'tanggal_selesai_acara' => $request->tanggal_selesai_acara,
             'lokasi_event' => $request->lokasi_event,
             'biaya_pendaftaran_umkm' => $request->biaya_pendaftaran_umkm,
             'kuota_umkm' => $request->kuota_umkm,
@@ -75,6 +80,7 @@ class PenyelenggaraController extends Controller
             'status_proposal' => 'menunggu_persetujuan',
             'status' => null,
         ]);
+        // --- ▲▲▲ AKHIR DARI PERUBAHAN LOGIKA ---
 
         $proposal->load('user');
 

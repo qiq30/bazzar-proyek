@@ -1,12 +1,10 @@
-// File: resources/js/Pages/UMKM/EventRegistration.jsx
+// resources/js/Pages/UMKM/EventRegistration.jsx
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, usePage, router } from "@inertiajs/react"; // <-- Import 'router'
+import { Head, Link, usePage, router } from "@inertiajs/react";
 import { useEffect, useState } from "react";
 
-// Komponen baru untuk ditampilkan saat profil belum bisa mendaftar
 const ProfileActionNotice = ({ hasProfile }) => (
-    // ... (kode komponen ini tidak berubah)
     <div className="bg-white rounded-lg shadow-sm text-center p-8">
         <div className="text-yellow-500 text-6xl mb-4">⚠️</div>
         <h3 className="text-2xl font-bold text-gray-800">
@@ -43,12 +41,6 @@ export default function EventRegistration({
 
             channel.listen("RegistrationStatusUpdated", (e) => {
                 console.log("RegistrationStatusUpdated event received:", e);
-
-                toast.success(
-                    `Pembayaran untuk event "${e.registration.event.nama_event}" telah dikonfirmasi!`
-                );
-
-                // Reload data 'events' dan 'registrationStatus' untuk update UI
                 router.reload({ only: ["events", "registrationStatus"] });
             });
 
@@ -68,39 +60,7 @@ export default function EventRegistration({
         }).format(number);
     };
 
-    const getEventStatus = (event) => {
-        // ... (kode fungsi ini tidak berubah)
-        const now = new Date();
-        const startDate = new Date(event.tanggal_mulai);
-        const endDate = new Date(event.tanggal_selesai);
-        if (endDate < now) return "finished";
-        if (startDate <= now && endDate >= now) return "active";
-        return "upcoming";
-    };
-
-    const getStatusBadge = (status) => {
-        // ... (kode fungsi ini tidak berubah)
-        const badges = {
-            upcoming: "bg-yellow-100 text-yellow-800",
-            active: "bg-green-100 text-green-800",
-            finished: "bg-gray-100 text-gray-800",
-        };
-        const statusText = {
-            upcoming: "Akan Datang",
-            active: "Sedang Berlangsung",
-            finished: "Selesai",
-        };
-        return (
-            <span
-                className={`px-2 py-1 rounded-full text-xs font-medium ${badges[status]}`}
-            >
-                {statusText[status]}
-            </span>
-        );
-    };
-
     const formatDate = (dateString) => {
-        // ... (kode fungsi ini tidak berubah)
         return new Date(dateString).toLocaleDateString("id-ID", {
             day: "numeric",
             month: "long",
@@ -108,7 +68,6 @@ export default function EventRegistration({
         });
     };
 
-    // --- ▼▼▼ GANTI KESELURUHAN KOMPONEN DI BAWAH INI ▼▼▼ ---
     const RegistrationStatusDisplay = ({ status, registrationId }) => {
         const statusConfig = {
             menunggu_pembayaran: {
@@ -146,7 +105,6 @@ export default function EventRegistration({
                 note: "Anda terdaftar sebagai peserta.",
             },
             rejected: {
-                // TAMBAHKAN KASUS UNTUK 'rejected'
                 component: (
                     <div className="p-6 text-center border-t bg-red-50 border-red-200">
                         <p className="text-sm font-bold text-red-700 mb-2">
@@ -191,7 +149,6 @@ export default function EventRegistration({
             </div>
         );
     };
-    // --- ▲▲▲ AKHIR DARI PERUBAHAN ▲▲▲ ---
 
     return (
         <AuthenticatedLayout
@@ -219,18 +176,25 @@ export default function EventRegistration({
                         <div className="grid lg:grid-cols-2 gap-6">
                             {events.length > 0 ? (
                                 events.map((event) => {
-                                    const eventStatus = getEventStatus(event);
-
-                                    // Ambil data pendaftaran dari props `registrationStatus`
                                     const registrationInfo =
                                         registrationStatus[event.id];
                                     const currentRegistrationStatus =
                                         registrationInfo?.status;
                                     const registrationId = registrationInfo?.id;
-
                                     const isQuotaFull =
                                         event.event_registrations_count >=
                                         event.kuota_umkm;
+
+                                    const now = new Date();
+                                    const startDate = new Date(
+                                        event.pendaftaran_dibuka
+                                    );
+                                    const endDate = new Date(
+                                        event.pendaftaran_ditutup
+                                    );
+                                    endDate.setHours(23, 59, 59, 999);
+                                    const isRegistrationOpen =
+                                        now >= startDate && now <= endDate;
 
                                     return (
                                         <div
@@ -244,43 +208,64 @@ export default function EventRegistration({
                                                     className="w-full h-full object-cover"
                                                 />
                                             </div>
-                                            <div className="p-6 flex-grow">
-                                                <div className="flex justify-between items-start mb-4">
-                                                    <h4 className="text-xl font-semibold text-gray-900 flex-1 mr-3">
-                                                        {event.nama_event}
-                                                    </h4>
-                                                    {getStatusBadge(
-                                                        eventStatus
-                                                    )}
-                                                </div>
-                                                <div className="space-y-3 mb-6">
-                                                    <div className="flex items-center text-gray-600">
-                                                        <span className="text-blue-600 mr-2">
-                                                            📅
-                                                        </span>
-                                                        <span className="text-sm">
-                                                            {formatDate(
-                                                                event.tanggal_mulai
-                                                            )}{" "}
-                                                            -{" "}
-                                                            {formatDate(
-                                                                event.tanggal_selesai
-                                                            )}
-                                                        </span>
+                                            <div className="p-6 flex-grow flex flex-col">
+                                                <h4 className="text-xl font-semibold text-gray-900 flex-1 mr-3">
+                                                    {event.nama_event}
+                                                </h4>
+
+                                                {/* --- ▼▼▼ PERBAIKAN TAMPILAN DI SINI ▼▼▼ --- */}
+                                                <div className="space-y-3 my-4 text-sm text-gray-600">
+                                                    <div>
+                                                        <p className="font-semibold text-gray-700">
+                                                            Jadwal Pendaftaran:
+                                                        </p>
+                                                        <div className="flex items-center">
+                                                            <span className="mr-2">
+                                                                📅
+                                                            </span>
+                                                            <span>
+                                                                {formatDate(
+                                                                    event.pendaftaran_dibuka
+                                                                )}{" "}
+                                                                -{" "}
+                                                                {formatDate(
+                                                                    event.pendaftaran_ditutup
+                                                                )}
+                                                            </span>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex items-center text-gray-600">
-                                                        <span className="text-blue-600 mr-2">
+                                                    <div>
+                                                        <p className="font-semibold text-gray-700">
+                                                            Jadwal Acara:
+                                                        </p>
+                                                        <div className="flex items-center">
+                                                            <span className="mr-2">
+                                                                🗓️
+                                                            </span>
+                                                            <span>
+                                                                {formatDate(
+                                                                    event.tanggal_mulai_acara
+                                                                )}{" "}
+                                                                -{" "}
+                                                                {formatDate(
+                                                                    event.tanggal_selesai_acara
+                                                                )}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center">
+                                                        <span className="mr-2">
                                                             📍
                                                         </span>
-                                                        <span className="text-sm">
+                                                        <span>
                                                             {event.lokasi_event}
                                                         </span>
                                                     </div>
-                                                    <div className="flex items-center text-gray-600">
-                                                        <span className="text-blue-600 mr-2">
+                                                    <div className="flex items-center">
+                                                        <span className="mr-2">
                                                             👥
                                                         </span>
-                                                        <span className="text-sm">
+                                                        <span>
                                                             Sisa Kuota:{" "}
                                                             {Math.max(
                                                                 0,
@@ -290,10 +275,13 @@ export default function EventRegistration({
                                                         </span>
                                                     </div>
                                                 </div>
-                                                <p className="text-gray-600 text-sm mb-6 line-clamp-3">
+                                                {/* --- ▲▲▲ AKHIR DARI PERBAIKAN --- */}
+
+                                                <p className="text-gray-600 text-sm mb-6 line-clamp-3 flex-grow">
                                                     {event.deskripsi_event}
                                                 </p>
                                             </div>
+
                                             <div className="mt-auto">
                                                 {currentRegistrationStatus ? (
                                                     <RegistrationStatusDisplay
@@ -304,39 +292,41 @@ export default function EventRegistration({
                                                             registrationId
                                                         }
                                                     />
-                                                ) : eventStatus ===
-                                                  "finished" ? (
-                                                    <div className="text-center py-4 bg-gray-50 border-t">
-                                                        <span className="text-gray-500 font-medium">
-                                                            Event Sudah Selesai
-                                                        </span>
-                                                    </div>
-                                                ) : isQuotaFull ? (
-                                                    <div className="p-6 text-center border-t">
-                                                        <button
-                                                            disabled
-                                                            className="w-full block px-4 py-2 bg-red-500 text-white text-center rounded-lg cursor-not-allowed opacity-75"
-                                                        >
-                                                            Kuota Penuh
-                                                        </button>
-                                                    </div>
                                                 ) : (
                                                     <div className="p-6 text-center border-t">
-                                                        <Link
-                                                            href={route(
-                                                                "umkm.events.register",
-                                                                event.id
-                                                            )}
-                                                            method="post"
-                                                            as="button"
-                                                            className="w-full block px-4 py-2 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition"
-                                                        >
-                                                            Daftar Sekarang (
-                                                            {formatRupiah(
-                                                                event.biaya_pendaftaran_umkm
-                                                            )}
-                                                            )
-                                                        </Link>
+                                                        {isQuotaFull ? (
+                                                            <button
+                                                                disabled
+                                                                className="w-full block px-4 py-2 bg-red-500 text-white text-center rounded-lg cursor-not-allowed opacity-75"
+                                                            >
+                                                                Kuota Penuh
+                                                            </button>
+                                                        ) : isRegistrationOpen ? (
+                                                            <Link
+                                                                href={route(
+                                                                    "umkm.events.register",
+                                                                    event.id
+                                                                )}
+                                                                method="post"
+                                                                as="button"
+                                                                className="w-full block px-4 py-2 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition"
+                                                            >
+                                                                Daftar Sekarang
+                                                                (
+                                                                {formatRupiah(
+                                                                    event.biaya_pendaftaran_umkm
+                                                                )}
+                                                                )
+                                                            </Link>
+                                                        ) : (
+                                                            <button
+                                                                disabled
+                                                                className="w-full block px-4 py-2 bg-gray-400 text-white text-center rounded-lg cursor-not-allowed"
+                                                            >
+                                                                Pendaftaran
+                                                                Ditutup
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>

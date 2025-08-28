@@ -24,7 +24,6 @@ const Modal = ({ show, onClose, children }) => {
 export default function ProposalDetail({ auth, proposal }) {
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
 
-    // Form untuk aksi penolakan
     const {
         data,
         setData,
@@ -36,8 +35,6 @@ export default function ProposalDetail({ auth, proposal }) {
         rejection_reason: "",
     });
 
-    // --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ ---
-    // Buat form terpisah khusus untuk aksi persetujuan
     const { post: postApprove, processing: processingApprove } = useForm();
 
     const handleApprove = () => {
@@ -45,7 +42,6 @@ export default function ProposalDetail({ auth, proposal }) {
             postApprove(route("admin.proposals.approve", proposal.id));
         }
     };
-    // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
 
     const openRejectModal = () => {
         reset("rejection_reason");
@@ -84,7 +80,6 @@ export default function ProposalDetail({ auth, proposal }) {
                 <div className="py-12">
                     <div className="max-w-4xl mx-auto sm:px-6 lg:px-8">
                         <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-8 grid md:grid-cols-3 gap-8">
-                            {/* Kolom Kiri: Poster */}
                             <div className="md:col-span-1">
                                 {proposal.poster_event ? (
                                     <img
@@ -100,7 +95,6 @@ export default function ProposalDetail({ auth, proposal }) {
                                     </div>
                                 )}
                             </div>
-                            {/* Kolom Kanan: Detail Info */}
                             <div className="md:col-span-2 space-y-4">
                                 <div>
                                     <span className="font-bold">
@@ -118,16 +112,32 @@ export default function ProposalDetail({ auth, proposal }) {
                                     <span className="font-bold">Lokasi:</span>{" "}
                                     {proposal.lokasi_event}
                                 </div>
+                                {/* --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ --- */}
                                 <div>
-                                    <span className="font-bold">Tanggal:</span>{" "}
+                                    <span className="font-bold">
+                                        Jadwal Pendaftaran:
+                                    </span>{" "}
                                     {new Date(
-                                        proposal.tanggal_mulai
+                                        proposal.pendaftaran_dibuka
                                     ).toLocaleDateString("id-ID")}{" "}
                                     s/d{" "}
                                     {new Date(
-                                        proposal.tanggal_selesai
+                                        proposal.pendaftaran_ditutup
                                     ).toLocaleDateString("id-ID")}
                                 </div>
+                                <div>
+                                    <span className="font-bold">
+                                        Jadwal Acara:
+                                    </span>{" "}
+                                    {new Date(
+                                        proposal.tanggal_mulai_acara
+                                    ).toLocaleDateString("id-ID")}{" "}
+                                    s/d{" "}
+                                    {new Date(
+                                        proposal.tanggal_selesai_acara
+                                    ).toLocaleDateString("id-ID")}
+                                </div>
+                                {/* --- ▲▲▲ AKHIR DARI PERBAIKAN --- */}
                                 <div>
                                     <span className="font-bold">
                                         Biaya Pendaftaran:

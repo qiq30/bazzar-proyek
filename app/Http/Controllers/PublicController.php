@@ -16,18 +16,21 @@ class PublicController extends Controller
 
         $filters = $request->only('search', 'status');
 
+        // --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ ---
         $events = Event::query()
             // Hanya ambil event yang belum selesai
             ->whereIn('status', ['active', 'upcoming'])
             // Terapkan filter dari request
             ->filter($filters)
-            ->orderBy('tanggal_mulai', 'asc')
-            ->take(12) // Kita bisa naikkan limitnya sedikit
+            // Ganti 'tanggal_mulai' menjadi 'tanggal_mulai_acara'
+            ->orderBy('tanggal_mulai_acara', 'asc')
+            ->take(12)
             ->get();
+        // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
 
         return Inertia::render('Public/HomePage', [
             'events' => $events,
-            'filters' => $filters, // <-- 3. Kirim filter kembali ke frontend
+            'filters' => $filters,
         ]);
     }
 

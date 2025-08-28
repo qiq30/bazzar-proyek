@@ -60,26 +60,138 @@ class UltimateTestSeeder extends Seeder
         // =================================================================
         $this->command->info('3. Membuat data Produk...');
         Product::insert([
-            ['umkm_profile_id' => $umkmVerified[0]->id, 'name' => 'Bingka Kentang', 'price' => 25000, 'description' => 'Kue bingka lembut dengan rasa kentang asli.'],
-            ['umkm_profile_id' => $umkmVerified[0]->id, 'name' => 'Nasi Kuning Haruan', 'price' => 18000, 'description' => 'Nasi kuning dengan lauk ikan haruan masak habang.'],
-            ['umkm_profile_id' => $umkmVerified[1]->id, 'name' => 'Kemeja Sasirangan Pria', 'price' => 250000, 'description' => 'Bahan katun primisima, adem dan nyaman.'],
-            ['umkm_profile_id' => $umkmVerified[1]->id, 'name' => 'Selendang Sasirangan', 'price' => 150000, 'description' => 'Cocok untuk acara formal maupun santai.'],
-            ['umkm_profile_id' => $umkmVerified[2]->id, 'name' => 'Tas Purun Jinjing', 'price' => 75000, 'description' => 'Tas ramah lingkungan dari anyaman purun.'],
-            ['umkm_profile_id' => $umkmVerified[3]->id, 'name' => 'Cincin Batu Kecubung', 'price' => 750000, 'description' => 'Batu asli dari Martapura.'],
-            ['umkm_profile_id' => $umkmVerified[4]->id, 'name' => 'Amplang Ikan Tenggiri 250gr', 'price' => 35000, 'description' => 'Kerupuk amplang renyah dan gurih.'],
+            ['umkm_profile_id' => $umkmVerified[0]->id, 'name' => 'Bingka Kentang', 'price' => 25000, 'description' => 'Kue bingka lembut dengan rasa kentang asli.', 'created_at' => now(), 'updated_at' => now()],
+            ['umkm_profile_id' => $umkmVerified[0]->id, 'name' => 'Nasi Kuning Haruan', 'price' => 18000, 'description' => 'Nasi kuning dengan lauk ikan haruan masak habang.', 'created_at' => now(), 'updated_at' => now()],
+            ['umkm_profile_id' => $umkmVerified[1]->id, 'name' => 'Kemeja Sasirangan Pria', 'price' => 250000, 'description' => 'Bahan katun primisima, adem dan nyaman.', 'created_at' => now(), 'updated_at' => now()],
+            ['umkm_profile_id' => $umkmVerified[1]->id, 'name' => 'Selendang Sasirangan', 'price' => 150000, 'description' => 'Cocok untuk acara formal maupun santai.', 'created_at' => now(), 'updated_at' => now()],
+            ['umkm_profile_id' => $umkmVerified[2]->id, 'name' => 'Tas Purun Jinjing', 'price' => 75000, 'description' => 'Tas ramah lingkungan dari anyaman purun.', 'created_at' => now(), 'updated_at' => now()],
+            ['umkm_profile_id' => $umkmVerified[3]->id, 'name' => 'Cincin Batu Kecubung', 'price' => 750000, 'description' => 'Batu asli dari Martapura.', 'created_at' => now(), 'updated_at' => now()],
+            ['umkm_profile_id' => $umkmVerified[4]->id, 'name' => 'Amplang Ikan Tenggiri 250gr', 'price' => 35000, 'description' => 'Kerupuk amplang renyah dan gurih.', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         // =================================================================
         // == DATA EVENT
         // =================================================================
         $this->command->info('4. Membuat data Event...');
-        $activeEvent = Event::create(['user_id' => $eoVerified1->user_id, 'nama_event' => 'Festival Kuliner Banua', 'deskripsi_event' => 'Menampilkan kelezatan masakan khas Kalimantan Selatan.', 'poster_event' => 'seeders/poster_event_1.jpg', 'tanggal_mulai' => now()->subDays(2), 'tanggal_selesai' => now()->addDays(2), 'lokasi_event' => 'Taman Kamboja', 'biaya_pendaftaran_umkm' => 100000, 'kuota_umkm' => 15, 'nama_bank_penyelenggara' => 'BCA', 'nomor_rekening_penyelenggara' => '9876543210', 'nama_pemilik_rekening' => $eoVerified1->organizer_name, 'status_proposal' => 'disetujui', 'status' => 'active', 'panitia_pin' => '123456']);
-        $upcomingEvent = Event::create(['user_id' => $eoVerified2->user_id, 'nama_event' => 'Pameran Sasirangan & Kerajinan', 'deskripsi_event' => 'Pameran terbesar untuk para pengrajin sasirangan.', 'poster_event' => null, 'tanggal_mulai' => now()->addDays(25), 'tanggal_selesai' => now()->addDays(28), 'lokasi_event' => 'Gedung Sultan Suriansyah', 'biaya_pendaftaran_umkm' => 200000, 'kuota_umkm' => 4, 'nama_bank_penyelenggara' => 'BNI', 'nomor_rekening_penyelenggara' => '1122334455', 'nama_pemilik_rekening' => $eoVerified2->organizer_name, 'status_proposal' => 'disetujui', 'status' => 'upcoming', 'panitia_pin' => '654321']);
-        $freeUpcomingEvent = Event::create(['user_id' => $eoVerified1->user_id, 'nama_event' => 'Gebyar UMKM Merdeka', 'deskripsi_event' => 'Event gratis dalam rangka perayaan hari kemerdekaan.', 'poster_event' => 'seeders/poster_event_3.jpg', 'tanggal_mulai' => now()->addDays(15), 'tanggal_selesai' => now()->addDays(17), 'lokasi_event' => 'Siring 0 KM Banjarmasin', 'biaya_pendaftaran_umkm' => 0, 'kuota_umkm' => 100, 'nama_bank_penyelenggara' => 'Bank Kalsel', 'nomor_rekening_penyelenggara' => '001234567890', 'nama_pemilik_rekening' => $eoVerified1->organizer_name, 'status_proposal' => 'disetujui', 'status' => 'upcoming', 'panitia_pin' => '778899']);
-        $finishedEvent = Event::create(['user_id' => $eoVerified2->user_id, 'nama_event' => 'Bazar Buku & Hobi Lawas', 'deskripsi_event' => 'Event untuk para pecinta buku, komik, dan hobi.', 'poster_event' => 'seeders/poster_event_4.jpg', 'tanggal_mulai' => now()->subDays(30), 'tanggal_selesai' => now()->subDays(28), 'lokasi_event' => 'Aula Kayuh Baimbai', 'biaya_pendaftaran_umkm' => 50000, 'kuota_umkm' => 25, 'nama_bank_penyelenggara' => 'BNI', 'nomor_rekening_penyelenggara' => '1122334455', 'nama_pemilik_rekening' => $eoVerified2->organizer_name, 'status_proposal' => 'disetujui', 'status' => 'finished', 'panitia_pin' => '112233']);
-        Event::create(['user_id' => $eoVerified1->user_id, 'nama_event' => 'Banjarmasin Coffee Week 2025', 'deskripsi_event' => 'Festival kopi terbesar di Banjarmasin.', 'poster_event' => null, 'tanggal_mulai' => now()->addDays(40), 'tanggal_selesai' => now()->addDays(42), 'lokasi_event' => 'Duta Mall Banjarmasin', 'biaya_pendaftaran_umkm' => 250000, 'kuota_umkm' => 30, 'nama_bank_penyelenggara' => 'Bank Mandiri', 'nomor_rekening_penyelenggara' => '1234567890123', 'nama_pemilik_rekening' => $eoVerified1->organizer_name, 'status_proposal' => 'menunggu_persetujuan', 'status' => null]);
-        $rejectedProposal = Event::create(['user_id' => $eoVerified2->user_id, 'nama_event' => 'Festival Musik Indie', 'deskripsi_event' => 'Acara musik indie lokal.', 'poster_event' => 'seeders/poster_event_2.jpg', 'tanggal_mulai' => now()->addDays(50), 'tanggal_selesai' => now()->addDays(50), 'lokasi_event' => 'Gedung Pemuda', 'biaya_pendaftaran_umkm' => 500000, 'kuota_umkm' => 10, 'nama_bank_penyelenggara' => 'BNI', 'nomor_rekening_penyelenggara' => '1122334455', 'nama_pemilik_rekening' => $eoVerified2->organizer_name, 'status_proposal' => 'ditolak', 'status' => null]);
+        $activeEvent = Event::create([
+            'user_id' => $eoVerified1->user_id,
+            'nama_event' => 'Festival Kuliner Banua',
+            'deskripsi_event' => 'Menampilkan kelezatan masakan khas Kalimantan Selatan.',
+            'poster_event' => 'seeders/poster_event_1.jpg',
+            'pendaftaran_dibuka' => now()->subDays(10),
+            'pendaftaran_ditutup' => now()->subDays(3),
+            'tanggal_mulai_acara' => now()->subDays(2),
+            'tanggal_selesai_acara' => now()->addDays(2),
+            'lokasi_event' => 'Taman Kamboja',
+            'biaya_pendaftaran_umkm' => 100000,
+            'kuota_umkm' => 15,
+            'nama_bank_penyelenggara' => 'BCA',
+            'nomor_rekening_penyelenggara' => '9876543210',
+            'nama_pemilik_rekening' => $eoVerified1->organizer_name,
+            'status_proposal' => 'disetujui',
+            'status' => 'active',
+            'panitia_pin' => '123456'
+        ]);
+
+        $upcomingEvent = Event::create([
+            'user_id' => $eoVerified2->user_id,
+            'nama_event' => 'Pameran Sasirangan & Kerajinan',
+            'deskripsi_event' => 'Pameran terbesar untuk para pengrajin sasirangan.',
+            'poster_event' => null,
+            'pendaftaran_dibuka' => now(),
+            'pendaftaran_ditutup' => now()->addDays(20),
+            'tanggal_mulai_acara' => now()->addDays(25),
+            'tanggal_selesai_acara' => now()->addDays(28),
+            'lokasi_event' => 'Gedung Sultan Suriansyah',
+            'biaya_pendaftaran_umkm' => 200000,
+            'kuota_umkm' => 4,
+            'nama_bank_penyelenggara' => 'BNI',
+            'nomor_rekening_penyelenggara' => '1122334455',
+            'nama_pemilik_rekening' => $eoVerified2->organizer_name,
+            'status_proposal' => 'disetujui',
+            'status' => 'upcoming',
+            'panitia_pin' => '654321'
+        ]);
+
+        $freeUpcomingEvent = Event::create([
+            'user_id' => $eoVerified1->user_id,
+            'nama_event' => 'Gebyar UMKM Merdeka',
+            'deskripsi_event' => 'Event gratis dalam rangka perayaan hari kemerdekaan.',
+            'poster_event' => 'seeders/poster_event_3.jpg',
+            'pendaftaran_dibuka' => now()->subDays(5),
+            'pendaftaran_ditutup' => now()->addDays(10),
+            'tanggal_mulai_acara' => now()->addDays(15),
+            'tanggal_selesai_acara' => now()->addDays(17),
+            'lokasi_event' => 'Siring 0 KM Banjarmasin',
+            'biaya_pendaftaran_umkm' => 0,
+            'kuota_umkm' => 100,
+            'nama_bank_penyelenggara' => 'Bank Kalsel',
+            'nomor_rekening_penyelenggara' => '001234567890',
+            'nama_pemilik_rekening' => $eoVerified1->organizer_name,
+            'status_proposal' => 'disetujui',
+            'status' => 'upcoming',
+            'panitia_pin' => '778899'
+        ]);
+
+        $finishedEvent = Event::create([
+            'user_id' => $eoVerified2->user_id,
+            'nama_event' => 'Bazar Buku & Hobi Lawas',
+            'deskripsi_event' => 'Event untuk para pecinta buku, komik, dan hobi.',
+            'poster_event' => 'seeders/poster_event_4.jpg',
+            'pendaftaran_dibuka' => now()->subDays(40),
+            'pendaftaran_ditutup' => now()->subDays(31),
+            'tanggal_mulai_acara' => now()->subDays(30),
+            'tanggal_selesai_acara' => now()->subDays(28),
+            'lokasi_event' => 'Aula Kayuh Baimbai',
+            'biaya_pendaftaran_umkm' => 50000,
+            'kuota_umkm' => 25,
+            'nama_bank_penyelenggara' => 'BNI',
+            'nomor_rekening_penyelenggara' => '1122334455',
+            'nama_pemilik_rekening' => $eoVerified2->organizer_name,
+            'status_proposal' => 'disetujui',
+            'status' => 'finished',
+            'panitia_pin' => '112233'
+        ]);
+
+        Event::create([
+            'user_id' => $eoVerified1->user_id,
+            'nama_event' => 'Banjarmasin Coffee Week 2025',
+            'deskripsi_event' => 'Festival kopi terbesar di Banjarmasin.',
+            'poster_event' => null,
+            'pendaftaran_dibuka' => now()->addDays(10),
+            'pendaftaran_ditutup' => now()->addDays(35),
+            'tanggal_mulai_acara' => now()->addDays(40),
+            'tanggal_selesai_acara' => now()->addDays(42),
+            'lokasi_event' => 'Duta Mall Banjarmasin',
+            'biaya_pendaftaran_umkm' => 250000,
+            'kuota_umkm' => 30,
+            'nama_bank_penyelenggara' => 'Bank Mandiri',
+            'nomor_rekening_penyelenggara' => '1234567890123',
+            'nama_pemilik_rekening' => $eoVerified1->organizer_name,
+            'status_proposal' => 'menunggu_persetujuan',
+            'status' => null
+        ]);
+
+        $rejectedProposal = Event::create([
+            'user_id' => $eoVerified2->user_id,
+            'nama_event' => 'Festival Musik Indie',
+            'deskripsi_event' => 'Acara musik indie lokal.',
+            'poster_event' => 'seeders/poster_event_2.jpg',
+            'pendaftaran_dibuka' => now()->addDays(20),
+            'pendaftaran_ditutup' => now()->addDays(45),
+            'tanggal_mulai_acara' => now()->addDays(50),
+            'tanggal_selesai_acara' => now()->addDays(50),
+            'lokasi_event' => 'Gedung Pemuda',
+            'biaya_pendaftaran_umkm' => 500000,
+            'kuota_umkm' => 10,
+            'nama_bank_penyelenggara' => 'BNI',
+            'nomor_rekening_penyelenggara' => '1122334455',
+            'nama_pemilik_rekening' => $eoVerified2->organizer_name,
+            'status_proposal' => 'ditolak',
+            'status' => null
+        ]);
         $rejectedProposal->delete();
+
 
         // =================================================================
         // == DATA PENDAFTARAN EVENT

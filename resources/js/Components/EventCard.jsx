@@ -26,7 +26,7 @@ export default function EventCard({ event }) {
     };
 
     const formatDate = (dateString) => {
-        if (!dateString) return "Tanggal tidak valid"; // Pencegahan error
+        if (!dateString) return "Tanggal tidak valid";
         return new Date(dateString).toLocaleDateString("id-ID", {
             day: "numeric",
             month: "long",
@@ -35,10 +35,8 @@ export default function EventCard({ event }) {
     };
 
     return (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-            {/* Event Image */}
+        <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
             <div className="h-48 bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
-                {/* 🔽 PERUBAHAN: Gunakan 'poster_event' jika ada, fallback ke 'image_url' untuk data lama 🔽 */}
                 {event.poster_event ? (
                     <img
                         src={`/storage/${event.poster_event}`}
@@ -50,50 +48,54 @@ export default function EventCard({ event }) {
                 )}
             </div>
 
-            {/* Event Content */}
-            <div className="p-6">
+            <div className="p-6 flex-grow flex flex-col">
                 <div className="flex justify-between items-start mb-3">
-                    {/* 🔽 PERUBAHAN NAMA PROPS 🔽 */}
                     <h4 className="text-lg font-semibold text-gray-900 line-clamp-2">
                         {event.nama_event}
                     </h4>
                     {getStatusBadge(event.status)}
                 </div>
 
-                <div className="space-y-2 mb-4">
-                    {/* 🔽 PERUBAHAN NAMA PROPS 🔽 */}
-                    <div className="flex items-center text-sm text-gray-600">
-                        <span className="mr-2">📅</span>
-                        <span>
-                            {formatDate(event.tanggal_mulai)} -{" "}
-                            {formatDate(event.tanggal_selesai)}
-                        </span>
+                {/* --- ▼▼▼ PERUBAHAN TAMPILAN TANGGAL DI SINI ▼▼▼ --- */}
+                <div className="space-y-3 mb-4 text-sm text-gray-600">
+                    <div>
+                        <p className="font-semibold text-gray-700">
+                            Jadwal Pendaftaran:
+                        </p>
+                        <div className="flex items-center">
+                            <span className="mr-2">📅</span>
+                            <span>
+                                {formatDate(event.pendaftaran_dibuka)} -{" "}
+                                {formatDate(event.pendaftaran_ditutup)}
+                            </span>
+                        </div>
                     </div>
-                    <div className="flex items-center text-sm text-gray-600">
+                    <div>
+                        <p className="font-semibold text-gray-700">
+                            Jadwal Acara:
+                        </p>
+                        <div className="flex items-center">
+                            <span className="mr-2">🗓️</span>
+                            <span>
+                                {formatDate(event.tanggal_mulai_acara)} -{" "}
+                                {formatDate(event.tanggal_selesai_acara)}
+                            </span>
+                        </div>
+                    </div>
+                    <div className="flex items-center">
                         <span className="mr-2">📍</span>
                         <span>{event.lokasi_event}</span>
                     </div>
                 </div>
+                {/* --- ▲▲▲ AKHIR DARI PERUBAHAN TANGGAL --- */}
 
-                {event.deskripsi_event && (
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                        {event.deskripsi_event}
-                    </p>
-                )}
-
-                <div className="flex justify-between items-center">
+                <div className="mt-auto flex justify-between items-center">
                     <Link
                         href={`/events/${event.id}/umkm`}
                         className="text-blue-600 hover:text-blue-800 font-medium text-sm"
                     >
                         Lihat Peserta UMKM →
                     </Link>
-
-                    {event.status === "active" && (
-                        <span className="text-xs text-green-600 font-medium">
-                            Berlangsung Sekarang
-                        </span>
-                    )}
                 </div>
             </div>
         </div>

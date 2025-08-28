@@ -20,7 +20,7 @@ use App\Events\EventPublished;
 
 class AdminController extends Controller
 {
-    // ... (method dashboard() dan method lainnya tidak berubah) ...
+    // ... (method dashboard() tidak berubah) ...
     public function dashboard()
     {
         $totalEvents = Event::whereNotNull('status')->count();
@@ -38,16 +38,18 @@ class AdminController extends Controller
         ]);
     }
 
+    // --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ ---
     public function events()
     {
         $events = Event::whereNotNull('status')
-            ->orderBy('tanggal_mulai', 'desc')
+            ->orderBy('tanggal_mulai_acara', 'desc') // Mengganti 'tanggal_mulai' menjadi 'tanggal_mulai_acara'
             ->get();
 
         return Inertia::render('Admin/EventManagement', [
             'events' => $events
         ]);
     }
+    // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
 
     public function showPublishForm()
     {
@@ -63,32 +65,37 @@ class AdminController extends Controller
 
     public function storeEventFromProposal(Request $request)
     {
+        // --- ▼▼▼ VALIDASI DISESUAIKAN DI SINI ▼▼▼ ---
+        // Validasi hanya field yang bisa diubah oleh admin di form
         $request->validate([
             'proposal_id' => 'required|exists:events,id',
             'nama_event' => 'required|string|max:255',
             'deskripsi_event' => 'required|string',
-            'tanggal_mulai' => 'required|date',
-            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
-            'lokasi_event' => 'required|string|max:255',
-            'biaya_pendaftaran_umkm' => 'required|numeric|min:0',
-            'kuota_umkm' => 'required|integer|min:1',
             'status' => 'required|in:upcoming,active',
         ]);
+        // --- ▲▲▲ AKHIR DARI PENYESUAIAN VALIDASI ---
 
         $event = Event::findOrFail($request->proposal_id);
         $panitiaPin = rand(100000, 999999);
 
+        // --- ▼▼▼ LOGIKA UPDATE DI SINI ▼▼▼ ---
+        // Update data berdasarkan kombinasi dari form dan data asli proposal
         $event->update([
             'nama_event' => $request->nama_event,
             'deskripsi_event' => $request->deskripsi_event,
-            'tanggal_mulai' => $request->tanggal_mulai,
-            'tanggal_selesai' => $request->tanggal_selesai,
-            'lokasi_event' => $request->lokasi_event,
-            'biaya_pendaftaran_umkm' => $request->biaya_pendaftaran_umkm,
-            'kuota_umkm' => $request->kuota_umkm,
             'status' => $request->status,
             'panitia_pin' => $panitiaPin,
+            // Data di bawah ini diambil dari proposal asli, bukan dari request,
+            // untuk memastikan konsistensi dan keamanan.
+            'pendaftaran_dibuka' => $event->pendaftaran_dibuka,
+            'pendaftaran_ditutup' => $event->pendaftaran_ditutup,
+            'tanggal_mulai_acara' => $event->tanggal_mulai_acara,
+            'tanggal_selesai_acara' => $event->tanggal_selesai_acara,
+            'lokasi_event' => $event->lokasi_event,
+            'biaya_pendaftaran_umkm' => $event->biaya_pendaftaran_umkm,
+            'kuota_umkm' => $event->kuota_umkm,
         ]);
+        // --- ▲▲▲ AKHIR DARI LOGIKA UPDATE ---
 
         EventPublished::dispatch($event);
 
@@ -99,16 +106,16 @@ class AdminController extends Controller
     {
         $request->validate([
             'nama_event' => 'required|string|max:255',
-            'tanggal_mulai' => 'required|date',
-            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
+            'tanggal_mulai_acara' => 'required|date',
+            'tanggal_selesai_acara' => 'required|date|after_or_equal:tanggal_mulai_acara',
             'lokasi_event' => 'required|string|max:255',
             'status' => 'required|in:upcoming,active,finished',
         ]);
 
         $event->update($request->only([
             'nama_event',
-            'tanggal_mulai',
-            'tanggal_selesai',
+            'tanggal_mulai_acara',
+            'tanggal_selesai_acara',
             'lokasi_event',
             'status'
         ]));
@@ -116,6 +123,7 @@ class AdminController extends Controller
         return back()->with('success', 'Event berhasil diupdate!');
     }
 
+    // ... (sisa controller tidak berubah) ...
     public function destroyEvent(Event $event)
     {
         if ($event->poster_event) {
@@ -244,8 +252,7 @@ class AdminController extends Controller
             ->orderBy('updated_at', 'desc')
             ->get();
 
-        // --- ▼▼▼ PASTIKAN BAGIAN INI SUDAH BENAR ▼▼▼ ---
-        $rejectedProposals = Event::withTrashed()->with('user') // Gunakan withTrashed()
+        $rejectedProposals = Event::withTrashed()->with('user')
             ->where('status_proposal', 'ditolak')
             ->orderBy('deleted_at', 'desc')
             ->get();
@@ -253,9 +260,8 @@ class AdminController extends Controller
         return Inertia::render('Admin/ProposalList', [
             'pendingProposals' => $pendingProposals,
             'approvedProposals' => $approvedProposals,
-            'rejectedProposals' => $rejectedProposals, // Pastikan ini dikirim
+            'rejectedProposals' => $rejectedProposals,
         ]);
-        // --- ▲▲▲ AKHIR DARI BAGIAN PENTING ---
     }
 
     public function showProposal(Event $event)
@@ -287,7 +293,7 @@ class AdminController extends Controller
             'rejection_reason' => $request->rejection_reason,
         ]);
 
-        $event->refresh(); // <-- TAMBAHKAN INI
+        $event->refresh();
         ProposalStatusUpdated::dispatch($event);
 
         $event->delete();
@@ -297,15 +303,12 @@ class AdminController extends Controller
 
     public function permanentlyDeleteProposal($id)
     {
-        // Temukan proposal, TERMASUK yang sudah di-soft delete
         $proposal = Event::withTrashed()->findOrFail($id);
 
-        // Hapus file poster jika ada
         if ($proposal->poster_event) {
             Storage::disk('public')->delete($proposal->poster_event);
         }
 
-        // Hapus secara permanen dari database
         $proposal->forceDelete();
 
         return back()->with('success', 'Proposal telah dihapus permanen.');

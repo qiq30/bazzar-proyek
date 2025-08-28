@@ -13,7 +13,6 @@ export default function UMKMDirectoryPage({ event, umkmProfiles }) {
             umkm.business_name
                 .toLowerCase()
                 .includes(searchTerm.toLowerCase()) ||
-            // Tambahkan pengecekan untuk memastikan deskripsi tidak null
             (umkm.description &&
                 umkm.description
                     .toLowerCase()
@@ -30,7 +29,6 @@ export default function UMKMDirectoryPage({ event, umkmProfiles }) {
 
     return (
         <>
-            {}
             <Head title={`Peserta UMKM - ${event.nama_event}`} />
 
             <div className="min-h-screen bg-gray-50">
@@ -70,24 +68,25 @@ export default function UMKMDirectoryPage({ event, umkmProfiles }) {
                 {/* Event Header */}
                 <section className="bg-blue-600 text-white py-12">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        {}
                         <h2 className="text-3xl font-bold mb-2">
                             {event.nama_event}
                         </h2>
+                        {/* --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ --- */}
                         <div className="flex flex-wrap gap-4 text-blue-100">
                             <span>
                                 📅{" "}
                                 {new Date(
-                                    event.tanggal_mulai
+                                    event.tanggal_mulai_acara
                                 ).toLocaleDateString("id-ID")}{" "}
                                 -{" "}
                                 {new Date(
-                                    event.tanggal_selesai
+                                    event.tanggal_selesai_acara
                                 ).toLocaleDateString("id-ID")}
                             </span>
                             <span>📍 {event.lokasi_event}</span>
                             <span>👥 {umkmProfiles.length} UMKM Terdaftar</span>
                         </div>
+                        {/* --- ▲▲▲ AKHIR DARI PERBAIKAN --- */}
                     </div>
                 </section>
 

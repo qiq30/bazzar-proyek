@@ -18,6 +18,7 @@ use App\Events\NewUserRegisteredForVerification;
 
 class UmkmController extends Controller
 {
+    // --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ ---
     public function dashboard()
     {
         $user = auth()->user();
@@ -29,8 +30,9 @@ class UmkmController extends Controller
         ];
 
         if ($umkmProfile) {
+            // Ganti 'tanggal_mulai' menjadi 'tanggal_mulai_acara'
             $data['registeredEvents'] = $umkmProfile->events()
-                ->orderBy('tanggal_mulai', 'desc')
+                ->orderBy('tanggal_mulai_acara', 'desc')
                 ->get();
         } else {
             $data['registeredEvents'] = [];
@@ -38,6 +40,7 @@ class UmkmController extends Controller
 
         return Inertia::render('UMKM/Dashboard', $data);
     }
+    // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
 
     public function profileSetup()
     {
@@ -50,7 +53,6 @@ class UmkmController extends Controller
         ]);
     }
 
-    // --- ▼▼▼ PERUBAHAN UTAMA DI SINI ▼▼▼ ---
     public function storeProfile(Request $request)
     {
         $user = Auth::user();
@@ -62,11 +64,9 @@ class UmkmController extends Controller
             'address' => 'required|string',
             'business_type' => 'required|string',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            // KTP hanya wajib jika belum ada sama sekali
             'ktp' => [$profile ? 'nullable' : 'required', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
         ]);
 
-        // Pertahankan path file lama jika tidak ada file baru yang diunggah
         $logoPath = $profile->logo_path ?? null;
         if ($request->hasFile('logo')) {
             if ($profile && $profile->logo_path) {
@@ -92,8 +92,8 @@ class UmkmController extends Controller
                 'business_type' => $request->business_type,
                 'logo_path' => $logoPath,
                 'ktp_path' => $ktpPath,
-                'status' => 'pending', // Selalu set ke pending saat update/create
-                'rejection_reason' => null, // Hapus alasan penolakan saat submit ulang
+                'status' => 'pending',
+                'rejection_reason' => null,
             ]
         );
 
@@ -101,7 +101,6 @@ class UmkmController extends Controller
 
         return redirect()->route('dashboard')->with('success', 'Profile UMKM berhasil disimpan dan diajukan ulang untuk verifikasi!');
     }
-    // --- ▲▲▲ AKHIR DARI PERUBAHAN ---
 
     public function events()
     {
@@ -117,7 +116,9 @@ class UmkmController extends Controller
                 }
             }])
             ->where('status', '!=', 'finished')
-            ->orderBy('tanggal_mulai', 'asc')
+            ->whereDate('pendaftaran_dibuka', '<=', now())
+            ->whereDate('pendaftaran_ditutup', '>=', now())
+            ->orderBy('tanggal_mulai_acara', 'asc')
             ->get();
 
         $registrationStatus = [];
@@ -208,8 +209,6 @@ class UmkmController extends Controller
         $product->delete();
         return back()->with('success', 'Produk berhasil dihapus!');
     }
-
-    // --- ALUR PENDAFTARAN & PEMBAYARAN EVENT ---
 
     public function startRegistration(Event $event)
     {

@@ -7,30 +7,32 @@ import { useState, useEffect } from "react";
 export default function PublishEventForm({ auth, proposals }) {
     const [selectedProposal, setSelectedProposal] = useState(null);
 
+    // --- ▼▼▼ PERUBAHAN STATE FORM ▼▼▼ ---
+    // State disederhanakan, namun akan diisi lengkap oleh useEffect
     const { data, setData, post, processing, errors, reset } = useForm({
         proposal_id: "",
         nama_event: "",
         deskripsi_event: "",
-        tanggal_mulai: "",
-        tanggal_selesai: "",
-        lokasi_event: "",
-        biaya_pendaftaran_umkm: 0,
-        kuota_umkm: 0,
         status: "upcoming",
+        // Field lain akan ditambahkan secara dinamis
     });
+    // --- ▲▲▲ AKHIR DARI PERUBAHAN ---
 
     useEffect(() => {
         if (selectedProposal) {
             setData({
-                ...data,
+                // Isi semua data dari proposal, meskipun tidak semua ditampilkan
                 proposal_id: selectedProposal.id,
                 nama_event: selectedProposal.nama_event,
                 deskripsi_event: selectedProposal.deskripsi_event,
-                tanggal_mulai: selectedProposal.tanggal_mulai.split("T")[0],
-                tanggal_selesai: selectedProposal.tanggal_selesai.split("T")[0],
+                pendaftaran_dibuka: selectedProposal.pendaftaran_dibuka,
+                pendaftaran_ditutup: selectedProposal.pendaftaran_ditutup,
+                tanggal_mulai_acara: selectedProposal.tanggal_mulai_acara,
+                tanggal_selesai_acara: selectedProposal.tanggal_selesai_acara,
                 lokasi_event: selectedProposal.lokasi_event,
                 biaya_pendaftaran_umkm: selectedProposal.biaya_pendaftaran_umkm,
                 kuota_umkm: selectedProposal.kuota_umkm,
+                status: "upcoming", // Default status saat terbit
             });
         } else {
             reset();
@@ -47,6 +49,14 @@ export default function PublishEventForm({ auth, proposals }) {
         e.preventDefault();
         post(route("admin.events.publish.store"));
     };
+
+    // Helper untuk format Rupiah
+    const formatRupiah = (number) =>
+        new Intl.NumberFormat("id-ID", {
+            style: "currency",
+            currency: "IDR",
+            minimumFractionDigits: 0,
+        }).format(number);
 
     return (
         <AuthenticatedLayout
@@ -90,10 +100,10 @@ export default function PublishEventForm({ auth, proposals }) {
                             {selectedProposal && (
                                 <>
                                     <div className="border-t pt-6 space-y-6">
-                                        {/* Field-field form yang terisi otomatis */}
+                                        {/* --- ▼▼▼ FORM DISEMPURNAKAN DI SINI ▼▼▼ --- */}
                                         <div>
                                             <label className="block text-sm font-medium">
-                                                Nama Event
+                                                Nama Event (dapat disesuaikan)
                                             </label>
                                             <input
                                                 type="text"
@@ -104,11 +114,80 @@ export default function PublishEventForm({ auth, proposals }) {
                                                         e.target.value
                                                     )
                                                 }
-                                                className="mt-1 w-full rounded-md"
-                                                required
+                                                className="mt-1 w-full rounded-md bg-gray-50"
                                             />
+                                            {errors.nama_event && (
+                                                <p className="text-red-500 text-xs mt-1">
+                                                    {errors.nama_event}
+                                                </p>
+                                            )}
                                         </div>
-                                        {}
+                                        <div>
+                                            <label className="block text-sm font-medium">
+                                                Deskripsi Event (dapat
+                                                disesuaikan)
+                                            </label>
+                                            <textarea
+                                                rows="4"
+                                                value={data.deskripsi_event}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        "deskripsi_event",
+                                                        e.target.value
+                                                    )
+                                                }
+                                                className="mt-1 w-full rounded-md bg-gray-50"
+                                            ></textarea>
+                                            {errors.deskripsi_event && (
+                                                <p className="text-red-500 text-xs mt-1">
+                                                    {errors.deskripsi_event}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {/* Tampilkan data lain sebagai informasi (read-only) */}
+                                        <div className="p-4 bg-gray-100 rounded-lg space-y-2 text-sm">
+                                            <p>
+                                                <strong>Lokasi:</strong>{" "}
+                                                {selectedProposal.lokasi_event}
+                                            </p>
+                                            <p>
+                                                <strong>Pendaftaran:</strong>{" "}
+                                                {new Date(
+                                                    selectedProposal.pendaftaran_dibuka
+                                                ).toLocaleDateString(
+                                                    "id-ID"
+                                                )}{" "}
+                                                -{" "}
+                                                {new Date(
+                                                    selectedProposal.pendaftaran_ditutup
+                                                ).toLocaleDateString("id-ID")}
+                                            </p>
+                                            <p>
+                                                <strong>Acara:</strong>{" "}
+                                                {new Date(
+                                                    selectedProposal.tanggal_mulai_acara
+                                                ).toLocaleDateString(
+                                                    "id-ID"
+                                                )}{" "}
+                                                -{" "}
+                                                {new Date(
+                                                    selectedProposal.tanggal_selesai_acara
+                                                ).toLocaleDateString("id-ID")}
+                                            </p>
+                                            <p>
+                                                <strong>Biaya:</strong>{" "}
+                                                {formatRupiah(
+                                                    selectedProposal.biaya_pendaftaran_umkm
+                                                )}
+                                            </p>
+                                            <p>
+                                                <strong>Kuota:</strong>{" "}
+                                                {selectedProposal.kuota_umkm}{" "}
+                                                UMKM
+                                            </p>
+                                        </div>
+
                                         <div>
                                             <label className="block text-sm font-medium">
                                                 Status Saat Terbit *
@@ -131,6 +210,7 @@ export default function PublishEventForm({ auth, proposals }) {
                                                 </option>
                                             </select>
                                         </div>
+                                        {/* --- ▲▲▲ AKHIR DARI PENYEMPURNAAN --- */}
                                     </div>
                                     <div className="flex justify-end">
                                         <button

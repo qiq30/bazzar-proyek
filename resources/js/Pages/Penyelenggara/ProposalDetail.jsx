@@ -70,7 +70,6 @@ export default function ProposalDetail({ auth, proposal }) {
                                 </div>
                             </div>
 
-                            {/* --- ▼▼▼ PERUBAHAN DI SINI ▼▼▼ --- */}
                             {proposal.status_proposal === "ditolak" && (
                                 <div className="p-4 bg-red-50 border-l-4 border-red-400 text-red-800">
                                     <p className="font-bold">
@@ -81,7 +80,6 @@ export default function ProposalDetail({ auth, proposal }) {
                                     </p>
                                 </div>
                             )}
-                            {/* --- ▲▲▲ AKHIR DARI PERUBAHAN --- */}
 
                             <hr />
                             <div>
@@ -92,16 +90,30 @@ export default function ProposalDetail({ auth, proposal }) {
                                 <span className="font-bold">Lokasi:</span>{" "}
                                 {proposal.lokasi_event}
                             </div>
+                            {/* --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ --- */}
                             <div>
-                                <span className="font-bold">Tanggal:</span>{" "}
+                                <span className="font-bold">
+                                    Jadwal Pendaftaran:
+                                </span>{" "}
                                 {new Date(
-                                    proposal.tanggal_mulai
+                                    proposal.pendaftaran_dibuka
                                 ).toLocaleDateString("id-ID")}{" "}
                                 s/d{" "}
                                 {new Date(
-                                    proposal.tanggal_selesai
+                                    proposal.pendaftaran_ditutup
                                 ).toLocaleDateString("id-ID")}
                             </div>
+                            <div>
+                                <span className="font-bold">Jadwal Acara:</span>{" "}
+                                {new Date(
+                                    proposal.tanggal_mulai_acara
+                                ).toLocaleDateString("id-ID")}{" "}
+                                s/d{" "}
+                                {new Date(
+                                    proposal.tanggal_selesai_acara
+                                ).toLocaleDateString("id-ID")}
+                            </div>
+                            {/* --- ▲▲▲ AKHIR DARI PERBAIKAN --- */}
                             <div>
                                 <span className="font-bold">
                                     Biaya Pendaftaran:

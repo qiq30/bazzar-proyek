@@ -8,8 +8,12 @@ export default function CreateProposal({ auth }) {
         nama_event: "",
         deskripsi_event: "",
         poster_event: null,
-        tanggal_mulai: "",
-        tanggal_selesai: "",
+        // --- ▼▼▼ PERUBAHAN STATE DI SINI ▼▼▼ ---
+        pendaftaran_dibuka: "",
+        pendaftaran_ditutup: "",
+        tanggal_mulai_acara: "",
+        tanggal_selesai_acara: "",
+        // --- ▲▲▲ AKHIR DARI PERUBAHAN ---
         lokasi_event: "",
         biaya_pendaftaran_umkm: 0,
         kuota_umkm: 10,
@@ -17,10 +21,11 @@ export default function CreateProposal({ auth }) {
         nomor_rekening_penyelenggara: "",
         nama_pemilik_rekening: "",
     });
+
     const getTodayDate = () => {
         const today = new Date();
         const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
+        const month = String(today.getMonth() + 1).padStart(2, "0");
         const day = String(today.getDate()).padStart(2, "0");
         return `${year}-${month}-${day}`;
     };
@@ -44,12 +49,11 @@ export default function CreateProposal({ auth }) {
                 <div className="max-w-4xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                         <form onSubmit={submit} className="space-y-6">
-                            {}
-                            {}
+                            {/* Nama & Lokasi Event (Tidak berubah) */}
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-sm font-medium">
-                                        Nama Event
+                                        Nama Event *
                                     </label>
                                     <input
                                         type="text"
@@ -71,7 +75,7 @@ export default function CreateProposal({ auth }) {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium">
-                                        Lokasi Event
+                                        Lokasi Event *
                                     </label>
                                     <input
                                         type="text"
@@ -92,10 +96,133 @@ export default function CreateProposal({ auth }) {
                                     )}
                                 </div>
                             </div>
-                            {/* Deskripsi */}
+
+                            {/* --- ▼▼▼ PERUBAHAN BESAR PADA BAGIAN TANGGAL ▼▼▼ --- */}
+                            <div className="space-y-6 pt-4 border-t">
+                                <h3 className="text-lg font-semibold text-gray-800">
+                                    Jadwal Pendaftaran Peserta
+                                </h3>
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-sm font-medium">
+                                            Pendaftaran Dibuka *
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={data.pendaftaran_dibuka}
+                                            min={getTodayDate()}
+                                            onChange={(e) =>
+                                                setData(
+                                                    "pendaftaran_dibuka",
+                                                    e.target.value
+                                                )
+                                            }
+                                            className="mt-1 w-full rounded-md"
+                                            required
+                                        />
+                                        {errors.pendaftaran_dibuka && (
+                                            <p className="text-red-500 text-xs mt-1">
+                                                {errors.pendaftaran_dibuka}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium">
+                                            Pendaftaran Ditutup *
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={data.pendaftaran_ditutup}
+                                            min={
+                                                data.pendaftaran_dibuka ||
+                                                getTodayDate()
+                                            }
+                                            onChange={(e) =>
+                                                setData(
+                                                    "pendaftaran_ditutup",
+                                                    e.target.value
+                                                )
+                                            }
+                                            className="mt-1 w-full rounded-md"
+                                            required
+                                            disabled={!data.pendaftaran_dibuka}
+                                        />
+                                        {errors.pendaftaran_ditutup && (
+                                            <p className="text-red-500 text-xs mt-1">
+                                                {errors.pendaftaran_ditutup}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6 pt-4 border-t">
+                                <h3 className="text-lg font-semibold text-gray-800">
+                                    Jadwal Pelaksanaan Acara
+                                </h3>
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-sm font-medium">
+                                            Tanggal Mulai Acara *
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={data.tanggal_mulai_acara}
+                                            min={
+                                                data.pendaftaran_ditutup ||
+                                                getTodayDate()
+                                            }
+                                            onChange={(e) =>
+                                                setData(
+                                                    "tanggal_mulai_acara",
+                                                    e.target.value
+                                                )
+                                            }
+                                            className="mt-1 w-full rounded-md"
+                                            required
+                                            disabled={!data.pendaftaran_ditutup}
+                                        />
+                                        {errors.tanggal_mulai_acara && (
+                                            <p className="text-red-500 text-xs mt-1">
+                                                {errors.tanggal_mulai_acara}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium">
+                                            Tanggal Selesai Acara *
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={data.tanggal_selesai_acara}
+                                            min={
+                                                data.tanggal_mulai_acara ||
+                                                getTodayDate()
+                                            }
+                                            onChange={(e) =>
+                                                setData(
+                                                    "tanggal_selesai_acara",
+                                                    e.target.value
+                                                )
+                                            }
+                                            className="mt-1 w-full rounded-md"
+                                            required
+                                            disabled={!data.tanggal_mulai_acara}
+                                        />
+                                        {errors.tanggal_selesai_acara && (
+                                            <p className="text-red-500 text-xs mt-1">
+                                                {errors.tanggal_selesai_acara}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                            {/* --- ▲▲▲ AKHIR DARI PERUBAHAN TANGGAL --- */}
+
+                            {/* Deskripsi (Tidak berubah) */}
                             <div>
                                 <label className="block text-sm font-medium">
-                                    Deskripsi Event
+                                    Deskripsi Event *
                                 </label>
                                 <textarea
                                     rows="4"
@@ -110,57 +237,12 @@ export default function CreateProposal({ auth }) {
                                     required
                                 ></textarea>
                             </div>
-                            {/* Tanggal Mulai & Selesai */}
+
+                            {/* Biaya & Kuota (Tidak berubah) */}
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-sm font-medium">
-                                        Tanggal Mulai
-                                    </label>
-                                    <input
-                                        type="date"
-                                        value={data.tanggal_mulai}
-                                        // --- ▼▼▼ TAMBAHKAN KODE DI BAWAH INI ▼▼▼ ---
-                                        min={getTodayDate()}
-                                        // --- ▲▲▲ AKHIR DARI PERUBAHAN ▲▲▲ ---
-                                        onChange={(e) =>
-                                            setData(
-                                                "tanggal_mulai",
-                                                e.target.value
-                                            )
-                                        }
-                                        className="mt-1 w-full rounded-md"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium">
-                                        Tanggal Selesai
-                                    </label>
-                                    <input
-                                        type="date"
-                                        value={data.tanggal_selesai}
-                                        // --- ▼▼▼ TAMBAHKAN KODE DI BAWAH INI ▼▼▼ ---
-                                        min={
-                                            data.tanggal_mulai || getTodayDate()
-                                        }
-                                        // --- ▲▲▲ AKHIR DARI PERUBAHAN ▲▲▲ ---
-                                        onChange={(e) =>
-                                            setData(
-                                                "tanggal_selesai",
-                                                e.target.value
-                                            )
-                                        }
-                                        className="mt-1 w-full rounded-md"
-                                        required
-                                    />
-                                </div>
-                            </div>
-                            {/* ... (Sisa form tidak berubah) ... */}
-                            {/* Biaya & Kuota */}
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-medium">
-                                        Biaya Pendaftaran UMKM (Rp)
+                                        Biaya Pendaftaran UMKM (Rp) *
                                     </label>
                                     <input
                                         type="number"
@@ -172,12 +254,13 @@ export default function CreateProposal({ auth }) {
                                             )
                                         }
                                         className="mt-1 w-full rounded-md"
+                                        min="0"
                                         required
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium">
-                                        Kuota UMKM
+                                        Kuota UMKM *
                                     </label>
                                     <input
                                         type="number"
@@ -189,15 +272,17 @@ export default function CreateProposal({ auth }) {
                                             )
                                         }
                                         className="mt-1 w-full rounded-md"
+                                        min="1"
                                         required
                                     />
                                 </div>
                             </div>
-                            {/* Info Bank */}
+
+                            {/* Info Bank (Tidak berubah) */}
                             <div className="grid md:grid-cols-3 gap-6">
                                 <div>
                                     <label className="block text-sm font-medium">
-                                        Nama Bank
+                                        Nama Bank *
                                     </label>
                                     <input
                                         type="text"
@@ -215,7 +300,7 @@ export default function CreateProposal({ auth }) {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium">
-                                        Nomor Rekening
+                                        Nomor Rekening *
                                     </label>
                                     <input
                                         type="text"
@@ -234,7 +319,7 @@ export default function CreateProposal({ auth }) {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium">
-                                        Nama Pemilik Rekening
+                                        Nama Pemilik Rekening *
                                     </label>
                                     <input
                                         type="text"
@@ -250,10 +335,11 @@ export default function CreateProposal({ auth }) {
                                     />
                                 </div>
                             </div>
-                            {/* Poster */}
+
+                            {/* Poster (Tidak berubah) */}
                             <div>
                                 <label className="block text-sm font-medium">
-                                    Poster Event
+                                    Poster Event *
                                 </label>
                                 <input
                                     type="file"
@@ -272,6 +358,8 @@ export default function CreateProposal({ auth }) {
                                     </p>
                                 )}
                             </div>
+
+                            {/* Tombol Submit (Tidak berubah) */}
                             <div className="flex justify-end">
                                 <button
                                     type="submit"

@@ -4,7 +4,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link } from "@inertiajs/react";
 import { Toaster } from "react-hot-toast";
 
-// --- Komponen Ikon SVG untuk Dashboard UMKM ---
+// --- (Komponen Ikon tidak berubah) ---
 const ProfileIcon = (props) => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -223,7 +223,7 @@ export default function Dashboard({
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    {/* Welcome Section */}
+                    {/* ... (bagian atas tidak berubah) ... */}
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                         <div className="p-6 text-gray-900">
                             <h3 className="text-2xl font-bold mb-2">
@@ -236,9 +236,7 @@ export default function Dashboard({
                         </div>
                     </div>
 
-                    {/* Stats Cards */}
                     <div className="grid md:grid-cols-3 gap-6 mb-8">
-                        {/* Profile Status Card */}
                         <div className="bg-white p-6 rounded-lg shadow-sm">
                             <div className="flex items-center justify-between">
                                 <div>
@@ -272,7 +270,6 @@ export default function Dashboard({
                             )}
                         </div>
 
-                        {/* Events Registered Card */}
                         <div className="bg-white p-6 rounded-lg shadow-sm">
                             <div className="flex items-center justify-between">
                                 <div>
@@ -295,7 +292,6 @@ export default function Dashboard({
                             </Link>
                         </div>
 
-                        {/* QRIS Status Card */}
                         <div className="bg-white p-6 rounded-lg shadow-sm">
                             <div className="flex items-center justify-between">
                                 <div>
@@ -340,7 +336,6 @@ export default function Dashboard({
                         </div>
                     </div>
 
-                    {/* Quick Actions */}
                     <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
                         <h4 className="text-lg font-semibold text-gray-900 mb-4">
                             Aksi Cepat
@@ -480,8 +475,7 @@ export default function Dashboard({
                             )}
                         </div>
                     </div>
-
-                    {/* Recent Events Section */}
+                    {/* --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ --- */}
                     <div className="bg-white rounded-lg shadow-sm p-6">
                         <h4 className="text-lg font-semibold text-gray-900 mb-4">
                             Event Terbaru yang Anda Ikuti
@@ -502,11 +496,11 @@ export default function Dashboard({
                                             </Link>
                                             <p className="text-sm text-gray-600">
                                                 {formatDate(
-                                                    event.tanggal_mulai
+                                                    event.tanggal_mulai_acara // Ganti di sini
                                                 )}{" "}
                                                 -{" "}
                                                 {formatDate(
-                                                    event.tanggal_selesai
+                                                    event.tanggal_selesai_acara // Ganti di sini
                                                 )}
                                             </p>
                                         </div>
@@ -546,6 +540,7 @@ export default function Dashboard({
                             </p>
                         )}
                     </div>
+                    {/* --- ▲▲▲ AKHIR DARI PERBAIKAN --- */}
                 </div>
             </div>
         </AuthenticatedLayout>

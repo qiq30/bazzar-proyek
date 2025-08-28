@@ -26,11 +26,11 @@ const Modal = ({ children, show, onClose }) => {
 const EventEditForm = ({ event, onSuccess, onCancel }) => {
     const { data, setData, put, processing, errors } = useForm({
         nama_event: event?.nama_event || "",
-        tanggal_mulai: event?.tanggal_mulai
-            ? event.tanggal_mulai.split("T")[0]
+        tanggal_mulai_acara: event?.tanggal_mulai_acara
+            ? event.tanggal_mulai_acara.split("T")[0]
             : "",
-        tanggal_selesai: event?.tanggal_selesai
-            ? event.tanggal_selesai.split("T")[0]
+        tanggal_selesai_acara: event?.tanggal_selesai_acara
+            ? event.tanggal_selesai_acara.split("T")[0]
             : "",
         lokasi_event: event?.lokasi_event || "",
         status: event?.status || "upcoming",
@@ -67,9 +67,9 @@ const EventEditForm = ({ event, onSuccess, onCancel }) => {
                     </label>
                     <input
                         type="date"
-                        value={data.tanggal_mulai}
+                        value={data.tanggal_mulai_acara}
                         onChange={(e) =>
-                            setData("tanggal_mulai", e.target.value)
+                            setData("tanggal_mulai_acara", e.target.value)
                         }
                         className="w-full p-2 border rounded mt-1"
                     />
@@ -80,9 +80,9 @@ const EventEditForm = ({ event, onSuccess, onCancel }) => {
                     </label>
                     <input
                         type="date"
-                        value={data.tanggal_selesai}
+                        value={data.tanggal_selesai_acara}
                         onChange={(e) =>
-                            setData("tanggal_selesai", e.target.value)
+                            setData("tanggal_selesai_acara", e.target.value)
                         }
                         className="w-full p-2 border rounded mt-1"
                     />
@@ -180,16 +180,17 @@ export default function EventManagement({ auth, events }) {
 
                         <div className="overflow-x-auto">
                             <table className="min-w-full bg-white">
+                                {/* --- ▼▼▼ PERBAIKAN HEADER TABEL DI SINI ▼▼▼ --- */}
                                 <thead className="bg-gray-200">
                                     <tr>
                                         <th className="py-2 px-4 text-left">
                                             Nama Event
                                         </th>
                                         <th className="py-2 px-4 text-left">
-                                            Tanggal
+                                            Jadwal Pendaftaran
                                         </th>
                                         <th className="py-2 px-4 text-left">
-                                            Lokasi
+                                            Jadwal Acara
                                         </th>
                                         <th className="py-2 px-4 text-left">
                                             Status
@@ -199,28 +200,51 @@ export default function EventManagement({ auth, events }) {
                                         </th>
                                     </tr>
                                 </thead>
+                                {/* --- ▲▲▲ AKHIR DARI PERBAIKAN --- */}
                                 <tbody>
                                     {events.map((event) => (
                                         <tr key={event.id} className="border-b">
-                                            <td className="py-2 px-4">
+                                            <td className="py-2 px-4 font-medium">
                                                 {event.nama_event}
                                             </td>
-                                            <td className="py-2 px-4">
+                                            {/* --- ▼▼▼ PERBAIKAN ISI TABEL DI SINI ▼▼▼ --- */}
+                                            <td className="py-2 px-4 text-sm">
                                                 {new Date(
-                                                    event.tanggal_mulai
+                                                    event.pendaftaran_dibuka
                                                 ).toLocaleDateString(
                                                     "id-ID"
                                                 )}{" "}
                                                 -{" "}
                                                 {new Date(
-                                                    event.tanggal_selesai
+                                                    event.pendaftaran_ditutup
                                                 ).toLocaleDateString("id-ID")}
                                             </td>
-                                            <td className="py-2 px-4">
-                                                {event.lokasi_event}
+                                            <td className="py-2 px-4 text-sm">
+                                                {new Date(
+                                                    event.tanggal_mulai_acara
+                                                ).toLocaleDateString(
+                                                    "id-ID"
+                                                )}{" "}
+                                                -{" "}
+                                                {new Date(
+                                                    event.tanggal_selesai_acara
+                                                ).toLocaleDateString("id-ID")}
                                             </td>
+                                            {/* --- ▲▲▲ AKHIR DARI PERBAIKAN --- */}
                                             <td className="py-2 px-4">
-                                                {event.status}
+                                                <span
+                                                    className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                                                        event.status ===
+                                                        "active"
+                                                            ? "bg-green-100 text-green-800"
+                                                            : event.status ===
+                                                              "upcoming"
+                                                            ? "bg-yellow-100 text-yellow-800"
+                                                            : "bg-gray-100 text-gray-800"
+                                                    }`}
+                                                >
+                                                    {event.status}
+                                                </span>
                                             </td>
                                             <td className="py-2 px-4 whitespace-nowrap">
                                                 <Link
@@ -230,7 +254,7 @@ export default function EventManagement({ auth, events }) {
                                                     )}
                                                     className="px-3 py-2 bg-green-600 text-white text-xs font-semibold rounded-md hover:bg-green-800 mr-3"
                                                 >
-                                                    Lihat Peserta
+                                                    Peserta
                                                 </Link>
                                                 <button
                                                     onClick={() =>
