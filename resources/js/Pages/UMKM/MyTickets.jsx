@@ -20,12 +20,17 @@ const ETicketCard = ({ ticket, ticketRef }) => {
                 <h3 className="text-2xl font-bold">
                     {ticket.event.nama_event}
                 </h3>
+                {/* --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ --- */}
                 <p className="opacity-90">
-                    {new Date(ticket.event.tanggal_mulai).toLocaleDateString(
-                        "id-ID",
-                        { day: "numeric", month: "long", year: "numeric" }
-                    )}
+                    {new Date(
+                        ticket.event.tanggal_mulai_acara
+                    ).toLocaleDateString("id-ID", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                    })}
                 </p>
+                {/* --- ▲▲▲ AKHIR DARI PERBAIKAN --- */}
             </div>
             <div className="p-6 space-y-4">
                 <div>

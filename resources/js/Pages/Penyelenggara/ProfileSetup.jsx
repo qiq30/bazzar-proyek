@@ -5,8 +5,8 @@ import { Head, useForm } from "@inertiajs/react";
 import { useState } from "react";
 
 export default function ProfileSetup({ auth, profile }) {
-    // --- ▼▼▼ PERUBAHAN DI SINI ▼▼▼ ---
     const [logoPreview, setLogoPreview] = useState(profile?.logo_url || null);
+    // --- ▼▼▼ PERBAIKAN PATH PREVIEW DOKUMEN ▼▼▼ ---
     const [documentPreview, setDocumentPreview] = useState(
         profile ? `/storage/${profile.verification_document_path}` : null
     );
@@ -18,7 +18,7 @@ export default function ProfileSetup({ auth, profile }) {
         verification_document: null,
         logo: null,
     });
-    // --- ▲▲▲ AKHIR DARI PERUBAHAN ---
+    // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
 
     const handleFileChange = (e, field, setPreview) => {
         const file = e.target.files[0];
@@ -150,7 +150,7 @@ export default function ProfileSetup({ auth, profile }) {
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Logo (Opsional)
                                         </label>
-                                        <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition">
+                                        <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition h-40 flex items-center justify-center">
                                             {logoPreview ? (
                                                 <div className="space-y-2">
                                                     <img
@@ -184,15 +184,20 @@ export default function ProfileSetup({ auth, profile }) {
                                         </div>
                                     </div>
                                     <div>
-                                        {/* --- ▼▼▼ PERUBAHAN DI SINI ▼▼▼ --- */}
+                                        {/* --- ▼▼▼ PERBAIKAN LABEL & BANTUAN DI SINI ▼▼▼ --- */}
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Dokumen Verifikasi{" "}
                                             {profile
                                                 ? "(Opsional jika tidak diubah)"
                                                 : "*"}
                                         </label>
-                                        {/* --- ▲▲▲ AKHIR DARI PERUBAHAN --- */}
-                                        <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition">
+                                        <p className="text-xs text-gray-500 mb-2">
+                                            {profile
+                                                ? "Unggah baru jika ingin mengganti."
+                                                : "Wajib diisi. Bisa berupa KTP Penanggung Jawab atau Surat Izin Usaha."}
+                                        </p>
+                                        {/* --- ▲▲▲ AKHIR DARI PERBAIKAN --- */}
+                                        <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition h-40 flex items-center justify-center">
                                             {documentPreview ? (
                                                 <div className="space-y-2">
                                                     <img
@@ -207,7 +212,7 @@ export default function ProfileSetup({ auth, profile }) {
                                                         📄
                                                     </div>
                                                     <p className="text-sm text-gray-600">
-                                                        Upload KTP/Surat Izin
+                                                        Upload Dokumen
                                                     </p>
                                                 </div>
                                             )}

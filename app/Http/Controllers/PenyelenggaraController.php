@@ -14,6 +14,7 @@ use App\Models\EventRegistration;
 use App\Events\PaymentRejected;
 use Illuminate\Http\Request;
 use App\Events\NewUserRegisteredForVerification;
+use App\Events\ProfileStatusUpdated; // <-- 1. TAMBAHKAN IMPORT INI
 
 class PenyelenggaraController extends Controller
 {
@@ -132,7 +133,7 @@ class PenyelenggaraController extends Controller
             $logoPath = $request->file('logo')->store('penyelenggara/logos', 'public');
         }
 
-        PenyelenggaraProfile::updateOrCreate(
+        $updatedProfile = PenyelenggaraProfile::updateOrCreate(
             ['user_id' => $user->id],
             [
                 'organizer_name' => $request->organizer_name,
@@ -146,6 +147,10 @@ class PenyelenggaraController extends Controller
         );
 
         NewUserRegisteredForVerification::dispatch($user);
+
+        // --- ▼▼▼ 2. TAMBAHKAN BARIS INI ▼▼▼ ---
+        ProfileStatusUpdated::dispatch($updatedProfile);
+        // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
 
         return redirect()->route('penyelenggara.dashboard')->with('success', 'Profil berhasil disimpan dan diajukan ulang untuk verifikasi.');
     }

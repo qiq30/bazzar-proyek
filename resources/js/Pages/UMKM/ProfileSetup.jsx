@@ -111,15 +111,12 @@ const PendingProfileView = ({ profile }) => (
 );
 
 const ProfileForm = ({ umkmProfile }) => {
-    // --- ▼▼▼ PERUBAHAN DI SINI ▼▼▼ ---
-    // Gunakan URL yang sudah ada untuk preview awal
     const [logoPreview, setLogoPreview] = useState(
         umkmProfile?.logo_url || null
     );
     const [ktpPreview, setKtpPreview] = useState(
         umkmProfile?.ktp_path ? `/storage/${umkmProfile.ktp_path}` : null
     );
-    // --- ▲▲▲ AKHIR DARI PERUBAHAN ---
 
     const businessTypes = [
         "Kuliner",
@@ -153,7 +150,6 @@ const ProfileForm = ({ umkmProfile }) => {
 
     const submit = (e) => {
         e.preventDefault();
-        // Gunakan POST karena Inertia tidak mendukung file upload dengan PUT/PATCH
         post(route("umkm.profile.store"));
     };
 
@@ -188,7 +184,6 @@ const ProfileForm = ({ umkmProfile }) => {
                 </div>
 
                 <form onSubmit={submit} className="space-y-6">
-                    {/* ... form fields lainnya tidak berubah ... */}
                     <div>
                         <InputLabel
                             htmlFor="business_name"
@@ -301,7 +296,7 @@ const ProfileForm = ({ umkmProfile }) => {
                             </div>
                         </div>
                         <div>
-                            {/* --- ▼▼▼ PERUBAHAN DI SINI ▼▼▼ --- */}
+                            {/* --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ --- */}
                             <InputLabel
                                 value={`Foto KTP ${
                                     umkmProfile
@@ -314,7 +309,7 @@ const ProfileForm = ({ umkmProfile }) => {
                                     ? "Unggah baru jika ingin mengganti."
                                     : "Wajib diisi untuk verifikasi."}
                             </p>
-                            {/* --- ▲▲▲ AKHIR DARI PERUBAHAN --- */}
+                            {/* --- ▲▲▲ AKHIR DARI PERBAIKAN --- */}
                             <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 text-center h-40 flex items-center justify-center">
                                 {ktpPreview ? (
                                     <img

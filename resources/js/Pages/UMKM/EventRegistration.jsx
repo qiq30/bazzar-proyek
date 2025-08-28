@@ -193,8 +193,14 @@ export default function EventRegistration({
                                         event.pendaftaran_ditutup
                                     );
                                     endDate.setHours(23, 59, 59, 999);
+
                                     const isRegistrationOpen =
                                         now >= startDate && now <= endDate;
+
+                                    // --- ▼▼▼ TAMBAHKAN LOGIKA BARU DI SINI ▼▼▼ ---
+                                    const isRegistrationUpcoming =
+                                        now < startDate;
+                                    // --- ▲▲▲ AKHIR DARI LOGIKA BARU ---
 
                                     return (
                                         <div
@@ -212,8 +218,6 @@ export default function EventRegistration({
                                                 <h4 className="text-xl font-semibold text-gray-900 flex-1 mr-3">
                                                     {event.nama_event}
                                                 </h4>
-
-                                                {/* --- ▼▼▼ PERBAIKAN TAMPILAN DI SINI ▼▼▼ --- */}
                                                 <div className="space-y-3 my-4 text-sm text-gray-600">
                                                     <div>
                                                         <p className="font-semibold text-gray-700">
@@ -275,8 +279,6 @@ export default function EventRegistration({
                                                         </span>
                                                     </div>
                                                 </div>
-                                                {/* --- ▲▲▲ AKHIR DARI PERBAIKAN --- */}
-
                                                 <p className="text-gray-600 text-sm mb-6 line-clamp-3 flex-grow">
                                                     {event.deskripsi_event}
                                                 </p>
@@ -318,7 +320,22 @@ export default function EventRegistration({
                                                                 )}
                                                                 )
                                                             </Link>
+                                                        ) : // --- ▼▼▼ TAMBAHKAN TAMPILAN BARU DI SINI ▼▼▼ ---
+                                                        isRegistrationUpcoming ? (
+                                                            <div className="w-full block px-4 py-2 bg-gray-100 text-gray-700 text-center rounded-lg">
+                                                                <p className="text-sm font-semibold">
+                                                                    Pendaftaran
+                                                                    akan dibuka
+                                                                    pada:
+                                                                </p>
+                                                                <p className="text-xs">
+                                                                    {formatDate(
+                                                                        event.pendaftaran_dibuka
+                                                                    )}
+                                                                </p>
+                                                            </div>
                                                         ) : (
+                                                            // --- ▲▲▲ AKHIR DARI TAMPILAN BARU ---
                                                             <button
                                                                 disabled
                                                                 className="w-full block px-4 py-2 bg-gray-400 text-white text-center rounded-lg cursor-not-allowed"

@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use App\Events\NewUserRegisteredForVerification;
+use App\Events\ProfileStatusUpdated; // <-- 1. TAMBAHKAN IMPORT INI
 
 class UmkmController extends Controller
 {
@@ -83,7 +84,7 @@ class UmkmController extends Controller
             $ktpPath = $request->file('ktp')->store('umkm/ktp', 'public');
         }
 
-        UmkmProfile::updateOrCreate(
+        $updatedProfile = UmkmProfile::updateOrCreate(
             ['user_id' => auth()->id()],
             [
                 'business_name' => $request->business_name,
@@ -98,6 +99,11 @@ class UmkmController extends Controller
         );
 
         NewUserRegisteredForVerification::dispatch($user);
+
+        // --- ▼▼▼ 2. TAMBAHKAN BARIS INI ▼▼▼ ---
+        // Kirim notifikasi ke pengguna bahwa profilnya sedang ditinjau ulang
+        ProfileStatusUpdated::dispatch($updatedProfile);
+        // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
 
         return redirect()->route('dashboard')->with('success', 'Profile UMKM berhasil disimpan dan diajukan ulang untuk verifikasi!');
     }
@@ -116,7 +122,6 @@ class UmkmController extends Controller
                 }
             }])
             ->where('status', '!=', 'finished')
-            ->whereDate('pendaftaran_dibuka', '<=', now())
             ->whereDate('pendaftaran_ditutup', '>=', now())
             ->orderBy('tanggal_mulai_acara', 'asc')
             ->get();
