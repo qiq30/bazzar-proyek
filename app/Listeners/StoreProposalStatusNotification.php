@@ -28,13 +28,23 @@ class StoreProposalStatusNotification
         $penyelenggara = $proposal->user;
         $isApproved = $proposal->status_proposal === 'disetujui';
 
+        // --- ▼▼▼ PERUBAHAN DI SINI ▼▼▼ ---
+        $message = '';
+        if ($isApproved) {
+            $message = "Proposal Anda untuk event '{$proposal->nama_event}' telah disetujui oleh admin. Anda sekarang bisa menerbitkannya.";
+        } else {
+            $rejectionReason = $proposal->rejection_reason ?? 'Tidak ada alasan spesifik.';
+            $message = "Proposal Anda untuk event '{$proposal->nama_event}' telah ditolak. Alasan: \"{$rejectionReason}\"";
+        }
+        // --- ▲▲▲ AKHIR DARI PERUBAHAN ---
+
         // Buat notifikasi di database
         $notification = Notification::create([
             'user_id' => $penyelenggara->id,
             'type'    => get_class($event),
             'data'    => [
                 'title'   => $isApproved ? 'Proposal Disetujui!' : 'Proposal Ditolak',
-                'message' => "Proposal Anda untuk event '{$proposal->nama_event}' telah " . ($isApproved ? "disetujui" : "ditolak") . " oleh admin.",
+                'message' => $message, // Gunakan pesan yang sudah dimodifikasi
                 'url'     => route('penyelenggara.proposals.show', $proposal->id),
             ]
         ]);

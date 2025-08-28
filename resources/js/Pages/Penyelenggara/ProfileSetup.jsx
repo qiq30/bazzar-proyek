@@ -4,17 +4,21 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm } from "@inertiajs/react";
 import { useState } from "react";
 
-export default function ProfileSetup({ auth }) {
-    const [logoPreview, setLogoPreview] = useState(null);
-    const [documentPreview, setDocumentPreview] = useState(null);
+export default function ProfileSetup({ auth, profile }) {
+    // --- ▼▼▼ PERUBAHAN DI SINI ▼▼▼ ---
+    const [logoPreview, setLogoPreview] = useState(profile?.logo_url || null);
+    const [documentPreview, setDocumentPreview] = useState(
+        profile ? `/storage/${profile.verification_document_path}` : null
+    );
 
     const { data, setData, post, processing, errors, progress } = useForm({
-        organizer_name: "",
-        description: "",
-        address: "",
+        organizer_name: profile?.organizer_name || "",
+        description: profile?.description || "",
+        address: profile?.address || "",
         verification_document: null,
         logo: null,
     });
+    // --- ▲▲▲ AKHIR DARI PERUBAHAN ---
 
     const handleFileChange = (e, field, setPreview) => {
         const file = e.target.files[0];
@@ -54,6 +58,21 @@ export default function ProfileSetup({ auth }) {
                                     Isi informasi lengkap tentang instansi atau
                                     organisasi Anda untuk dapat membuat event.
                                 </p>
+                                {profile?.status === "rejected" && (
+                                    <div className="mt-4 p-4 bg-red-50 border-l-4 border-red-400 text-red-800">
+                                        <p className="font-bold">
+                                            Profil Anda Ditolak
+                                        </p>
+                                        <p className="mt-1">
+                                            <strong>Alasan:</strong>{" "}
+                                            {profile.rejection_reason}
+                                        </p>
+                                        <p className="mt-2 text-sm">
+                                            Silakan perbarui data Anda dan
+                                            simpan kembali untuk diajukan ulang.
+                                        </p>
+                                    </div>
+                                )}
                             </div>
 
                             <form onSubmit={submit} className="space-y-6">
@@ -111,12 +130,8 @@ export default function ProfileSetup({ auth }) {
                                     </label>
                                     <textarea
                                         value={data.address}
-                                        onChange={
-                                            (e) =>
-                                                setData(
-                                                    "address",
-                                                    e.target.value
-                                                ) // INI PERBAIKANNYA
+                                        onChange={(e) =>
+                                            setData("address", e.target.value)
                                         }
                                         rows={3}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -169,9 +184,14 @@ export default function ProfileSetup({ auth }) {
                                         </div>
                                     </div>
                                     <div>
+                                        {/* --- ▼▼▼ PERUBAHAN DI SINI ▼▼▼ --- */}
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Dokumen Verifikasi *
+                                            Dokumen Verifikasi{" "}
+                                            {profile
+                                                ? "(Opsional jika tidak diubah)"
+                                                : "*"}
                                         </label>
+                                        {/* --- ▲▲▲ AKHIR DARI PERUBAHAN --- */}
                                         <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition">
                                             {documentPreview ? (
                                                 <div className="space-y-2">
@@ -202,7 +222,7 @@ export default function ProfileSetup({ auth }) {
                                                     )
                                                 }
                                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                                required
+                                                required={!profile}
                                             />
                                         </div>
                                     </div>

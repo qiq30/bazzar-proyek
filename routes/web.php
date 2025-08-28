@@ -85,6 +85,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/penyelenggara/verification', [AdminController::class, 'penyelenggaraVerification'])->name('penyelenggara.verification');
     Route::post('/penyelenggara/{penyelenggara}/verify', [AdminController::class, 'verifyPenyelenggara'])->name('penyelenggara.verify');
     Route::post('/penyelenggara/{penyelenggara}/reject', [AdminController::class, 'rejectPenyelenggara'])->name('penyelenggara.reject');
+    Route::delete('/proposals/{id}/force-delete', [AdminController::class, 'permanentlyDeleteProposal'])->name('proposals.forceDelete');
 });
 
 // Penyelenggara Routes
@@ -101,7 +102,7 @@ Route::middleware(['auth', 'verified', 'penyelenggara'])->prefix('penyelenggara'
     Route::post('/verifikasi-pendaftar/{registration}/confirm', [PenyelenggaraController::class, 'confirmPayment'])->name('pendaftar.verifikasi.confirm');
     Route::post('/verifikasi-pendaftar/{registration}/reject', [PenyelenggaraController::class, 'rejectPayment'])->name('pendaftar.verifikasi.reject');
     Route::post('/verifikasi-pendaftar/{registration}/assign-stand', [PenyelenggaraController::class, 'assignStandNumber'])->name('pendaftar.verifikasi.assignStand');
-    Route::get('/proposals/{event}', [PenyelenggaraController::class, 'showProposal'])->name('proposals.show');
+    Route::get('/proposals/{event}', [PenyelenggaraController::class, 'showProposal'])->name('proposals.show')->withTrashed();
 });
 
 // PANITIA ROUTES

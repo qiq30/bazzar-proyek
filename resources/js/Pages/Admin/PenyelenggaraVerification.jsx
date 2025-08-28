@@ -2,12 +2,17 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm } from "@inertiajs/react";
 import { useState } from "react";
 
-// Komponen Modal (tidak berubah)
 const Modal = ({ children, show, onClose }) => {
     if (!show) return null;
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
-            <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4"
+            onClick={onClose}
+        >
+            <div
+                className="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+            >
                 {children}
             </div>
         </div>
@@ -20,22 +25,48 @@ export default function PenyelenggaraVerification({
     verifiedPenyelenggara = [],
 }) {
     const [viewingProfile, setViewingProfile] = useState(null);
-    const { post, processing } = useForm();
+    const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+
+    const {
+        data,
+        setData,
+        post: postReject,
+        processing: processingReject,
+        errors,
+        reset,
+    } = useForm({
+        rejection_reason: "",
+    });
+
+    // --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ ---
+    const { post: postVerify, processing: processingVerify } = useForm();
 
     const handleVerify = (id) => {
         if (confirm("Yakin ingin verifikasi profil ini?")) {
-            post(route("admin.penyelenggara.verify", id), {
+            postVerify(route("admin.penyelenggara.verify", id), {
                 onSuccess: () => setViewingProfile(null),
             });
         }
     };
+    // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
 
-    const handleReject = (id) => {
-        if (confirm("Yakin ingin menolak profil ini?")) {
-            post(route("admin.penyelenggara.reject", id), {
-                onSuccess: () => setViewingProfile(null),
-            });
-        }
+    const openRejectModal = (profile) => {
+        setViewingProfile(profile);
+        reset("rejection_reason");
+        setIsRejectModalOpen(true);
+    };
+
+    const closeRejectModal = () => {
+        setIsRejectModalOpen(false);
+        setViewingProfile(null);
+    };
+
+    const handleRejectSubmit = (e) => {
+        e.preventDefault();
+        if (!viewingProfile) return;
+        postReject(route("admin.penyelenggara.reject", viewingProfile.id), {
+            onSuccess: () => closeRejectModal(),
+        });
     };
 
     return (
@@ -50,7 +81,7 @@ export default function PenyelenggaraVerification({
             <Head title="Verifikasi Penyelenggara" />
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
-                    {/* BAGIAN 1: Verifikasi Profil Penyelenggara Baru */}
+                    {/* ... sisa komponen tidak berubah, hanya perbarui 'disabled' ... */}
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 border-b border-gray-200">
                             <h3 className="text-xl font-bold text-gray-900">
@@ -128,8 +159,6 @@ export default function PenyelenggaraVerification({
                             )}
                         </div>
                     </div>
-
-                    {/* BAGIAN 2: Daftar Penyelenggara Terdaftar */}
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 border-b border-gray-200">
                             <h3 className="text-xl font-bold text-gray-900">
@@ -221,9 +250,8 @@ export default function PenyelenggaraVerification({
                 </div>
             </div>
 
-            {/* Modal untuk melihat detail */}
             <Modal
-                show={!!viewingProfile}
+                show={!!viewingProfile && !isRejectModalOpen}
                 onClose={() => setViewingProfile(null)}
             >
                 {viewingProfile && (
@@ -267,9 +295,11 @@ export default function PenyelenggaraVerification({
                                 <>
                                     <button
                                         onClick={() =>
-                                            handleReject(viewingProfile.id)
+                                            openRejectModal(viewingProfile)
                                         }
-                                        disabled={processing}
+                                        disabled={
+                                            processingReject || processingVerify
+                                        }
                                         className="bg-red-600 text-white py-2 px-4 rounded"
                                     >
                                         Tolak
@@ -278,7 +308,9 @@ export default function PenyelenggaraVerification({
                                         onClick={() =>
                                             handleVerify(viewingProfile.id)
                                         }
-                                        disabled={processing}
+                                        disabled={
+                                            processingReject || processingVerify
+                                        }
                                         className="bg-green-600 text-white py-2 px-4 rounded"
                                     >
                                         Verifikasi
@@ -288,6 +320,57 @@ export default function PenyelenggaraVerification({
                         </div>
                     </div>
                 )}
+            </Modal>
+
+            <Modal show={isRejectModalOpen} onClose={closeRejectModal}>
+                <form onSubmit={handleRejectSubmit} className="space-y-4">
+                    <h2 className="text-xl font-bold text-gray-900">
+                        Tolak Profil Penyelenggara
+                    </h2>
+                    <p className="text-sm text-gray-600">
+                        Berikan alasan penolakan. Alasan ini akan dikirimkan ke
+                        pengguna.
+                    </p>
+                    <div>
+                        <label
+                            htmlFor="rejection_reason"
+                            className="block text-sm font-medium text-gray-700"
+                        >
+                            Alasan Penolakan *
+                        </label>
+                        <textarea
+                            id="rejection_reason"
+                            rows="4"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                            value={data.rejection_reason}
+                            onChange={(e) =>
+                                setData("rejection_reason", e.target.value)
+                            }
+                            required
+                        ></textarea>
+                        {errors.rejection_reason && (
+                            <p className="text-red-500 text-xs mt-1">
+                                {errors.rejection_reason}
+                            </p>
+                        )}
+                    </div>
+                    <div className="flex justify-end space-x-3 pt-4 border-t">
+                        <button
+                            type="button"
+                            onClick={closeRejectModal}
+                            className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={processingReject}
+                            className="px-4 py-2 bg-red-600 text-white font-bold rounded-md hover:bg-red-700 disabled:opacity-50"
+                        >
+                            {processingReject ? "Memproses..." : "Tolak Profil"}
+                        </button>
+                    </div>
+                </form>
             </Modal>
         </AuthenticatedLayout>
     );

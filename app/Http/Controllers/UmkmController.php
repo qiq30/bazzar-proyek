@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use App\Events\NewUserRegisteredForVerification;
 
 class UmkmController extends Controller
 {
@@ -49,19 +50,38 @@ class UmkmController extends Controller
         ]);
     }
 
+    // --- ▼▼▼ PERUBAHAN UTAMA DI SINI ▼▼▼ ---
     public function storeProfile(Request $request)
     {
+        $user = Auth::user();
+        $profile = $user->umkmProfile;
+
         $request->validate([
             'business_name' => 'required|string|max:255',
             'description' => 'required|string',
             'address' => 'required|string',
             'business_type' => 'required|string',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'ktp' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            // KTP hanya wajib jika belum ada sama sekali
+            'ktp' => [$profile ? 'nullable' : 'required', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
         ]);
 
-        $logoPath = $request->hasFile('logo') ? $request->file('logo')->store('umkm/logos', 'public') : null;
-        $ktpPath = $request->hasFile('ktp') ? $request->file('ktp')->store('umkm/ktp', 'public') : null;
+        // Pertahankan path file lama jika tidak ada file baru yang diunggah
+        $logoPath = $profile->logo_path ?? null;
+        if ($request->hasFile('logo')) {
+            if ($profile && $profile->logo_path) {
+                Storage::disk('public')->delete($profile->logo_path);
+            }
+            $logoPath = $request->file('logo')->store('umkm/logos', 'public');
+        }
+
+        $ktpPath = $profile->ktp_path ?? null;
+        if ($request->hasFile('ktp')) {
+            if ($profile && $profile->ktp_path) {
+                Storage::disk('public')->delete($profile->ktp_path);
+            }
+            $ktpPath = $request->file('ktp')->store('umkm/ktp', 'public');
+        }
 
         UmkmProfile::updateOrCreate(
             ['user_id' => auth()->id()],
@@ -72,11 +92,16 @@ class UmkmController extends Controller
                 'business_type' => $request->business_type,
                 'logo_path' => $logoPath,
                 'ktp_path' => $ktpPath,
-                'status' => 'pending'
+                'status' => 'pending', // Selalu set ke pending saat update/create
+                'rejection_reason' => null, // Hapus alasan penolakan saat submit ulang
             ]
         );
-        return redirect()->route('dashboard')->with('success', 'Profile UMKM berhasil disimpan!');
+
+        NewUserRegisteredForVerification::dispatch($user);
+
+        return redirect()->route('dashboard')->with('success', 'Profile UMKM berhasil disimpan dan diajukan ulang untuk verifikasi!');
     }
+    // --- ▲▲▲ AKHIR DARI PERUBAHAN ---
 
     public function events()
     {
@@ -101,7 +126,8 @@ class UmkmController extends Controller
             foreach ($registrations as $reg) {
                 $registrationStatus[$reg->event_id] = [
                     'status' => $reg->status,
-                    'id' => $reg->id
+                    'id' => $reg->id,
+                    'rejection_reason' => $reg->rejection_reason,
                 ];
             }
         }
@@ -191,12 +217,12 @@ class UmkmController extends Controller
 
         $existingRegistration = EventRegistration::where('event_id', $event->id)
             ->where('umkm_profile_id', $umkmProfile->id)
+            ->where('status', '!=', 'rejected')
             ->first();
 
-        // Cek jika ada pendaftaran lama yang kadaluwarsa atau tidak valid
         if ($existingRegistration && (!$existingRegistration->payment_due || now()->isAfter($existingRegistration->payment_due))) {
-            $existingRegistration->delete(); // Hapus pendaftaran lama
-            $existingRegistration = null; // Set jadi null agar pendaftaran baru dibuat
+            $existingRegistration->delete();
+            $existingRegistration = null;
         }
 
         if ($existingRegistration) {
@@ -214,13 +240,18 @@ class UmkmController extends Controller
         $prefix = 'BZREVT' . $event->id . '-';
         $uniqueCode = $prefix . strtoupper(Str::random(5));
 
-        $registration = EventRegistration::create([
-            'event_id' => $event->id,
-            'umkm_profile_id' => $umkmProfile->id,
-            'status' => 'menunggu_pembayaran',
-            'kode_pendaftaran' => $uniqueCode,
-            'payment_due' => now()->addHour(),
-        ]);
+        $registration = EventRegistration::updateOrCreate(
+            [
+                'event_id' => $event->id,
+                'umkm_profile_id' => $umkmProfile->id,
+            ],
+            [
+                'status' => 'menunggu_pembayaran',
+                'kode_pendaftaran' => $uniqueCode,
+                'payment_due' => now()->addHour(),
+                'rejection_reason' => null,
+            ]
+        );
 
         return redirect()->route('umkm.events.pay', ['registration' => $registration->id]);
     }
@@ -231,7 +262,6 @@ class UmkmController extends Controller
             abort(403);
         }
 
-        // Pengecekan hanya dilakukan jika statusnya masih menunggu pembayaran
         if ($registration->status === 'menunggu_pembayaran' && $registration->payment_due && now()->isAfter($registration->payment_due)) {
             $registration->delete();
             return redirect()->route('umkm.events')->with('error', 'Waktu pembayaran Anda telah habis. Slot Anda telah dibatalkan. Silakan daftar kembali.');
@@ -255,12 +285,11 @@ class UmkmController extends Controller
         $registration->update([
             'bukti_pembayaran_path' => $buktiPath,
             'status' => 'menunggu_konfirmasi_pembayaran',
+            'rejection_reason' => null,
         ]);
 
-        // Muat relasi yang dibutuhkan oleh event broadcast
         $registration->load('event', 'umkmProfile');
 
-        // Kirim notifikasi ke penyelenggara
         PendaftarBaruMenungguKonfirmasi::dispatch($registration);
 
         return redirect()->route('dashboard')->with('success', 'Bukti pembayaran berhasil diunggah. Mohon tunggu konfirmasi dari penyelenggara.');

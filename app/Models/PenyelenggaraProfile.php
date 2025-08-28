@@ -19,6 +19,7 @@ class PenyelenggaraProfile extends Model
         'logo_path',
         'verification_document_path',
         'status',
+        'rejection_reason', // <-- TAMBAHKAN INI
     ];
 
     protected $appends = ['logo_url'];

@@ -13,16 +13,18 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\EventRegistration;
 use App\Events\PaymentRejected;
 use Illuminate\Http\Request;
+use App\Events\NewUserRegisteredForVerification;
 
 class PenyelenggaraController extends Controller
 {
+    // ... (method lain tidak berubah) ...
     public function dashboard()
     {
         $user = Auth::user();
         $profile = $user->penyelenggaraProfile;
 
-        // Menggunakan withCount untuk efisiensi jika perlu menampilkan jumlah pendaftar
-        $events = Event::withCount('eventRegistrations')
+        $events = Event::withTrashed()
+            ->withCount('eventRegistrations')
             ->where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->get();
@@ -57,7 +59,7 @@ class PenyelenggaraController extends Controller
 
         $posterPath = $request->file('poster_event')->store('events/posters', 'public');
 
-        $proposal = Event::create([ // <-- Ubah nama variabel menjadi $proposal
+        $proposal = Event::create([
             'user_id' => Auth::id(),
             'nama_event' => $request->nama_event,
             'deskripsi_event' => $request->deskripsi_event,
@@ -76,7 +78,6 @@ class PenyelenggaraController extends Controller
 
         $proposal->load('user');
 
-        // Kirim event broadcast setelah proposal berhasil dibuat
         ProposalSubmitted::dispatch($proposal);
 
         return redirect()->route('penyelenggara.dashboard')->with('success', 'Proposal event berhasil diajukan dan sedang menunggu persetujuan admin.');
@@ -91,23 +92,39 @@ class PenyelenggaraController extends Controller
             return redirect()->route('penyelenggara.dashboard')->with('info', 'Profil yang sudah terverifikasi tidak dapat diubah.');
         }
 
-        return Inertia::render('Penyelenggara/ProfileSetup');
+        return Inertia::render('Penyelenggara/ProfileSetup', [
+            'profile' => $profile,
+        ]);
     }
 
     public function storeProfile(Request $request)
     {
+        $user = Auth::user();
+        $profile = $user->penyelenggaraProfile;
+
         $request->validate([
             'organizer_name' => 'required|string|max:255',
             'description' => 'required|string',
             'address' => 'required|string',
-            'verification_document' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'verification_document' => [$profile ? 'nullable' : 'required', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
             'logo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        $user = Auth::user();
+        $documentPath = $profile->verification_document_path ?? null;
+        if ($request->hasFile('verification_document')) {
+            if ($profile && $profile->verification_document_path) {
+                Storage::disk('public')->delete($profile->verification_document_path);
+            }
+            $documentPath = $request->file('verification_document')->store('penyelenggara/documents', 'public');
+        }
 
-        $documentPath = $request->file('verification_document')->store('penyelenggara/documents', 'public');
-        $logoPath = $request->hasFile('logo') ? $request->file('logo')->store('penyelenggara/logos', 'public') : null;
+        $logoPath = $profile->logo_path ?? null;
+        if ($request->hasFile('logo')) {
+            if ($profile && $profile->logo_path) {
+                Storage::disk('public')->delete($profile->logo_path);
+            }
+            $logoPath = $request->file('logo')->store('penyelenggara/logos', 'public');
+        }
 
         PenyelenggaraProfile::updateOrCreate(
             ['user_id' => $user->id],
@@ -118,10 +135,13 @@ class PenyelenggaraController extends Controller
                 'verification_document_path' => $documentPath,
                 'logo_path' => $logoPath,
                 'status' => 'pending',
+                'rejection_reason' => null,
             ]
         );
 
-        return redirect()->route('penyelenggara.dashboard')->with('success', 'Profil berhasil disimpan dan sedang menunggu verifikasi.');
+        NewUserRegisteredForVerification::dispatch($user);
+
+        return redirect()->route('penyelenggara.dashboard')->with('success', 'Profil berhasil disimpan dan diajukan ulang untuk verifikasi.');
     }
 
     public function listVerifikasi()
@@ -168,39 +188,38 @@ class PenyelenggaraController extends Controller
             abort(403);
         }
 
-        $registration->update(['status' => 'pembayaran_terkonfirmasi']);
+        $registration->update(['status' => 'pembayaran_terkonfirmasi', 'rejection_reason' => null]);
 
-        // Muat relasi yang dibutuhkan oleh event
         $registration->load('umkmProfile');
 
-        // Kirim event ke UMKM yang bersangkutan
-        RegistrationStatusUpdated::dispatch($registration); // <-- TAMBAHKAN BARIS INI
+        RegistrationStatusUpdated::dispatch($registration);
 
         return redirect()->route('penyelenggara.pendaftar.verifikasi.list')->with('success', 'Pembayaran telah dikonfirmasi.');
     }
 
-    public function rejectPayment(EventRegistration $registration)
+    public function rejectPayment(Request $request, EventRegistration $registration)
     {
         if ($registration->event->user_id !== Auth::id()) {
             abort(403);
         }
 
-        // Hapus file bukti pembayaran yang lama
+        $request->validate(['rejection_reason' => 'required|string|min:10']);
+
         if ($registration->bukti_pembayaran_path) {
             Storage::disk('public')->delete($registration->bukti_pembayaran_path);
         }
 
-        // Update status menjadi 'rejected' dan hapus path bukti pembayaran
         $registration->update([
             'status' => 'rejected',
             'bukti_pembayaran_path' => null,
+            'rejection_reason' => $request->rejection_reason,
         ]);
 
-        // Muat relasi yang dibutuhkan oleh event
+        // --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ ---
+        $registration->refresh();
         $registration->load('event', 'umkmProfile');
-
-        // Panggil event notifikasi penolakan
         PaymentRejected::dispatch($registration);
+        // --- ▲▲▲ AKHIR DARI PERUBAHAN ---
 
         return redirect()->route('penyelenggara.pendaftar.verifikasi.list')
             ->with('success', 'Pembayaran ditolak dan notifikasi telah dikirim ke UMKM.');
@@ -208,13 +227,19 @@ class PenyelenggaraController extends Controller
 
     public function showProposal(Event $event)
     {
-        if ($event->user_id !== Auth::id()) {
+        // --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ ---
+        // Gunakan withTrashed() untuk mencari proposal di arsip (soft-deleted) juga.
+        // Route model binding tidak bisa menangani soft-deleted secara default.
+        $proposal = Event::withTrashed()->where('id', $event->id)->firstOrFail();
+
+        if ($proposal->user_id !== Auth::id()) {
             abort(403);
         }
 
         return Inertia::render('Penyelenggara/ProposalDetail', [
-            'proposal' => $event,
+            'proposal' => $proposal,
         ]);
+        // --- ▲▲▲ AKHIR DARI PERUBAHAN ---
     }
 
     public function assignStandNumber(Request $request, EventRegistration $registration)

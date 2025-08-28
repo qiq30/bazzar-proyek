@@ -49,9 +49,11 @@ class StoreProfileStatusNotification
                 ];
                 break;
             case 'rejected':
+                // Tambahkan alasan penolakan ke dalam pesan notifikasi
+                $rejectionReason = $profile->rejection_reason ?? 'Tidak ada alasan yang diberikan.';
                 $notificationData = [
                     'title'   => 'Profil Ditolak',
-                    'message' => 'Mohon perhatian, profil Anda ditolak. Silakan perbarui data Anda dan ajukan ulang.',
+                    'message' => "Mohon perhatian, profil Anda ditolak. Alasan: \"{$rejectionReason}\". Silakan perbarui data Anda dan ajukan ulang.",
                     'url'     => $role === 'umkm' ? route('umkm.profile.setup') : route('penyelenggara.profile.setup'),
                 ];
                 break;

@@ -21,6 +21,7 @@ class UmkmProfile extends Model
         'status',
         'address',
         'business_type',
+        'rejection_reason', // <-- TAMBAHKAN INI
     ];
 
     /**
@@ -50,7 +51,7 @@ class UmkmProfile extends Model
     public function events()
     {
         return $this->belongsToMany(Event::class, 'event_registrations')
-            ->withPivot('id', 'status', 'notes') // Tambahkan 'id' di sini
+            ->withPivot('id', 'status', 'notes', 'rejection_reason') // Tambahkan rejection_reason
             ->withTimestamps();
     }
 

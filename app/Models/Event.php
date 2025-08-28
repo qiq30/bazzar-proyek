@@ -19,6 +19,7 @@ class Event extends Model
      *
      * @var array<int, string>
      */
+    // --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ ---
     protected $fillable = [
         'user_id',
         'nama_event',
@@ -34,10 +35,10 @@ class Event extends Model
         'nama_pemilik_rekening',
         'status_proposal',
         'status',
-        'status_proposal',
-        'status',
-        'panitia_pin'
+        'panitia_pin',
+        'rejection_reason', // Tambahkan ini
     ];
+    // --- ▲▲▲ AKHIR DARI PERUBAHAN ---
 
     /**
      * The attributes that should be cast.
@@ -125,8 +126,6 @@ class Event extends Model
 
     public function prunable()
     {
-        // Hapus permanen semua event yang di-soft delete
-        // lebih dari 30 hari yang lalu.
         return static::where('deleted_at', '<=', now()->subDays(20));
     }
 
@@ -139,7 +138,6 @@ class Event extends Model
      */
     public function scopeFilter($query, array $filters)
     {
-        // Filter berdasarkan kata kunci pencarian
         $query->when($filters['search'] ?? false, function ($query, $search) {
             $query->where(function ($query) use ($search) {
                 $query->where('nama_event', 'like', '%' . $search . '%')
@@ -148,7 +146,6 @@ class Event extends Model
             });
         });
 
-        // Filter berdasarkan status event
         $query->when($filters['status'] ?? false, function ($query, $status) {
             $query->where('status', $status);
         });

@@ -42,11 +42,19 @@ export default function ProposalDetail({ auth, proposal }) {
                 <div className="max-w-4xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-8 grid md:grid-cols-3 gap-8">
                         <div className="md:col-span-1">
-                            <img
-                                src={`/storage/${proposal.poster_event}`}
-                                alt="Poster Event"
-                                className="rounded-lg w-full object-cover"
-                            />
+                            {proposal.poster_event ? (
+                                <img
+                                    src={`/storage/${proposal.poster_event}`}
+                                    alt="Poster Event"
+                                    className="rounded-lg w-full object-cover"
+                                />
+                            ) : (
+                                <div className="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
+                                    <span className="text-gray-500">
+                                        No Image
+                                    </span>
+                                </div>
+                            )}
                         </div>
                         <div className="md:col-span-2 space-y-4">
                             <div>
@@ -61,6 +69,20 @@ export default function ProposalDetail({ auth, proposal }) {
                                     </span>
                                 </div>
                             </div>
+
+                            {/* --- ▼▼▼ PERUBAHAN DI SINI ▼▼▼ --- */}
+                            {proposal.status_proposal === "ditolak" && (
+                                <div className="p-4 bg-red-50 border-l-4 border-red-400 text-red-800">
+                                    <p className="font-bold">
+                                        Alasan Penolakan:
+                                    </p>
+                                    <p className="mt-1">
+                                        {proposal.rejection_reason}
+                                    </p>
+                                </div>
+                            )}
+                            {/* --- ▲▲▲ AKHIR DARI PERUBAHAN --- */}
+
                             <hr />
                             <div>
                                 <span className="font-bold">Deskripsi:</span>{" "}

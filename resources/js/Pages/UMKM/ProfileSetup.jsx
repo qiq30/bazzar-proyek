@@ -1,10 +1,11 @@
+// resources/js/Pages/UMKM/ProfileSetup.jsx
+
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm, Link } from "@inertiajs/react";
 import { useState } from "react";
 
-// --- Sub-Komponen: Tampilan Read-Only untuk Profil yang Sedang Diverifikasi ---
-// Tampilan ini akan muncul jika status profil adalah 'pending'.
 const PendingProfileView = ({ profile }) => (
+    // ... Komponen ini tidak berubah
     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
         <div className="p-6 bg-yellow-50 border-b border-yellow-200">
             <h3 className="text-2xl font-bold text-yellow-800">
@@ -77,12 +78,20 @@ const PendingProfileView = ({ profile }) => (
                         Dokumen KTP
                     </h4>
                     <a
-                        href={`/storage/${profile.ktp_path}`}
+                        href={
+                            profile.ktp_path
+                                ? `/storage/${profile.ktp_path}`
+                                : "#"
+                        }
                         target="_blank"
                         rel="noopener noreferrer"
                     >
                         <img
-                            src={`/storage/${profile.ktp_path}`}
+                            src={
+                                profile.ktp_path
+                                    ? `/storage/${profile.ktp_path}`
+                                    : ""
+                            }
                             alt="KTP"
                             className="mt-2 h-24 w-auto rounded-lg border hover:opacity-80 transition"
                         />
@@ -101,15 +110,17 @@ const PendingProfileView = ({ profile }) => (
     </div>
 );
 
-// --- Sub-Komponen: Form untuk Mengisi atau Mengedit Profil ---
-// Tampilan ini akan muncul jika profil belum ada atau statusnya 'rejected'.
 const ProfileForm = ({ umkmProfile }) => {
+    // --- ▼▼▼ PERUBAHAN DI SINI ▼▼▼ ---
+    // Gunakan URL yang sudah ada untuk preview awal
     const [logoPreview, setLogoPreview] = useState(
         umkmProfile?.logo_url || null
     );
     const [ktpPreview, setKtpPreview] = useState(
-        umkmProfile ? `/storage/${umkmProfile.ktp_path}` : null
+        umkmProfile?.ktp_path ? `/storage/${umkmProfile.ktp_path}` : null
     );
+    // --- ▲▲▲ AKHIR DARI PERUBAHAN ---
+
     const businessTypes = [
         "Kuliner",
         "Fashion",
@@ -128,7 +139,6 @@ const ProfileForm = ({ umkmProfile }) => {
         business_type: umkmProfile?.business_type || "",
         logo: null,
         ktp: null,
-        _method: "post",
     });
 
     const handleFileChange = (e, field, setPreview) => {
@@ -143,6 +153,7 @@ const ProfileForm = ({ umkmProfile }) => {
 
     const submit = (e) => {
         e.preventDefault();
+        // Gunakan POST karena Inertia tidak mendukung file upload dengan PUT/PATCH
         post(route("umkm.profile.store"));
     };
 
@@ -159,10 +170,15 @@ const ProfileForm = ({ umkmProfile }) => {
                         Isi informasi lengkap tentang usaha Anda untuk dapat
                         mengikuti event bazar.
                     </p>
+
                     {umkmProfile?.status === "rejected" && (
-                        <div className="mt-4 p-4 bg-red-50 border-l-4 border-red-400 text-red-700">
+                        <div className="mt-4 p-4 bg-red-50 border-l-4 border-red-400 text-red-800">
                             <p className="font-bold">Profil Anda Ditolak</p>
-                            <p>
+                            <p className="mt-1">
+                                <strong>Alasan:</strong>{" "}
+                                {umkmProfile.rejection_reason}
+                            </p>
+                            <p className="mt-2 text-sm">
                                 Silakan periksa kembali data Anda, perbaiki jika
                                 ada kesalahan, lalu simpan kembali untuk
                                 diajukan ulang.
@@ -172,6 +188,7 @@ const ProfileForm = ({ umkmProfile }) => {
                 </div>
 
                 <form onSubmit={submit} className="space-y-6">
+                    {/* ... form fields lainnya tidak berubah ... */}
                     <div>
                         <InputLabel
                             htmlFor="business_name"
@@ -284,12 +301,20 @@ const ProfileForm = ({ umkmProfile }) => {
                             </div>
                         </div>
                         <div>
-                            <InputLabel value="Foto KTP *" />
+                            {/* --- ▼▼▼ PERUBAHAN DI SINI ▼▼▼ --- */}
+                            <InputLabel
+                                value={`Foto KTP ${
+                                    umkmProfile
+                                        ? "(Opsional jika tidak diubah)"
+                                        : "*"
+                                }`}
+                            />
                             <p className="text-xs text-gray-500 mb-2">
                                 {umkmProfile
                                     ? "Unggah baru jika ingin mengganti."
                                     : "Wajib diisi untuk verifikasi."}
                             </p>
+                            {/* --- ▲▲▲ AKHIR DARI PERUBAHAN --- */}
                             <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 text-center h-40 flex items-center justify-center">
                                 {ktpPreview ? (
                                     <img
@@ -312,7 +337,7 @@ const ProfileForm = ({ umkmProfile }) => {
                                             setKtpPreview
                                         )
                                     }
-                                    required={!umkmProfile}
+                                    required={!umkmProfile} // Hanya required jika profil belum ada
                                 />
                             </div>
                             <InputError message={errors.ktp} className="mt-2" />
@@ -340,7 +365,6 @@ const ProfileForm = ({ umkmProfile }) => {
     );
 };
 
-// --- Komponen Utama Halaman ---
 export default function ProfileSetup({ auth, umkmProfile }) {
     return (
         <AuthenticatedLayout
@@ -354,7 +378,6 @@ export default function ProfileSetup({ auth, umkmProfile }) {
             <Head title="Profil UMKM" />
             <div className="py-12">
                 <div className="max-w-4xl mx-auto sm:px-6 lg:px-8">
-                    {/* Logika utama: Tampilkan view jika 'pending', jika tidak (null atau 'rejected'), tampilkan form */}
                     {umkmProfile && umkmProfile.status === "pending" ? (
                         <PendingProfileView profile={umkmProfile} />
                     ) : (

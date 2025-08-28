@@ -20,7 +20,7 @@ use App\Events\EventPublished;
 
 class AdminController extends Controller
 {
-    // ... (method dashboard() dan method lainnya biarkan seperti semula)
+    // ... (method dashboard() dan method lainnya tidak berubah) ...
     public function dashboard()
     {
         $totalEvents = Event::whereNotNull('status')->count();
@@ -63,7 +63,6 @@ class AdminController extends Controller
 
     public function storeEventFromProposal(Request $request)
     {
-        // Validasi semua data yang datang dari form
         $request->validate([
             'proposal_id' => 'required|exists:events,id',
             'nama_event' => 'required|string|max:255',
@@ -77,11 +76,8 @@ class AdminController extends Controller
         ]);
 
         $event = Event::findOrFail($request->proposal_id);
-
-        // Generate PIN Panitia
         $panitiaPin = rand(100000, 999999);
 
-        // Update event dengan semua data dari form
         $event->update([
             'nama_event' => $request->nama_event,
             'deskripsi_event' => $request->deskripsi_event,
@@ -94,7 +90,6 @@ class AdminController extends Controller
             'panitia_pin' => $panitiaPin,
         ]);
 
-        // Memicu event untuk notifikasi ke penyelenggara
         EventPublished::dispatch($event);
 
         return redirect()->route('admin.events')->with('success', 'Event berhasil diterbitkan!');
@@ -138,7 +133,7 @@ class AdminController extends Controller
             ->get();
 
         $verifiedUmkmProfiles = UmkmProfile::with('user')
-            ->where('status', 'verified')
+            ->whereIn('status', ['verified', 'rejected'])
             ->orderBy('updated_at', 'desc')
             ->get();
 
@@ -167,10 +162,7 @@ class AdminController extends Controller
             'kode_pin'    => $kodePin,
         ]);
 
-        // Muat relasi yang dibutuhkan oleh event broadcast
         $registration->load('event', 'umkmProfile');
-
-        // Kirim notifikasi ke UMKM
         RegistrationFinalized::dispatch($registration);
 
         return back()->with('success', 'Pendaftaran UMKM berhasil disetujui! E-Ticket telah dibuat.');
@@ -178,22 +170,26 @@ class AdminController extends Controller
 
     public function verifyUmkm(UmkmProfile $umkm)
     {
-        $umkm->update(['status' => 'verified']);
-
+        $umkm->update(['status' => 'verified', 'rejection_reason' => null]);
+        $umkm->refresh(); // Ambil data terbaru
         ProfileStatusUpdated::dispatch($umkm);
-
         return back()->with('success', 'UMKM berhasil diverifikasi!');
     }
 
     public function rejectUmkm(Request $request, UmkmProfile $umkm)
     {
-        $umkm->update(['status' => 'rejected']);
+        $request->validate(['rejection_reason' => 'required|string|min:10']);
 
+        $umkm->update([
+            'status' => 'rejected',
+            'rejection_reason' => $request->rejection_reason,
+        ]);
+
+        $umkm->refresh(); // <-- TAMBAHKAN INI
         ProfileStatusUpdated::dispatch($umkm);
 
         return back()->with('success', 'UMKM ditolak.');
     }
-    // --- AKHIR MODIFIKASI ---
 
     public function penyelenggaraVerification()
     {
@@ -213,20 +209,24 @@ class AdminController extends Controller
         ]);
     }
 
-
     public function verifyPenyelenggara(PenyelenggaraProfile $penyelenggara)
     {
-        $penyelenggara->update(['status' => 'verified']);
-
+        $penyelenggara->update(['status' => 'verified', 'rejection_reason' => null]);
+        $penyelenggara->refresh(); // Ambil data terbaru
         ProfileStatusUpdated::dispatch($penyelenggara);
-
         return back()->with('success', 'Profil Penyelenggara berhasil diverifikasi!');
     }
 
     public function rejectPenyelenggara(Request $request, PenyelenggaraProfile $penyelenggara)
     {
-        $penyelenggara->update(['status' => 'rejected']);
+        $request->validate(['rejection_reason' => 'required|string|min:10']);
 
+        $penyelenggara->update([
+            'status' => 'rejected',
+            'rejection_reason' => $request->rejection_reason,
+        ]);
+
+        $penyelenggara->refresh(); // <-- TAMBAHKAN INI
         ProfileStatusUpdated::dispatch($penyelenggara);
 
         return back()->with('success', 'Profil Penyelenggara ditolak.');
@@ -244,12 +244,19 @@ class AdminController extends Controller
             ->orderBy('updated_at', 'desc')
             ->get();
 
+        // --- ▼▼▼ PASTIKAN BAGIAN INI SUDAH BENAR ▼▼▼ ---
+        $rejectedProposals = Event::withTrashed()->with('user') // Gunakan withTrashed()
+            ->where('status_proposal', 'ditolak')
+            ->orderBy('deleted_at', 'desc')
+            ->get();
+
         return Inertia::render('Admin/ProposalList', [
             'pendingProposals' => $pendingProposals,
             'approvedProposals' => $approvedProposals,
+            'rejectedProposals' => $rejectedProposals, // Pastikan ini dikirim
         ]);
+        // --- ▲▲▲ AKHIR DARI BAGIAN PENTING ---
     }
-
 
     public function showProposal(Event $event)
     {
@@ -262,29 +269,41 @@ class AdminController extends Controller
         $event->update([
             'status_proposal' => 'disetujui',
             'status'          => null,
+            'rejection_reason' => null,
         ]);
 
+        $event->refresh(); // Ambil data terbaru
         ProposalStatusUpdated::dispatch($event);
 
         return redirect()->route('admin.proposals.list')->with('success', 'Proposal event telah disetujui dan siap untuk diterbitkan.');
     }
 
-    public function rejectProposal(Event $event)
+    public function rejectProposal(Request $request, Event $event)
     {
-        $event->update(['status_proposal' => 'ditolak']);
+        $request->validate(['rejection_reason' => 'required|string|min:10']);
 
+        $event->update([
+            'status_proposal' => 'ditolak',
+            'rejection_reason' => $request->rejection_reason,
+        ]);
+
+        $event->refresh(); // <-- TAMBAHKAN INI
         ProposalStatusUpdated::dispatch($event);
 
-        Storage::disk('public')->delete($event->poster_event);
-        $event->delete(); // Ini sekarang akan melakukan soft delete
+        $event->delete();
 
-        return redirect()->route('admin.proposals.list')->with('success', 'Proposal event telah ditolak dan dihapus.');
+        return redirect()->route('admin.proposals.list')->with('success', 'Proposal event telah ditolak dan diarsipkan.');
     }
 
     public function permanentlyDeleteProposal($id)
     {
         // Temukan proposal, TERMASUK yang sudah di-soft delete
         $proposal = Event::withTrashed()->findOrFail($id);
+
+        // Hapus file poster jika ada
+        if ($proposal->poster_event) {
+            Storage::disk('public')->delete($proposal->poster_event);
+        }
 
         // Hapus secara permanen dari database
         $proposal->forceDelete();
@@ -301,14 +320,22 @@ class AdminController extends Controller
             'registrations' => $event->eventRegistrations,
         ]);
     }
+
     public function approveRegistration(EventRegistration $registration)
     {
-        $registration->update(['status' => 'approved']);
+        $registration->update(['status' => 'approved', 'rejection_reason' => null]);
         return back()->with('success', 'Pendaftaran UMKM disetujui.');
     }
+
     public function rejectRegistration(Request $request, EventRegistration $registration)
     {
-        $registration->update(['status' => 'rejected', 'notes' => $request->notes]);
+        $request->validate(['rejection_reason' => 'required|string|min:10']);
+
+        $registration->update([
+            'status' => 'rejected',
+            'rejection_reason' => $request->rejection_reason
+        ]);
+
         return back()->with('success', 'Pendaftaran UMKM ditolak.');
     }
 }
