@@ -25,26 +25,15 @@ export default function UMKMVerification({
     const [viewingUmkm, setViewingUmkm] = useState(null);
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
 
-    // Form untuk aksi penolakan
-    const {
-        data,
-        setData,
-        post: postReject, // Ubah nama 'post' agar tidak konflik
-        processing: processingReject,
-        errors,
-        reset,
-    } = useForm({
+    // --- ▼▼▼ PERBAIKAN DI SINI: SATUKAN SEMUA AKSI DALAM SATU useForm HOOK ▼▼▼ ---
+    const { data, setData, post, processing, errors, reset } = useForm({
         rejection_reason: "",
     });
 
-    // --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ ---
-    // Buat form terpisah khusus untuk aksi verifikasi
-    const { post: postVerify, processing: processingVerify } = useForm();
-
     const handleVerifyProfile = (id) => {
         if (confirm("Yakin ingin verifikasi profil UMKM ini?")) {
-            // Gunakan post dari form verifikasi
-            postVerify(route("admin.umkm.verify", id), {
+            // Gunakan 'post' dari hook yang sama
+            post(route("admin.umkm.verify", id), {
                 onSuccess: () => setViewingUmkm(null),
             });
         }
@@ -65,7 +54,8 @@ export default function UMKMVerification({
     const handleRejectSubmit = (e) => {
         e.preventDefault();
         if (!viewingUmkm) return;
-        postReject(route("admin.umkm.reject", viewingUmkm.id), {
+        // Gunakan 'post' dari hook yang sama
+        post(route("admin.umkm.reject", viewingUmkm.id), {
             onSuccess: () => closeRejectModal(),
         });
     };
@@ -83,7 +73,6 @@ export default function UMKMVerification({
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
-                    {/* ... sisa komponen tidak berubah, hanya perbarui 'disabled' ... */}
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 border-b border-gray-200">
                             <h3 className="text-xl font-bold text-gray-900">
@@ -330,9 +319,7 @@ export default function UMKMVerification({
                                         onClick={() =>
                                             openRejectModal(viewingUmkm)
                                         }
-                                        disabled={
-                                            processingReject || processingVerify
-                                        }
+                                        disabled={processing} // Cukup periksa satu 'processing'
                                         className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
                                     >
                                         Tolak
@@ -341,9 +328,7 @@ export default function UMKMVerification({
                                         onClick={() =>
                                             handleVerifyProfile(viewingUmkm.id)
                                         }
-                                        disabled={
-                                            processingReject || processingVerify
-                                        }
+                                        disabled={processing} // Cukup periksa satu 'processing'
                                         className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
                                     >
                                         Verifikasi
@@ -397,10 +382,10 @@ export default function UMKMVerification({
                         </button>
                         <button
                             type="submit"
-                            disabled={processingReject}
+                            disabled={processing}
                             className="px-4 py-2 bg-red-600 text-white font-bold rounded-md hover:bg-red-700 disabled:opacity-50"
                         >
-                            {processingReject ? "Memproses..." : "Tolak Profil"}
+                            {processing ? "Memproses..." : "Tolak Profil"}
                         </button>
                     </div>
                 </form>

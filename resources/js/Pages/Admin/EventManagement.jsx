@@ -12,12 +12,6 @@ const Modal = ({ children, show, onClose }) => {
                 <div className="max-h-[80vh] overflow-y-auto pr-4">
                     {children}
                 </div>
-                <button
-                    onClick={onClose}
-                    className="mt-4 bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded"
-                >
-                    Tutup
-                </button>
             </div>
         </div>
     );

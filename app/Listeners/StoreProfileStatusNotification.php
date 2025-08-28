@@ -49,8 +49,8 @@ class StoreProfileStatusNotification
                 ];
                 break;
             case 'rejected':
-                // Tambahkan alasan penolakan ke dalam pesan notifikasi
-                $rejectionReason = $profile->rejection_reason ?? 'Tidak ada alasan yang diberikan.';
+                // TAMBAHKAN LOGIKA FALLBACK UNTUK ALASAN PENOLAKAN
+                $rejectionReason = $profile->rejection_reason ?: 'Tidak ada alasan spesifik yang diberikan.';
                 $notificationData = [
                     'title'   => 'Profil Ditolak',
                     'message' => "Mohon perhatian, profil Anda ditolak. Alasan: \"{$rejectionReason}\". Silakan perbarui data Anda dan ajukan ulang.",

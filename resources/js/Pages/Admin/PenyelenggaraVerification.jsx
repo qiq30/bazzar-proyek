@@ -27,23 +27,15 @@ export default function PenyelenggaraVerification({
     const [viewingProfile, setViewingProfile] = useState(null);
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
 
-    const {
-        data,
-        setData,
-        post: postReject,
-        processing: processingReject,
-        errors,
-        reset,
-    } = useForm({
+    // --- ▼▼▼ PERBAIKAN DI SINI: SATUKAN SEMUA AKSI DALAM SATU useForm HOOK ▼▼▼ ---
+    const { data, setData, post, processing, errors, reset } = useForm({
         rejection_reason: "",
     });
 
-    // --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ ---
-    const { post: postVerify, processing: processingVerify } = useForm();
-
     const handleVerify = (id) => {
         if (confirm("Yakin ingin verifikasi profil ini?")) {
-            postVerify(route("admin.penyelenggara.verify", id), {
+            // Cukup panggil 'post' dari hook yang sama
+            post(route("admin.penyelenggara.verify", id), {
                 onSuccess: () => setViewingProfile(null),
             });
         }
@@ -64,7 +56,8 @@ export default function PenyelenggaraVerification({
     const handleRejectSubmit = (e) => {
         e.preventDefault();
         if (!viewingProfile) return;
-        postReject(route("admin.penyelenggara.reject", viewingProfile.id), {
+        // Gunakan 'post' dari hook yang sama
+        post(route("admin.penyelenggara.reject", viewingProfile.id), {
             onSuccess: () => closeRejectModal(),
         });
     };
@@ -81,7 +74,6 @@ export default function PenyelenggaraVerification({
             <Head title="Verifikasi Penyelenggara" />
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
-                    {/* ... sisa komponen tidak berubah, hanya perbarui 'disabled' ... */}
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 border-b border-gray-200">
                             <h3 className="text-xl font-bold text-gray-900">
@@ -297,9 +289,7 @@ export default function PenyelenggaraVerification({
                                         onClick={() =>
                                             openRejectModal(viewingProfile)
                                         }
-                                        disabled={
-                                            processingReject || processingVerify
-                                        }
+                                        disabled={processing}
                                         className="bg-red-600 text-white py-2 px-4 rounded"
                                     >
                                         Tolak
@@ -308,9 +298,7 @@ export default function PenyelenggaraVerification({
                                         onClick={() =>
                                             handleVerify(viewingProfile.id)
                                         }
-                                        disabled={
-                                            processingReject || processingVerify
-                                        }
+                                        disabled={processing}
                                         className="bg-green-600 text-white py-2 px-4 rounded"
                                     >
                                         Verifikasi
@@ -364,10 +352,10 @@ export default function PenyelenggaraVerification({
                         </button>
                         <button
                             type="submit"
-                            disabled={processingReject}
+                            disabled={processing}
                             className="px-4 py-2 bg-red-600 text-white font-bold rounded-md hover:bg-red-700 disabled:opacity-50"
                         >
-                            {processingReject ? "Memproses..." : "Tolak Profil"}
+                            {processing ? "Memproses..." : "Tolak Profil"}
                         </button>
                     </div>
                 </form>

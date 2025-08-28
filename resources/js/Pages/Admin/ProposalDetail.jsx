@@ -24,27 +24,20 @@ const Modal = ({ show, onClose, children }) => {
 export default function ProposalDetail({ auth, proposal }) {
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
 
-    const {
-        data,
-        setData,
-        post: postReject,
-        processing: processingReject,
-        errors,
-        reset,
-    } = useForm({
+    // --- ▼▼▼ PERBAIKAN DI SINI: SATUKAN SEMUA AKSI DALAM SATU useForm HOOK ▼▼▼ ---
+    const { data, setData, post, processing, errors, reset } = useForm({
         rejection_reason: "",
     });
 
-    const { post: postApprove, processing: processingApprove } = useForm();
-
     const handleApprove = () => {
         if (confirm(`Yakin ingin menyetujui event "${proposal.nama_event}"?`)) {
-            postApprove(route("admin.proposals.approve", proposal.id));
+            // Cukup panggil 'post' dari hook yang sama
+            post(route("admin.proposals.approve", proposal.id));
         }
     };
 
     const openRejectModal = () => {
-        reset("rejection_reason");
+        reset("rejection_reason"); // Reset field spesifik
         setIsRejectModalOpen(true);
     };
 
@@ -54,10 +47,12 @@ export default function ProposalDetail({ auth, proposal }) {
 
     const handleRejectSubmit = (e) => {
         e.preventDefault();
-        postReject(route("admin.proposals.reject", proposal.id), {
+        // Gunakan 'post' dari hook yang sama
+        post(route("admin.proposals.reject", proposal.id), {
             onSuccess: () => closeRejectModal(),
         });
     };
+    // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
 
     const formatRupiah = (number) =>
         new Intl.NumberFormat("id-ID", {
@@ -112,7 +107,6 @@ export default function ProposalDetail({ auth, proposal }) {
                                     <span className="font-bold">Lokasi:</span>{" "}
                                     {proposal.lokasi_event}
                                 </div>
-                                {/* --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ --- */}
                                 <div>
                                     <span className="font-bold">
                                         Jadwal Pendaftaran:
@@ -137,7 +131,6 @@ export default function ProposalDetail({ auth, proposal }) {
                                         proposal.tanggal_selesai_acara
                                     ).toLocaleDateString("id-ID")}
                                 </div>
-                                {/* --- ▲▲▲ AKHIR DARI PERBAIKAN --- */}
                                 <div>
                                     <span className="font-bold">
                                         Biaya Pendaftaran:
@@ -176,20 +169,14 @@ export default function ProposalDetail({ auth, proposal }) {
                                     <div className="flex space-x-4 pt-4 border-t">
                                         <button
                                             onClick={handleApprove}
-                                            disabled={
-                                                processingApprove ||
-                                                processingReject
-                                            }
+                                            disabled={processing} // Cukup periksa satu state 'processing'
                                             className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
                                         >
                                             Setujui Proposal
                                         </button>
                                         <button
                                             onClick={openRejectModal}
-                                            disabled={
-                                                processingApprove ||
-                                                processingReject
-                                            }
+                                            disabled={processing} // Cukup periksa satu state 'processing'
                                             className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
                                         >
                                             Tolak Proposal
@@ -251,12 +238,10 @@ export default function ProposalDetail({ auth, proposal }) {
                         </button>
                         <button
                             type="submit"
-                            disabled={processingReject}
+                            disabled={processing} // Cukup periksa satu state 'processing'
                             className="px-4 py-2 bg-red-600 text-white font-bold rounded-md hover:bg-red-700 disabled:opacity-50"
                         >
-                            {processingReject
-                                ? "Memproses..."
-                                : "Tolak & Arsipkan"}
+                            {processing ? "Memproses..." : "Tolak & Arsipkan"}
                         </button>
                     </div>
                 </form>
