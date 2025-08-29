@@ -1,10 +1,11 @@
 // resources/js/Pages/Panitia/Dashboard.jsx
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Head, Link } from "@inertiajs/react";
 import axios from "axios";
+import { Html5QrcodeScanner } from "html5-qrcode";
 
-// --- Komponen Ikon SVG ---
+// --- Komponen Ikon SVG (Tidak ada perubahan) ---
 const UsersIcon = (props) => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -34,6 +35,22 @@ const UserCheckIcon = (props) => (
             strokeLinecap="round"
             strokeLinejoin="round"
             d="M9 12.75L11.25 15 15 9.75M21 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2m8-11a4 4 0 100-8 4 4 0 000 8z"
+        />
+    </svg>
+);
+const LogoutIcon = (props) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={1.5}
+        stroke="currentColor"
+        {...props}
+    >
+        <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
         />
     </svg>
 );
@@ -69,22 +86,6 @@ const ListIcon = (props) => (
         />
     </svg>
 );
-const LogoutIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
-        />
-    </svg>
-);
 const SearchIcon = (props) => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -101,8 +102,29 @@ const SearchIcon = (props) => (
         />
     </svg>
 );
+const Spinner = () => (
+    <svg
+        className="animate-spin h-5 w-5 text-white"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+    >
+        <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+        ></circle>
+        <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+        ></path>
+    </svg>
+);
 
-// ... Sisa komponen (StatusBadge) tidak berubah ...
 const StatusBadge = ({ status }) => {
     const statusConfig = {
         approved: {
@@ -128,44 +150,117 @@ const StatusBadge = ({ status }) => {
 const CheckInSection = ({ event }) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [result, setResult] = useState(null);
-    const [message, setMessage] = useState(
-        "Silakan cari peserta menggunakan PIN atau Nama UMKM."
-    );
+    const [message, setMessage] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [isScanning, setIsScanning] = useState(false);
+    const scannerRef = useRef(null);
 
-    const handleSearch = (e) => {
-        e.preventDefault();
-        if (!searchTerm) return;
+    useEffect(() => {
+        if (isScanning) {
+            // ▼▼▼ PERUBAHAN DI SINI ▼▼▼
+            const config = {
+                qrbox: { width: 250, height: 250 },
+                fps: 10,
+                // Baris ini secara eksplisit meminta kamera belakang
+                facingMode: "environment",
+            };
+            // ▲▲▲ AKHIR PERUBAHAN ▲▲▲
+
+            const scanner = new Html5QrcodeScanner(
+                "qr-scanner-region",
+                config,
+                false
+            );
+
+            const onScanSuccess = (decodedText) => {
+                if (!isLoading) {
+                    handleSearch(decodedText);
+                }
+            };
+
+            scanner.render(onScanSuccess, (error) => {});
+            scannerRef.current = scanner;
+        } else {
+            if (
+                scannerRef.current &&
+                scannerRef.current.getState() !== "NOT_STARTED"
+            ) {
+                scannerRef.current
+                    .clear()
+                    .catch((err) =>
+                        console.error("Error clearing scanner:", err)
+                    );
+            }
+        }
+
+        return () => {
+            if (
+                scannerRef.current &&
+                scannerRef.current.getState() !== "NOT_STARTED"
+            ) {
+                scannerRef.current
+                    .clear()
+                    .catch((err) =>
+                        console.error("Error clearing scanner on cleanup:", err)
+                    );
+            }
+        };
+    }, [isScanning, isLoading]);
+
+    const handleSearch = (term) => {
+        if (!term || isLoading) return;
         setIsLoading(true);
         setResult(null);
-        setMessage("Mencari...");
+        setIsScanning(false);
+        setMessage({ type: "info", text: "Mencari data..." });
 
         axios
-            .post(`/panitia/${event.id}/search`, { term: searchTerm })
+            .post(route("panitia.search", { event: event.id }), { term })
             .then((response) => {
-                setResult(response.data);
-                if (!response.data) {
-                    setMessage(`Data untuk "${searchTerm}" tidak ditemukan.`);
-                }
+                setResult(response.data || null);
+                setMessage(
+                    response.data
+                        ? null
+                        : {
+                              type: "error",
+                              text: `Data "${term}" tidak ditemukan.`,
+                          }
+                );
             })
-            .catch(() => setMessage("Terjadi kesalahan saat mencari data."))
+            .catch(() =>
+                setMessage({
+                    type: "error",
+                    text: "Terjadi kesalahan saat mencari.",
+                })
+            )
             .finally(() => setIsLoading(false));
     };
 
     const handleCheckIn = () => {
-        if (!result) return;
+        if (!result || result.status !== "approved" || isLoading) return;
         setIsLoading(true);
+        setMessage({ type: "info", text: "Memproses check-in..." });
 
         axios
-            .post(`/panitia/check-in/${result.id}`)
+            .post(route("panitia.processCheckIn", { registration: result.id }))
             .then(() => {
                 setResult((prev) => ({ ...prev, status: "sudah_check_in" }));
-                setMessage("Check-in Berhasil!");
+                setMessage({ type: "success", text: "Check-in Berhasil!" });
             })
             .catch((error) =>
-                setMessage(error.response?.data?.message || "Gagal check-in.")
+                setMessage({
+                    type: "error",
+                    text: error.response?.data?.message || "Gagal check-in.",
+                })
             )
             .finally(() => setIsLoading(false));
+    };
+
+    const resetState = () => {
+        setResult(null);
+        setMessage(null);
+        setSearchTerm("");
+        setIsScanning(false);
     };
 
     return (
@@ -174,57 +269,64 @@ const CheckInSection = ({ event }) => {
                 <h3 className="text-lg font-semibold text-gray-800">
                     Check-in Peserta
                 </h3>
-                <form onSubmit={handleSearch} className="mt-4 relative">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                        <SearchIcon className="h-5 w-5 text-gray-400" />
-                    </div>
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        handleSearch(searchTerm);
+                    }}
+                    className="mt-4 flex gap-2"
+                >
                     <input
                         type="search"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 text-base border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Masukkan PIN atau Nama UMKM..."
+                        className="w-full border-gray-300 rounded-lg"
+                        placeholder="Cari Nama / PIN..."
                         disabled={isLoading}
                     />
+                    <button
+                        type="submit"
+                        disabled={isLoading || !searchTerm}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300"
+                    >
+                        <SearchIcon className="h-5 w-5" />
+                    </button>
                 </form>
+                <div className="mt-4 border-t pt-4">
+                    <button
+                        onClick={() => setIsScanning((prev) => !prev)}
+                        className={`w-full py-2 font-semibold rounded-lg flex items-center justify-center gap-2 ${
+                            isScanning
+                                ? "bg-red-500 text-white"
+                                : "bg-gray-200 text-gray-800"
+                        }`}
+                    >
+                        <QrCodeIcon className="h-5 w-5" />
+                        {isScanning ? "Stop Scan" : "Mulai Scan QR Code"}
+                    </button>
+                </div>
             </div>
-            <div className="p-6 min-h-[250px] flex flex-col items-center justify-center bg-gray-50">
-                {isLoading ? (
-                    <div className="text-center text-gray-500">
-                        <svg
-                            className="animate-spin h-8 w-8 text-blue-600 mx-auto"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                        >
-                            <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                            ></circle>
-                            <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                            ></path>
-                        </svg>
-                        <p className="mt-2">Mencari...</p>
-                    </div>
-                ) : result ? (
-                    <div className="w-full text-center bg-white p-6 rounded-lg border">
+
+            {isScanning && (
+                <div
+                    id="qr-scanner-region"
+                    className="w-full bg-gray-900"
+                ></div>
+            )}
+
+            <div className="p-6 min-h-[150px]">
+                {result ? (
+                    <div className="w-full text-center">
                         <p className="text-sm text-gray-500">Nama UMKM</p>
-                        <p className="text-3xl font-bold text-blue-600 mb-4">
+                        <p className="text-2xl font-bold text-blue-600 mb-2">
                             {result.umkm_profile.business_name}
                         </p>
-                        <div className="grid grid-cols-2 gap-4 border-t border-b py-4 mb-4">
+                        <div className="flex justify-around items-center mb-4">
                             <div>
                                 <p className="text-sm text-gray-500">
                                     Nomor Stand
                                 </p>
-                                <p className="text-3xl font-bold text-gray-800">
+                                <p className="text-2xl font-bold">
                                     {result.nomor_stand}
                                 </p>
                             </div>
@@ -233,21 +335,57 @@ const CheckInSection = ({ event }) => {
                                 <StatusBadge status={result.status} />
                             </div>
                         </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <button
+                                onClick={resetState}
+                                className="w-full py-3 font-bold text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+                            >
+                                Reset
+                            </button>
+                            <button
+                                onClick={handleCheckIn}
+                                disabled={
+                                    isLoading || result.status !== "approved"
+                                }
+                                className="w-full py-3 font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:bg-gray-400 flex items-center justify-center"
+                            >
+                                {isLoading ? (
+                                    <>
+                                        <Spinner /> Memproses...
+                                    </>
+                                ) : result.status === "sudah_check_in" ? (
+                                    "✓ Sudah Check-in"
+                                ) : (
+                                    "Konfirmasi Check-in"
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                ) : message ? (
+                    <div
+                        className={`text-center p-4 rounded-lg ${
+                            message.type === "success"
+                                ? "bg-green-100 text-green-800"
+                                : message.type === "error"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-blue-100 text-blue-800"
+                        }`}
+                    >
+                        <p>{message.text}</p>
                         <button
-                            onClick={handleCheckIn}
-                            disabled={result.status !== "approved"}
-                            className="w-full py-3 text-lg font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                            onClick={resetState}
+                            className="mt-4 px-4 py-2 bg-white/50 rounded-lg text-sm font-semibold"
                         >
-                            {result.status === "sudah_check_in"
-                                ? "✓ Sudah Check-in"
-                                : "Check-in Sekarang"}
+                            OK
                         </button>
                     </div>
                 ) : (
-                    <div className="text-center text-gray-500">
-                        <SearchIcon className="h-12 w-12 mx-auto text-gray-300" />
-                        <p className="mt-2">{message}</p>
-                    </div>
+                    !isScanning && (
+                        <p className="text-center text-gray-500">
+                            Silakan pindai QR Code atau cari peserta secara
+                            manual.
+                        </p>
+                    )
                 )}
             </div>
         </div>
@@ -265,21 +403,21 @@ const ParticipantListSection = ({ registrations }) => (
             <table className="min-w-full">
                 <thead className="bg-gray-50">
                     <tr>
-                        <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">
                             Nama UMKM
                         </th>
-                        <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">
                             Nomor Stand
                         </th>
-                        <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status Check-in
+                        <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase">
+                            Status
                         </th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                     {registrations.map((reg) => (
                         <tr key={reg.id} className="hover:bg-gray-50">
-                            <td className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">
+                            <td className="py-4 px-6 font-medium text-gray-900">
                                 {reg.umkm_profile.business_name}
                             </td>
                             <td className="py-4 px-6 text-gray-700">
@@ -296,6 +434,7 @@ const ParticipantListSection = ({ registrations }) => (
     </div>
 );
 
+// --- KOMPONEN UTAMA DASHBOARD ---
 export default function PanitiaDashboard({ event }) {
     const [activeTab, setActiveTab] = useState("checkin");
     const participants = event.event_registrations.filter(
@@ -306,10 +445,11 @@ export default function PanitiaDashboard({ event }) {
     ).length;
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-100">
             <Head title={`Panitia - ${event.nama_event}`} />
             <div className="py-8">
                 <div className="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
+                    {/* Header */}
                     <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white overflow-hidden shadow-lg sm:rounded-lg p-6 flex justify-between items-center">
                         <div>
                             <h1 className="text-3xl font-bold">
@@ -329,6 +469,8 @@ export default function PanitiaDashboard({ event }) {
                             <span>Keluar</span>
                         </Link>
                     </div>
+
+                    {/* Stats */}
                     <div className="grid md:grid-cols-2 gap-6">
                         <div className="bg-white p-6 rounded-lg shadow-sm flex justify-between items-center">
                             <div>
@@ -357,6 +499,8 @@ export default function PanitiaDashboard({ event }) {
                             </div>
                         </div>
                     </div>
+
+                    {/* Tabs */}
                     <div className="bg-white rounded-lg shadow-sm p-2 flex space-x-2">
                         <button
                             onClick={() => setActiveTab("checkin")}
@@ -381,6 +525,8 @@ export default function PanitiaDashboard({ event }) {
                             <span>Lihat Semua Peserta</span>
                         </button>
                     </div>
+
+                    {/* Content */}
                     <div>
                         {activeTab === "checkin" && (
                             <CheckInSection event={event} />

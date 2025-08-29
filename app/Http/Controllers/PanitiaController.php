@@ -59,9 +59,10 @@ class PanitiaController extends Controller
         $term = $request->input('term');
 
         $registration = EventRegistration::where('event_id', $event->id)
-            ->where('status', '!=', 'rejected')
+            ->where('status', '!=', 'rejected') // Tetap tolak yang sudah ditolak
             ->where(function ($query) use ($term) {
-                $query->where('kode_pin', $term)
+                $query->where('kode_pendaftaran', $term) // Prioritaskan pencarian berdasarkan kode pendaftaran (hasil scan)
+                    ->orWhere('kode_pin', $term)
                     ->orWhereHas('umkmProfile', function ($q) use ($term) {
                         $q->where('business_name', 'LIKE', "%{$term}%");
                     });

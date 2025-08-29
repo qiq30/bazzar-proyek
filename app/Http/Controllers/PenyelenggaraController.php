@@ -41,21 +41,16 @@ class PenyelenggaraController extends Controller
 
     public function createProposal()
     {
-        // --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ ---
-        // 1. Ambil tanggal hari ini dari server
         $serverToday = Carbon::now()->toDateString();
 
-        // 2. Kirim tanggal tersebut sebagai prop ke komponen Inertia
         return Inertia::render('Penyelenggara/CreateProposal', [
             'serverDate' => $serverToday,
         ]);
-        // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
     }
 
-    // ... (sisa controller tidak ada perubahan) ...
+
     public function storeProposal(Request $request)
     {
-        // --- ▼▼▼ PERBAIKAN LOGIKA VALIDASI DI SINI ▼▼▼ ---
         $request->validate([
             'nama_event' => 'required|string|max:255',
             'deskripsi_event' => 'required|string',
@@ -92,7 +87,6 @@ class PenyelenggaraController extends Controller
             'status_proposal' => 'menunggu_persetujuan',
             'status' => null,
         ]);
-        // --- ▲▲▲ AKHIR DARI PERUBAHAN LOGIKA ---
 
         $proposal->load('user');
 
@@ -159,9 +153,7 @@ class PenyelenggaraController extends Controller
 
         NewUserRegisteredForVerification::dispatch($user);
 
-        // --- ▼▼▼ 2. TAMBAHKAN BARIS INI ▼▼▼ ---
         ProfileStatusUpdated::dispatch($updatedProfile);
-        // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
 
         return redirect()->route('penyelenggara.dashboard')->with('success', 'Profil berhasil disimpan dan diajukan ulang untuk verifikasi.');
     }
@@ -237,11 +229,9 @@ class PenyelenggaraController extends Controller
             'rejection_reason' => $request->rejection_reason,
         ]);
 
-        // --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ ---
         $registration->refresh();
         $registration->load('event', 'umkmProfile');
         PaymentRejected::dispatch($registration);
-        // --- ▲▲▲ AKHIR DARI PERUBAHAN ---
 
         return redirect()->route('penyelenggara.pendaftar.verifikasi.list')
             ->with('success', 'Pembayaran ditolak dan notifikasi telah dikirim ke UMKM.');
@@ -249,10 +239,6 @@ class PenyelenggaraController extends Controller
 
     public function showProposal(Event $event)
     {
-        // --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ ---
-        // Gunakan withTrashed() untuk mencari proposal di arsip (soft-deleted) juga.
-        // Route model binding tidak bisa menangani soft-deleted secara default,
-        // jadi kita ambil ID dari model yang di-resolve dan query ulang.
         $proposal = Event::withTrashed()->where('id', $event->id)->firstOrFail();
 
         if ($proposal->user_id !== Auth::id()) {
@@ -262,7 +248,6 @@ class PenyelenggaraController extends Controller
         return Inertia::render('Penyelenggara/ProposalDetail', [
             'proposal' => $proposal,
         ]);
-        // --- ▲▲▲ AKHIR DARI PERUBAHAN ---
     }
 
     public function assignStandNumber(Request $request, EventRegistration $registration)

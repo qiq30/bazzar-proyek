@@ -17,6 +17,9 @@ use Inertia\Inertia;
 use App\Events\NewUserRegisteredForVerification;
 use App\Events\ProfileStatusUpdated;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+
 
 class UmkmController extends Controller
 {
@@ -212,13 +215,9 @@ class UmkmController extends Controller
 
     public function startRegistration(Event $event)
     {
-        // --- ▼▼▼ PERBAIKAN UTAMA & KRUSIAL DI SINI ▼▼▼ ---
-        // Validasi ini memastikan pendaftaran hanya bisa dilakukan jika waktu server
-        // berada di dalam rentang tanggal pendaftaran yang valid.
         if (!Carbon::now()->between($event->pendaftaran_dibuka, $event->pendaftaran_ditutup->endOfDay())) {
             return redirect()->route('umkm.events')->with('error', 'Pendaftaran untuk event ini sedang tidak dibuka.');
         }
-        // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
 
         $umkmProfile = auth()->user()->umkmProfile;
 
@@ -317,5 +316,42 @@ class UmkmController extends Controller
         return Inertia::render('UMKM/MyTickets', [
             'tickets' => $tickets,
         ]);
+    }
+
+    public function downloadTicket(EventRegistration $registration)
+    {
+        if ($registration->umkm_profile_id !== auth()->user()->umkmProfile->id) {
+            abort(403);
+        }
+
+        $registration->load(['event', 'umkmProfile']);
+
+        // 1. Buat QR Code dari Kode Pendaftaran
+        // Kita akan membuat QR code dalam format SVG, lalu di-encode ke base64
+        // agar bisa langsung disematkan di HTML tanpa file terpisah.
+        $qrCode = base64_encode(
+            QrCode::format('svg')
+                ->size(150) // Ukuran QR Code dalam pixel
+                ->errorCorrection('H') // Tingkat koreksi error yang tinggi
+                ->generate($registration->kode_pendaftaran)
+        );
+
+        // 2. Encode logo Pemko untuk disematkan di PDF
+        $logoPath = public_path('images/logo-banjarmasin.png');
+        $logoData = base64_encode(file_get_contents($logoPath));
+        $logoBase64 = 'data:image/png;base64,' . $logoData;
+
+        // 3. Gabungkan semua data untuk dikirim ke view
+        $data = [
+            'registration' => $registration,
+            'qrCode'       => $qrCode,
+            'logoBase64'   => $logoBase64,
+        ];
+
+        $fileName = 'e-ticket-' . \Illuminate\Support\Str::slug($registration->event->nama_event) . '.pdf';
+
+        $pdf = PDF::loadView('pdf.ticket', $data);
+
+        return $pdf->download($fileName);
     }
 }

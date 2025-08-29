@@ -36,7 +36,6 @@ require __DIR__ . '/auth.php';
 // Terapkan middleware 'umkm'
 Route::middleware(['auth', 'verified', 'umkm'])->group(function () {
     Route::get('/dashboard', [UmkmController::class, 'dashboard'])->name('dashboard');
-    // ... rute UMKM lainnya
     Route::get('/profile/setup', [UmkmController::class, 'profileSetup'])->name('umkm.profile.setup');
     Route::post('/profile/setup', [UmkmController::class, 'storeProfile'])->name('umkm.profile.store');
     Route::get('/events', [UmkmController::class, 'events'])->name('umkm.events');
@@ -44,6 +43,7 @@ Route::middleware(['auth', 'verified', 'umkm'])->group(function () {
     Route::get('/payment/{registration}', [UmkmController::class, 'showPaymentPage'])->name('umkm.events.pay');
     Route::post('/payment/{registration}', [UmkmController::class, 'uploadPaymentProof'])->name('umkm.events.uploadProof');
     Route::get('/my-tickets', [UmkmController::class, 'myTickets'])->name('umkm.tickets');
+    Route::get('/my-tickets/{registration}/download', [UmkmController::class, 'downloadTicket'])->name('umkm.tickets.download');
     Route::get('/qris/upload', [UmkmController::class, 'uploadQris'])->name('umkm.qris.upload');
     Route::post('/qris/upload', [UmkmController::class, 'storeQris'])->name('umkm.qris.store');
     Route::get('/products', [UmkmController::class, 'products'])->name('umkm.products');
@@ -89,7 +89,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 });
 
 // Penyelenggara Routes
-// Terapkan middleware 'penyelenggara'
 Route::middleware(['auth', 'verified', 'penyelenggara'])->prefix('penyelenggara')->name('penyelenggara.')->group(function () {
     Route::get('/dashboard', [PenyelenggaraController::class, 'dashboard'])->name('dashboard');
     // ... rute Penyelenggara lainnya

@@ -1,17 +1,18 @@
+// resources/js/Pages/UMKM/MyTickets.jsx
+
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head } from "@inertiajs/react";
+import { Head, Link } from "@inertiajs/react"; // 1. Hapus Link karena tidak digunakan lagi
 import html2canvas from "html2canvas";
 import { useRef } from "react";
 
 const ETicketCard = ({ ticket, ticketRef }) => {
-    // Tentukan warna dan teks banner berdasarkan status tiket
+    // ... (Komponen ini tidak ada perubahan)
     const isCheckedIn = ticket.status === "sudah_check_in";
     const bannerClass = isCheckedIn ? "bg-gray-500" : "bg-green-500";
     const bannerText = isCheckedIn
         ? "RIWAYAT CHECK-IN"
         : "PENDAFTARAN BERHASIL";
 
-    // --- ▼▼▼ FUNGSI BARU UNTUK FORMAT RENTANG TANGGAL ▼▼▼ ---
     const formatEventDate = (start, end) => {
         const startDate = new Date(start);
         const endDate = new Date(end);
@@ -25,7 +26,6 @@ const ETicketCard = ({ ticket, ticketRef }) => {
             options
         )} - ${endDate.toLocaleDateString("id-ID", options)}`;
     };
-    // --- ▲▲▲ AKHIR FUNGSI BARU ---
 
     return (
         <div
@@ -36,14 +36,12 @@ const ETicketCard = ({ ticket, ticketRef }) => {
                 <h3 className="text-2xl font-bold">
                     {ticket.event.nama_event}
                 </h3>
-                {/* --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ --- */}
                 <p className="opacity-90">
                     {formatEventDate(
                         ticket.event.tanggal_mulai_acara,
                         ticket.event.tanggal_selesai_acara
                     )}
                 </p>
-                {/* --- ▲▲▲ AKHIR DARI PERBAIKAN --- */}
             </div>
             <div className="p-6 space-y-4">
                 <div>
@@ -88,7 +86,7 @@ export default function MyTickets({ auth, tickets = [] }) {
         const element = ticketRefs[ticket.id].current;
         if (!element) return;
 
-        const canvas = await html2canvas(element, { scale: 2 }); // Tingkatkan skala untuk kualitas lebih baik
+        const canvas = await html2canvas(element, { scale: 2 });
         const dataUrl = canvas.toDataURL("image/png");
 
         const link = document.createElement("a");
@@ -123,7 +121,8 @@ export default function MyTickets({ auth, tickets = [] }) {
                                         ticket={ticket}
                                         ticketRef={ticketRefs[ticket.id]}
                                     />
-                                    <div className="mt-4">
+                                    {/* ▼▼▼ MODIFIKASI AREA TOMBOL ▼▼▼ */}
+                                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <button
                                             onClick={() =>
                                                 handleDownloadImage(ticket)
@@ -132,7 +131,17 @@ export default function MyTickets({ auth, tickets = [] }) {
                                         >
                                             Unduh E-Ticket (Gambar)
                                         </button>
+                                        <a
+                                            href={route(
+                                                "umkm.tickets.download",
+                                                { registration: ticket.id }
+                                            )}
+                                            className="w-full block text-center py-3 px-4 bg-red-700 text-white font-semibold rounded-lg hover:bg-red-800 transition"
+                                        >
+                                            Unduh E-Ticket (PDF)
+                                        </a>
                                     </div>
+                                    {/* ▲▲▲ AKHIR MODIFIKASI ▲▲▲ */}
                                 </div>
                             ))}
                         </div>
