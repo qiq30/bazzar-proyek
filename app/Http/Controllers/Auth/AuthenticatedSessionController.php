@@ -27,17 +27,13 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
         $user = $request->user();
 
-        // --- ▼▼▼ PERBAIKAN LOGIKA REDIRECT (HAPUS INTENDED) ▼▼▼ ---
-        if ($user->is_admin) {
-            return redirect()->route('admin.dashboard');
-        }
+        $home = match (true) {
+            $user->is_admin => route('admin.dashboard'),
+            $user->is_penyelenggara => route('penyelenggara.dashboard'),
+            default => route('dashboard'), // Default untuk UMKM
+        };
 
-        if ($user->is_penyelenggara) {
-            return redirect()->route('penyelenggara.dashboard');
-        }
-
-        return redirect()->route('dashboard'); // Default untuk UMKM
-        // --- ▲▲▲ AKHIR DARI PERUBAHAN ▲▲▲ ---
+        return redirect()->intended($home);
     }
 
     public function destroy(Request $request): RedirectResponse

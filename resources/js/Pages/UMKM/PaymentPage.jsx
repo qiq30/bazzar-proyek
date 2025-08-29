@@ -5,9 +5,13 @@ import { Head, Link, useForm } from "@inertiajs/react";
 import { useEffect, useState } from "react";
 
 // --- KOMPONEN COUNTDOWN TIMER ---
-const CountdownTimer = ({ expiryTime }) => {
+const CountdownTimer = ({ expiryTime, serverTime }) => {
     const calculateTimeLeft = () => {
-        const difference = +new Date(expiryTime) - +new Date();
+        const serverNow = new Date(serverTime).getTime();
+        const now = Date.now();
+        const elapsed = now - serverNow;
+        const difference = +new Date(expiryTime) - serverNow - elapsed;
+
         let timeLeft = {};
 
         if (difference > 0) {
@@ -21,23 +25,23 @@ const CountdownTimer = ({ expiryTime }) => {
 
     const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
 
-    useEffect(() => {
-        // Jangan jalankan timer jika waktu sudah habis
-        if (!timeLeft.minutes && !timeLeft.seconds) return;
+    const isTimeUp = !timeLeft.minutes && !timeLeft.seconds;
 
+    useEffect(() => {
         const timer = setTimeout(() => {
-            setTimeLeft(calculateTimeLeft());
+            const newTimeLeft = calculateTimeLeft();
+            setTimeLeft(newTimeLeft);
+
+            if (!newTimeLeft.minutes && !newTimeLeft.seconds) {
+            }
         }, 1000);
 
-        // Hentikan timer saat komponen di-unmount
         return () => clearTimeout(timer);
-    }); // Hapus array dependensi agar timer terus berjalan setiap detik
+    }, [timeLeft]); // Tambahkan timeLeft sebagai dependency
 
     const addLeadingZero = (value) => {
         return value < 10 ? `0${value}` : value;
     };
-
-    const isTimeUp = !timeLeft.minutes && !timeLeft.seconds;
 
     return (
         <div
@@ -60,7 +64,7 @@ const CountdownTimer = ({ expiryTime }) => {
 };
 // --- AKHIR KOMPONEN COUNTDOWN TIMER ---
 
-export default function PaymentPage({ auth, event, registration }) {
+export default function PaymentPage({ auth, event, registration, serverTime }) {
     const { setData, post, processing, errors } = useForm({
         bukti_pembayaran: null,
     });
@@ -101,6 +105,7 @@ export default function PaymentPage({ auth, event, registration }) {
                             </h4>
                             <CountdownTimer
                                 expiryTime={registration.payment_due}
+                                serverTime={serverTime}
                             />
                             <p className="text-sm text-red-800 mt-2 text-center">
                                 <strong>PENTING:</strong> Segera selesaikan

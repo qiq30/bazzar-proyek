@@ -2,7 +2,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm } from "@inertiajs/react";
 import { useState } from "react";
 
-// Komponen Modal
+// Komponen Modal (Tidak berubah)
 const Modal = ({ children, show, onClose }) => {
     if (!show) return null;
     return (
@@ -35,6 +35,7 @@ export default function UMKMVerification({
             // Gunakan 'post' dari hook yang sama
             post(route("admin.umkm.verify", id), {
                 onSuccess: () => setViewingUmkm(null),
+                preserveScroll: true,
             });
         }
     };
@@ -57,6 +58,7 @@ export default function UMKMVerification({
         // Gunakan 'post' dari hook yang sama
         post(route("admin.umkm.reject", viewingUmkm.id), {
             onSuccess: () => closeRejectModal(),
+            preserveScroll: true,
         });
     };
 
@@ -73,6 +75,7 @@ export default function UMKMVerification({
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+                    {/* ... (Tabel tidak ada perubahan) ... */}
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 border-b border-gray-200">
                             <h3 className="text-xl font-bold text-gray-900">

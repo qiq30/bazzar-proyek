@@ -4,6 +4,44 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, usePage, router } from "@inertiajs/react";
 import { useEffect, useState } from "react";
 
+// --- Komponen Peringatan Waktu ---
+const TimeMismatchWarning = ({ onDismiss }) => (
+    <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-md shadow-sm relative">
+        <h4 className="font-bold">Peringatan Ketidaksesuaian Waktu</h4>
+        <p className="mt-1 text-sm">
+            Waktu di perangkat Anda tampaknya tidak sinkron dengan waktu server
+            kami. Hal ini dapat menyebabkan masalah saat mendaftar.
+        </p>
+        <p className="mt-2 text-sm">
+            <b>
+                Tolong sesuaikan tanggal dan waktu di perangkat Anda agar sesuai
+                dengan waktu saat ini untuk melanjutkan.
+            </b>{" "}
+            Jangan memanipulasi tanggal.
+        </p>
+        <button
+            onClick={onDismiss}
+            className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+            >
+                <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                />
+            </svg>
+        </button>
+    </div>
+);
+
+// --- Komponen ProfileActionNotice (Tidak berubah) ---
 const ProfileActionNotice = ({ hasProfile }) => (
     <div className="bg-white rounded-lg shadow-sm text-center p-8">
         <div className="text-yellow-500 text-6xl mb-4">⚠️</div>
@@ -34,21 +72,60 @@ export default function EventRegistration({
     registrationStatus,
     hasProfile,
     isVerified,
+    serverTime,
 }) {
+    // --- ▼▼▼ PERBAIKAN FINAL LOGIKA WAKTU DI SINI ▼▼▼ ---
+    const [isTimeMismatched, setIsTimeMismatched] = useState(false);
+    const [showWarning, setShowWarning] = useState(false);
+
+    useEffect(() => {
+        // Fungsi untuk memeriksa perbedaan waktu
+        const checkTime = () => {
+            const serverTimestamp = new Date(serverTime).getTime();
+            const clientTimestamp = Date.now();
+            const timeDifference = Math.abs(serverTimestamp - clientTimestamp);
+            const mismatched = timeDifference > 300000; // Toleransi 5 menit
+
+            setIsTimeMismatched(mismatched);
+            // Hanya tampilkan peringatan jika waktu tidak cocok
+            if (mismatched) {
+                setShowWarning(true);
+            }
+        };
+
+        // Periksa waktu saat komponen pertama kali dimuat
+        checkTime();
+
+        // Set interval untuk memeriksa waktu setiap 10 detik.
+        // Ini memastikan jika pengguna memperbaiki waktunya, UI akan diperbarui.
+        const intervalId = setInterval(checkTime, 10000);
+
+        // Hentikan interval saat komponen dilepas untuk mencegah kebocoran memori
+        return () => clearInterval(intervalId);
+    }, [serverTime]);
+    // --- ▲▲▲ AKHIR DARI PERBAIKAN FINAL ---
+
     useEffect(() => {
         if (auth.user) {
             const channel = window.Echo.private(`user.${auth.user.id}`);
-
             channel.listen("RegistrationStatusUpdated", (e) => {
-                console.log("RegistrationStatusUpdated event received:", e);
                 router.reload({ only: ["events", "registrationStatus"] });
             });
-
             return () => {
                 channel.stopListening("RegistrationStatusUpdated");
             };
         }
     }, [auth.user]);
+
+    const handleRegisterClick = (eventId) => {
+        if (isTimeMismatched) {
+            alert(
+                "Waktu pada perangkat Anda tidak sesuai. Mohon perbaiki sebelum mendaftar."
+            );
+            return;
+        }
+        router.post(route("umkm.events.register", eventId));
+    };
 
     const formatRupiah = (number) => {
         if (number === null || number === undefined || number == 0)
@@ -69,6 +146,7 @@ export default function EventRegistration({
     };
 
     const RegistrationStatusDisplay = ({ status, registrationId }) => {
+        // ... (Fungsi ini tidak berubah)
         const statusConfig = {
             menunggu_pembayaran: {
                 component: (
@@ -124,21 +202,8 @@ export default function EventRegistration({
         };
 
         const config = statusConfig[status];
-
-        if (!config) {
-            return (
-                <div className="flex items-center justify-between text-center px-6 py-4 border-t bg-gray-50 border-gray-200 text-gray-700">
-                    <span className="font-semibold">
-                        Status Tidak Diketahui
-                    </span>
-                    <span className="text-xs">Hubungi admin.</span>
-                </div>
-            );
-        }
-
-        if (config.component) {
-            return config.component;
-        }
+        if (!config) return null;
+        if (config.component) return config.component;
 
         return (
             <div
@@ -162,6 +227,11 @@ export default function EventRegistration({
             <Head title="Daftar Event" />
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                    {showWarning && (
+                        <TimeMismatchWarning
+                            onDismiss={() => setShowWarning(false)}
+                        />
+                    )}
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6 p-6">
                         <h3 className="text-2xl font-bold text-gray-900 mb-2">
                             Event Bazar Tersedia
@@ -184,8 +254,7 @@ export default function EventRegistration({
                                     const isQuotaFull =
                                         event.event_registrations_count >=
                                         event.kuota_umkm;
-
-                                    const now = new Date();
+                                    const now = new Date(serverTime);
                                     const startDate = new Date(
                                         event.pendaftaran_dibuka
                                     );
@@ -193,14 +262,10 @@ export default function EventRegistration({
                                         event.pendaftaran_ditutup
                                     );
                                     endDate.setHours(23, 59, 59, 999);
-
                                     const isRegistrationOpen =
                                         now >= startDate && now <= endDate;
-
-                                    // --- ▼▼▼ TAMBAHKAN LOGIKA BARU DI SINI ▼▼▼ ---
                                     const isRegistrationUpcoming =
                                         now < startDate;
-                                    // --- ▲▲▲ AKHIR DARI LOGIKA BARU ---
 
                                     return (
                                         <div
@@ -283,7 +348,6 @@ export default function EventRegistration({
                                                     {event.deskripsi_event}
                                                 </p>
                                             </div>
-
                                             <div className="mt-auto">
                                                 {currentRegistrationStatus ? (
                                                     <RegistrationStatusDisplay
@@ -304,24 +368,28 @@ export default function EventRegistration({
                                                                 Kuota Penuh
                                                             </button>
                                                         ) : isRegistrationOpen ? (
-                                                            <Link
-                                                                href={route(
-                                                                    "umkm.events.register",
-                                                                    event.id
-                                                                )}
-                                                                method="post"
-                                                                as="button"
-                                                                className="w-full block px-4 py-2 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition"
+                                                            <button
+                                                                onClick={() =>
+                                                                    handleRegisterClick(
+                                                                        event.id
+                                                                    )
+                                                                }
+                                                                className={`w-full block px-4 py-2 text-white text-center rounded-lg transition ${
+                                                                    isTimeMismatched
+                                                                        ? "bg-red-600 cursor-not-allowed"
+                                                                        : "bg-blue-600 hover:bg-blue-700"
+                                                                }`}
+                                                                disabled={
+                                                                    isTimeMismatched
+                                                                }
                                                             >
-                                                                Daftar Sekarang
-                                                                (
-                                                                {formatRupiah(
-                                                                    event.biaya_pendaftaran_umkm
-                                                                )}
-                                                                )
-                                                            </Link>
-                                                        ) : // --- ▼▼▼ TAMBAHKAN TAMPILAN BARU DI SINI ▼▼▼ ---
-                                                        isRegistrationUpcoming ? (
+                                                                {isTimeMismatched
+                                                                    ? "Perbaiki Waktu Perangkat Anda"
+                                                                    : `Daftar Sekarang (${formatRupiah(
+                                                                          event.biaya_pendaftaran_umkm
+                                                                      )})`}
+                                                            </button>
+                                                        ) : isRegistrationUpcoming ? (
                                                             <div className="w-full block px-4 py-2 bg-gray-100 text-gray-700 text-center rounded-lg">
                                                                 <p className="text-sm font-semibold">
                                                                     Pendaftaran
@@ -335,7 +403,6 @@ export default function EventRegistration({
                                                                 </p>
                                                             </div>
                                                         ) : (
-                                                            // --- ▲▲▲ AKHIR DARI TAMPILAN BARU ---
                                                             <button
                                                                 disabled
                                                                 className="w-full block px-4 py-2 bg-gray-400 text-white text-center rounded-lg cursor-not-allowed"

@@ -11,6 +11,22 @@ const ETicketCard = ({ ticket, ticketRef }) => {
         ? "RIWAYAT CHECK-IN"
         : "PENDAFTARAN BERHASIL";
 
+    // --- ▼▼▼ FUNGSI BARU UNTUK FORMAT RENTANG TANGGAL ▼▼▼ ---
+    const formatEventDate = (start, end) => {
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        const options = { day: "numeric", month: "long", year: "numeric" };
+
+        if (startDate.getTime() === endDate.getTime()) {
+            return startDate.toLocaleDateString("id-ID", options);
+        }
+        return `${startDate.toLocaleDateString(
+            "id-ID",
+            options
+        )} - ${endDate.toLocaleDateString("id-ID", options)}`;
+    };
+    // --- ▲▲▲ AKHIR FUNGSI BARU ---
+
     return (
         <div
             ref={ticketRef}
@@ -22,13 +38,10 @@ const ETicketCard = ({ ticket, ticketRef }) => {
                 </h3>
                 {/* --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ --- */}
                 <p className="opacity-90">
-                    {new Date(
-                        ticket.event.tanggal_mulai_acara
-                    ).toLocaleDateString("id-ID", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                    })}
+                    {formatEventDate(
+                        ticket.event.tanggal_mulai_acara,
+                        ticket.event.tanggal_selesai_acara
+                    )}
                 </p>
                 {/* --- ▲▲▲ AKHIR DARI PERBAIKAN --- */}
             </div>

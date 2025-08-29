@@ -3,17 +3,17 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm } from "@inertiajs/react";
 
-export default function CreateProposal({ auth }) {
+// --- ▼▼▼ PERUBAIKAN DI SINI ▼▼▼ ---
+// 1. Terima prop 'serverDate'
+export default function CreateProposal({ auth, serverDate }) {
     const { data, setData, post, processing, errors } = useForm({
         nama_event: "",
         deskripsi_event: "",
         poster_event: null,
-        // --- ▼▼▼ PERUBAHAN STATE DI SINI ▼▼▼ ---
         pendaftaran_dibuka: "",
         pendaftaran_ditutup: "",
         tanggal_mulai_acara: "",
         tanggal_selesai_acara: "",
-        // --- ▲▲▲ AKHIR DARI PERUBAHAN ---
         lokasi_event: "",
         biaya_pendaftaran_umkm: 0,
         kuota_umkm: 10,
@@ -22,13 +22,17 @@ export default function CreateProposal({ auth }) {
         nama_pemilik_rekening: "",
     });
 
-    const getTodayDate = () => {
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, "0");
-        const day = String(today.getDate()).padStart(2, "0");
-        return `${year}-${month}-${day}`;
+    // 2. Fungsi getTodayDate() sudah tidak diperlukan lagi, kita hapus.
+    // const getTodayDate = () => { ... }
+
+    // 3. Modifikasi fungsi getTomorrowDate untuk menggunakan serverDate sebagai fallback
+    const getTomorrowDate = (dateString) => {
+        if (!dateString) return serverDate; // Gunakan tanggal server jika tanggal acuan kosong
+        const date = new Date(dateString);
+        date.setDate(date.getDate() + 2); // Tambah 1 hari (gunakan +2 karena bug timezone JS)
+        return date.toISOString().split("T")[0];
     };
+    // --- ▲▲▲ AKHIR DARI PERUBAIKAN ---
 
     const submit = (e) => {
         e.preventDefault();
@@ -49,7 +53,7 @@ export default function CreateProposal({ auth }) {
                 <div className="max-w-4xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                         <form onSubmit={submit} className="space-y-6">
-                            {/* Nama & Lokasi Event (Tidak berubah) */}
+                            {/* ... (Form fields lain tidak berubah) ... */}
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-sm font-medium">
@@ -96,8 +100,6 @@ export default function CreateProposal({ auth }) {
                                     )}
                                 </div>
                             </div>
-
-                            {/* --- ▼▼▼ PERUBAHAN BESAR PADA BAGIAN TANGGAL ▼▼▼ --- */}
                             <div className="space-y-6 pt-4 border-t">
                                 <h3 className="text-lg font-semibold text-gray-800">
                                     Jadwal Pendaftaran Peserta
@@ -110,13 +112,26 @@ export default function CreateProposal({ auth }) {
                                         <input
                                             type="date"
                                             value={data.pendaftaran_dibuka}
-                                            min={getTodayDate()}
-                                            onChange={(e) =>
+                                            // --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ ---
+                                            min={serverDate}
+                                            onChange={(e) => {
                                                 setData(
                                                     "pendaftaran_dibuka",
                                                     e.target.value
-                                                )
-                                            }
+                                                );
+                                                setData(
+                                                    "pendaftaran_ditutup",
+                                                    ""
+                                                );
+                                                setData(
+                                                    "tanggal_mulai_acara",
+                                                    ""
+                                                );
+                                                setData(
+                                                    "tanggal_selesai_acara",
+                                                    ""
+                                                );
+                                            }}
                                             className="mt-1 w-full rounded-md"
                                             required
                                         />
@@ -135,15 +150,23 @@ export default function CreateProposal({ auth }) {
                                             value={data.pendaftaran_ditutup}
                                             min={
                                                 data.pendaftaran_dibuka ||
-                                                getTodayDate()
+                                                serverDate
                                             }
-                                            onChange={(e) =>
+                                            onChange={(e) => {
                                                 setData(
                                                     "pendaftaran_ditutup",
                                                     e.target.value
-                                                )
-                                            }
-                                            className="mt-1 w-full rounded-md"
+                                                );
+                                                setData(
+                                                    "tanggal_mulai_acara",
+                                                    ""
+                                                );
+                                                setData(
+                                                    "tanggal_selesai_acara",
+                                                    ""
+                                                );
+                                            }}
+                                            className="mt-1 w-full rounded-md disabled:bg-gray-100"
                                             required
                                             disabled={!data.pendaftaran_dibuka}
                                         />
@@ -168,20 +191,24 @@ export default function CreateProposal({ auth }) {
                                         <input
                                             type="date"
                                             value={data.tanggal_mulai_acara}
-                                            min={
-                                                data.pendaftaran_ditutup ||
-                                                getTodayDate()
-                                            }
-                                            onChange={(e) =>
+                                            min={getTomorrowDate(
+                                                data.pendaftaran_ditutup
+                                            )}
+                                            onChange={(e) => {
                                                 setData(
                                                     "tanggal_mulai_acara",
                                                     e.target.value
-                                                )
-                                            }
-                                            className="mt-1 w-full rounded-md"
+                                                );
+                                                setData(
+                                                    "tanggal_selesai_acara",
+                                                    ""
+                                                );
+                                            }}
+                                            className="mt-1 w-full rounded-md disabled:bg-gray-100"
                                             required
                                             disabled={!data.pendaftaran_ditutup}
                                         />
+                                        {/* --- ▲▲▲ AKHIR DARI PERBAIKAN --- */}
                                         {errors.tanggal_mulai_acara && (
                                             <p className="text-red-500 text-xs mt-1">
                                                 {errors.tanggal_mulai_acara}
@@ -197,7 +224,7 @@ export default function CreateProposal({ auth }) {
                                             value={data.tanggal_selesai_acara}
                                             min={
                                                 data.tanggal_mulai_acara ||
-                                                getTodayDate()
+                                                serverDate
                                             }
                                             onChange={(e) =>
                                                 setData(
@@ -205,7 +232,7 @@ export default function CreateProposal({ auth }) {
                                                     e.target.value
                                                 )
                                             }
-                                            className="mt-1 w-full rounded-md"
+                                            className="mt-1 w-full rounded-md disabled:bg-gray-100"
                                             required
                                             disabled={!data.tanggal_mulai_acara}
                                         />
@@ -217,9 +244,7 @@ export default function CreateProposal({ auth }) {
                                     </div>
                                 </div>
                             </div>
-                            {/* --- ▲▲▲ AKHIR DARI PERUBAHAN TANGGAL --- */}
-
-                            {/* Deskripsi (Tidak berubah) */}
+                            {/* ... (Sisa form tidak berubah) ... */}
                             <div>
                                 <label className="block text-sm font-medium">
                                     Deskripsi Event *
@@ -238,7 +263,6 @@ export default function CreateProposal({ auth }) {
                                 ></textarea>
                             </div>
 
-                            {/* Biaya & Kuota (Tidak berubah) */}
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-sm font-medium">
@@ -278,7 +302,6 @@ export default function CreateProposal({ auth }) {
                                 </div>
                             </div>
 
-                            {/* Info Bank (Tidak berubah) */}
                             <div className="grid md:grid-cols-3 gap-6">
                                 <div>
                                     <label className="block text-sm font-medium">
@@ -336,7 +359,6 @@ export default function CreateProposal({ auth }) {
                                 </div>
                             </div>
 
-                            {/* Poster (Tidak berubah) */}
                             <div>
                                 <label className="block text-sm font-medium">
                                     Poster Event *
@@ -359,7 +381,6 @@ export default function CreateProposal({ auth }) {
                                 )}
                             </div>
 
-                            {/* Tombol Submit (Tidak berubah) */}
                             <div className="flex justify-end">
                                 <button
                                     type="submit"

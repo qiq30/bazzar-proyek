@@ -15,11 +15,11 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use App\Events\NewUserRegisteredForVerification;
-use App\Events\ProfileStatusUpdated; // <-- 1. TAMBAHKAN IMPORT INI
+use App\Events\ProfileStatusUpdated;
+use Carbon\Carbon;
 
 class UmkmController extends Controller
 {
-    // --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ ---
     public function dashboard()
     {
         $user = auth()->user();
@@ -31,7 +31,6 @@ class UmkmController extends Controller
         ];
 
         if ($umkmProfile) {
-            // Ganti 'tanggal_mulai' menjadi 'tanggal_mulai_acara'
             $data['registeredEvents'] = $umkmProfile->events()
                 ->orderBy('tanggal_mulai_acara', 'desc')
                 ->get();
@@ -41,7 +40,6 @@ class UmkmController extends Controller
 
         return Inertia::render('UMKM/Dashboard', $data);
     }
-    // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
 
     public function profileSetup()
     {
@@ -99,11 +97,7 @@ class UmkmController extends Controller
         );
 
         NewUserRegisteredForVerification::dispatch($user);
-
-        // --- ▼▼▼ 2. TAMBAHKAN BARIS INI ▼▼▼ ---
-        // Kirim notifikasi ke pengguna bahwa profilnya sedang ditinjau ulang
         ProfileStatusUpdated::dispatch($updatedProfile);
-        // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
 
         return redirect()->route('dashboard')->with('success', 'Profile UMKM berhasil disimpan dan diajukan ulang untuk verifikasi!');
     }
@@ -143,6 +137,7 @@ class UmkmController extends Controller
             'registrationStatus' => $registrationStatus,
             'hasProfile' => $umkmProfile !== null,
             'isVerified' => $umkmProfile ? $umkmProfile->isVerified() : false,
+            'serverTime' => now('Asia/Makassar')->toIso8601String(),
         ]);
     }
 
@@ -217,6 +212,14 @@ class UmkmController extends Controller
 
     public function startRegistration(Event $event)
     {
+        // --- ▼▼▼ PERBAIKAN UTAMA & KRUSIAL DI SINI ▼▼▼ ---
+        // Validasi ini memastikan pendaftaran hanya bisa dilakukan jika waktu server
+        // berada di dalam rentang tanggal pendaftaran yang valid.
+        if (!Carbon::now()->between($event->pendaftaran_dibuka, $event->pendaftaran_ditutup->endOfDay())) {
+            return redirect()->route('umkm.events')->with('error', 'Pendaftaran untuk event ini sedang tidak dibuka.');
+        }
+        // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
+
         $umkmProfile = auth()->user()->umkmProfile;
 
         $existingRegistration = EventRegistration::where('event_id', $event->id)
@@ -266,7 +269,7 @@ class UmkmController extends Controller
             abort(403);
         }
 
-        if ($registration->status === 'menunggu_pembayaran' && $registration->payment_due && now()->isAfter($registration->payment_due)) {
+        if ($registration->status === 'menunggu_pembayaran' && $registration->payment_due && Carbon::now()->isAfter($registration->payment_due)) {
             $registration->delete();
             return redirect()->route('umkm.events')->with('error', 'Waktu pembayaran Anda telah habis. Slot Anda telah dibatalkan. Silakan daftar kembali.');
         }
@@ -276,6 +279,7 @@ class UmkmController extends Controller
         return Inertia::render('UMKM/PaymentPage', [
             'registration' => $registration,
             'event' => $registration->event,
+            'serverTime' => now()->toIso8601String(),
         ]);
     }
 

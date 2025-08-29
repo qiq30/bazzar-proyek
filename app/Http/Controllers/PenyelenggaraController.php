@@ -14,11 +14,12 @@ use App\Models\EventRegistration;
 use App\Events\PaymentRejected;
 use Illuminate\Http\Request;
 use App\Events\NewUserRegisteredForVerification;
-use App\Events\ProfileStatusUpdated; // <-- 1. TAMBAHKAN IMPORT INI
+use App\Events\ProfileStatusUpdated;
+use Carbon\Carbon;
 
 class PenyelenggaraController extends Controller
 {
-    // ... (method lain tidak berubah) ...
+    // ... (method dashboard() tidak berubah) ...
     public function dashboard()
     {
         $user = Auth::user();
@@ -37,11 +38,21 @@ class PenyelenggaraController extends Controller
         ]);
     }
 
+
     public function createProposal()
     {
-        return Inertia::render('Penyelenggara/CreateProposal');
+        // --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ ---
+        // 1. Ambil tanggal hari ini dari server
+        $serverToday = Carbon::now()->toDateString();
+
+        // 2. Kirim tanggal tersebut sebagai prop ke komponen Inertia
+        return Inertia::render('Penyelenggara/CreateProposal', [
+            'serverDate' => $serverToday,
+        ]);
+        // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
     }
 
+    // ... (sisa controller tidak ada perubahan) ...
     public function storeProposal(Request $request)
     {
         // --- ▼▼▼ PERBAIKAN LOGIKA VALIDASI DI SINI ▼▼▼ ---
@@ -240,7 +251,8 @@ class PenyelenggaraController extends Controller
     {
         // --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ ---
         // Gunakan withTrashed() untuk mencari proposal di arsip (soft-deleted) juga.
-        // Route model binding tidak bisa menangani soft-deleted secara default.
+        // Route model binding tidak bisa menangani soft-deleted secara default,
+        // jadi kita ambil ID dari model yang di-resolve dan query ulang.
         $proposal = Event::withTrashed()->where('id', $event->id)->firstOrFail();
 
         if ($proposal->user_id !== Auth::id()) {
