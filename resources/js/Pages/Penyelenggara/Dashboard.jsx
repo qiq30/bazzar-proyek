@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, Link } from "@inertiajs/react";
+import { Head, Link, usePage } from "@inertiajs/react"; // Import usePage
 
 // --- Komponen Ikon SVG untuk Dashboard Penyelenggara ---
 const ProfileIcon = (props) => (
@@ -99,7 +99,6 @@ const HomeIcon = (props) => (
     </svg>
 );
 
-// Komponen badge status DITINGKATKAN untuk menampilkan status baru
 const StatusBadge = ({ proposalStatus, eventStatus }) => {
     let config = { text: "Unknown", className: "bg-gray-100 text-gray-800" };
 
@@ -111,15 +110,12 @@ const StatusBadge = ({ proposalStatus, eventStatus }) => {
     } else if (proposalStatus === "ditolak") {
         config = { text: "Ditolak", className: "bg-red-100 text-red-800" };
     } else if (proposalStatus === "disetujui") {
-        // Jika proposal disetujui, cek status event-nya
         if (eventStatus) {
-            // Jika eventStatus tidak null (sudah terbit)
             config = {
                 text: "Sudah Diterbitkan",
                 className: "bg-green-100 text-green-800",
             };
         } else {
-            // Jika eventStatus masih null
             config = {
                 text: "Disetujui (Menunggu Terbit)",
                 className: "bg-blue-100 text-blue-800",
@@ -137,6 +133,8 @@ const StatusBadge = ({ proposalStatus, eventStatus }) => {
 };
 
 export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
+    const { impersonating } = usePage().props; // Ambil 'impersonating' dari props
+
     const getProfileStatus = () => {
         if (!hasProfile) {
             return {
@@ -238,9 +236,22 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
                                 >
                                     {profileStatus.actionText} →
                                 </Link>
+                            ) : impersonating &&
+                              profile?.status === "verified" ? (
+                                <Link
+                                    href={route(
+                                        "superadmin.users.edit",
+                                        profile.user_id
+                                    )}
+                                    className="mt-4 inline-block text-green-600 hover:text-green-800 font-medium text-sm"
+                                >
+                                    Edit Profil ini (Super Admin) →
+                                </Link>
                             ) : (
                                 <p className="mt-4 text-sm text-gray-500">
-                                    {profileStatus.actionText}
+                                    {profile?.status === "verified"
+                                        ? "Profil terkunci. Hubungi admin untuk perubahan."
+                                        : profileStatus.actionText}
                                 </p>
                             )}
                         </div>

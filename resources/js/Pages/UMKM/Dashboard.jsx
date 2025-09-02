@@ -1,7 +1,7 @@
 // File: resources/js/Pages/UMKM/Dashboard.jsx
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, Link } from "@inertiajs/react";
+import { Head, Link, usePage } from "@inertiajs/react"; // Import usePage
 import { Toaster } from "react-hot-toast";
 
 // --- (Komponen Ikon tidak berubah) ---
@@ -124,6 +124,7 @@ export default function Dashboard({
     umkmProfile,
     registeredEvents = [],
 }) {
+    const { impersonating } = usePage().props; // Ambil 'impersonating' dari props
     const isProfileVerified = hasProfile && umkmProfile?.status === "verified";
 
     const getProfileStatus = () => {
@@ -223,7 +224,6 @@ export default function Dashboard({
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    {/* ... (bagian atas tidak berubah) ... */}
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                         <div className="p-6 text-gray-900">
                             <h3 className="text-2xl font-bold mb-2">
@@ -261,6 +261,16 @@ export default function Dashboard({
                                     className="mt-4 inline-block text-blue-600 hover:text-blue-800 font-medium text-sm"
                                 >
                                     {profileStatus.action} →
+                                </Link>
+                            ) : impersonating ? (
+                                <Link
+                                    href={route(
+                                        "superadmin.users.edit",
+                                        umkmProfile.user_id
+                                    )}
+                                    className="mt-4 inline-block text-green-600 hover:text-green-800 font-medium text-sm"
+                                >
+                                    Edit Profil ini (Super Admin) →
                                 </Link>
                             ) : (
                                 <p className="mt-4 text-sm text-gray-500">
@@ -475,7 +485,6 @@ export default function Dashboard({
                             )}
                         </div>
                     </div>
-                    {/* --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ --- */}
                     <div className="bg-white rounded-lg shadow-sm p-6">
                         <h4 className="text-lg font-semibold text-gray-900 mb-4">
                             Event Terbaru yang Anda Ikuti
@@ -496,11 +505,11 @@ export default function Dashboard({
                                             </Link>
                                             <p className="text-sm text-gray-600">
                                                 {formatDate(
-                                                    event.tanggal_mulai_acara // Ganti di sini
+                                                    event.tanggal_mulai_acara
                                                 )}{" "}
                                                 -{" "}
                                                 {formatDate(
-                                                    event.tanggal_selesai_acara // Ganti di sini
+                                                    event.tanggal_selesai_acara
                                                 )}
                                             </p>
                                         </div>
@@ -540,7 +549,6 @@ export default function Dashboard({
                             </p>
                         )}
                     </div>
-                    {/* --- ▲▲▲ AKHIR DARI PERBAIKAN --- */}
                 </div>
             </div>
         </AuthenticatedLayout>

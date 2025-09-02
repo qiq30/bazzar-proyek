@@ -6,7 +6,11 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
-use Inertia\Inertia; // Pastikan ini ada
+use Inertia\Inertia;
+use App\Models\UmkmProfile;
+use App\Models\PenyelenggaraProfile;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage; // <-- Tambahkan ini
 
 class SuperAdminController extends Controller
 {
@@ -49,7 +53,6 @@ class SuperAdminController extends Controller
 
     public function destroyAdmin(User $admin)
     {
-        // Pastikan user yang dihapus adalah admin
         if (!$admin->is_admin) {
             return back()->with('error', 'Pengguna ini bukan admin.');
         }
@@ -57,7 +60,6 @@ class SuperAdminController extends Controller
         return back()->with('success', 'Akun admin berhasil dihapus.');
     }
 
-    // --- ▼▼▼ TAMBAHKAN FUNGSI BARU DI SINI ▼▼▼ ---
     public function manageUsers()
     {
         return Inertia::render('SuperAdmin/UserManagement', [
@@ -74,5 +76,75 @@ class SuperAdminController extends Controller
                 }),
         ]);
     }
-    // --- ▲▲▲ AKHIR DARI FUNGSI BARU ---
+
+    public function editUserProfile(User $user)
+    {
+        $profile = null;
+        if ($user->is_penyelenggara) {
+            $profile = $user->penyelenggaraProfile;
+        } else if (!$user->is_admin) {
+            $profile = $user->umkmProfile;
+        }
+
+        if (!$profile) {
+            return redirect()->route('superadmin.users.manage')->with('error', 'Profil pengguna tidak ditemukan atau tidak dapat diedit.');
+        }
+
+        return Inertia::render('SuperAdmin/EditUserProfile', [
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->is_admin ? 'Admin' : ($user->is_penyelenggara ? 'Penyelenggara' : 'UMKM'),
+            ],
+            'profile' => $profile,
+        ]);
+    }
+
+    public function updateUserProfile(Request $request, User $user)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+        ]);
+
+        $user->update($request->only('name', 'email'));
+
+        if ($user->is_penyelenggara && $user->penyelenggaraProfile) {
+            $request->validate([
+                'organizer_name' => 'required|string|max:255',
+                'description' => 'required|string',
+                'address' => 'required|string',
+                'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            ]);
+            $profileData = $request->only('organizer_name', 'description', 'address');
+
+            if ($request->hasFile('logo')) {
+                if ($user->penyelenggaraProfile->logo_path) {
+                    Storage::disk('public')->delete($user->penyelenggaraProfile->logo_path);
+                }
+                $profileData['logo_path'] = $request->file('logo')->store('penyelenggara/logos', 'public');
+            }
+            $user->penyelenggaraProfile->update($profileData);
+        } elseif (!$user->is_admin && $user->umkmProfile) {
+            $request->validate([
+                'business_name' => 'required|string|max:255',
+                'description' => 'required|string',
+                'address' => 'required|string',
+                'business_type' => 'required|string',
+                'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            ]);
+            $profileData = $request->only('business_name', 'description', 'address', 'business_type');
+
+            if ($request->hasFile('logo')) {
+                if ($user->umkmProfile->logo_path) {
+                    Storage::disk('public')->delete($user->umkmProfile->logo_path);
+                }
+                $profileData['logo_path'] = $request->file('logo')->store('umkm/logos', 'public');
+            }
+            $user->umkmProfile->update($profileData);
+        }
+
+        return redirect()->route('superadmin.users.manage')->with('success', 'Profil pengguna berhasil diperbarui.');
+    }
 }

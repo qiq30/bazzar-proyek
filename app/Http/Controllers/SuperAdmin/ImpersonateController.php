@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\SuperAdmin;
+namespace App\http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -21,7 +21,13 @@ class ImpersonateController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route('home')->with('success', 'Anda sekarang masuk sebagai ' . $user->name);
+        $home = match (true) {
+            $user->is_admin => route('admin.dashboard'),
+            $user->is_penyelenggara => route('penyelenggara.dashboard'),
+            default => route('dashboard'), // Default untuk UMKM
+        };
+
+        return redirect($home)->with('success', 'Anda sekarang masuk sebagai ' . $user->name);
     }
 
     /**

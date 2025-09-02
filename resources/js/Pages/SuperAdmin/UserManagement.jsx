@@ -8,8 +8,7 @@ export default function UserManagement({ auth, users }) {
                 "Apakah Anda yakin ingin masuk sebagai pengguna ini? Anda akan logout dari sesi Super Admin."
             )
         ) {
-            // Gunakan Inertia Link's 'href' property for GET requests
-            // router.get(...) juga bisa digunakan, tapi Link lebih sederhana
+            // Inertia Link handles the GET request, no separate handler needed here.
         }
     };
 
@@ -78,7 +77,7 @@ export default function UserManagement({ auth, users }) {
                                                 <td className="py-4 px-6">
                                                     {getRoleBadge(user.role)}
                                                 </td>
-                                                <td className="py-4 px-6">
+                                                <td className="py-4 px-6 space-x-4">
                                                     <Link
                                                         href={route(
                                                             "superadmin.impersonate.start",
@@ -93,6 +92,19 @@ export default function UserManagement({ auth, users }) {
                                                     >
                                                         Masuk sebagai
                                                     </Link>
+                                                    {(user.role === "UMKM" ||
+                                                        user.role ===
+                                                            "Penyelenggara") && (
+                                                        <Link
+                                                            href={route(
+                                                                "superadmin.users.edit",
+                                                                user.id
+                                                            )}
+                                                            className="text-green-600 hover:text-green-900 text-sm font-semibold"
+                                                        >
+                                                            Edit Profil
+                                                        </Link>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))}

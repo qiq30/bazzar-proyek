@@ -44,6 +44,8 @@ Route::middleware(['auth', 'super_admin'])->prefix('superadmin')->name('superadm
 
     Route::get('/impersonate/{user}', [ImpersonateController::class, 'start'])->name('impersonate.start');
     Route::get('/users', [SuperAdminController::class, 'manageUsers'])->name('users.manage');
+    Route::get('/users/{user}/edit', [SuperAdminController::class, 'editUserProfile'])->name('users.edit');
+    Route::put('/users/{user}', [SuperAdminController::class, 'updateUserProfile'])->name('users.update');
 });
 
 Route::get('/impersonate/stop', [ImpersonateController::class, 'stop'])
