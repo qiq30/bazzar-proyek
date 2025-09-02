@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use App\Models\User; // <-- Pastikan ini ditambahkan
 
 class LoginRequest extends FormRequest
 {
@@ -41,6 +42,19 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
+        // Cari user berdasarkan email terlebih dahulu
+        $user = User::where('email', $this->string('email'))->first();
+
+        // Jika user adalah admin, tolak login dari form ini
+        if ($user && $user->is_admin) {
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => 'Admin hanya bisa login melalui halaman login admin.',
+            ]);
+        }
+
+        // Jika bukan admin, lanjutkan proses otentikasi seperti biasa
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
@@ -80,6 +94,6 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        return Str::transliterate(Str::lower($this->string('email')) . '|' . $this->ip());
     }
 }

@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Auth\RegistrationWizardController;
+use App\Http\Controllers\Auth\AdminLoginController;
+
 
 // RUTE WIZARD REGISTRASI DITEMPATKAN DI SINI
 Route::middleware('guest')->group(function () {
@@ -22,6 +24,12 @@ Route::middleware('guest')->group(function () {
     Route::post('/register-finish', [RegistrationWizardController::class, 'storeFinal'])
         ->middleware('throttle:5,1')
         ->name('register.wizard.finish');
+});
+
+// ADMIN LOGIN ROUTE
+Route::middleware('guest')->prefix('admin')->name('admin.')->group(function () {
+    Route::get('login', [AdminLoginController::class, 'create'])->name('login');
+    Route::post('login', [AdminLoginController::class, 'store'])->name('login.store');
 });
 
 // Public Routes (No Authentication)
