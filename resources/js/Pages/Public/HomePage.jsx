@@ -11,7 +11,13 @@ const HeroSection = ({ auth }) => {
         return null;
     }
     let title, description, link, linkText;
-    if (auth.user.is_admin) {
+    if (auth.user.is_super_admin) {
+        // Tambahkan kondisi ini
+        title = `Selamat Datang, Super Admin ${auth.user.name}!`;
+        description = "Anda memiliki kontrol penuh atas sistem.";
+        link = route("superadmin.dashboard");
+        linkText = "Buka Dashboard Super Admin";
+    } else if (auth.user.is_admin) {
         title = `Selamat Datang, Admin ${auth.user.name}!`;
         description =
             "Kelola semua event, pengguna, dan proposal dari dasbor utama Anda.";
@@ -161,13 +167,16 @@ export default function HomePage({ events, filters }) {
         );
     };
 
-    // --- Logika untuk mengambil link dashboard yang sesuai ---
+    // --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ ---
+    // Logika untuk mengambil link dashboard yang sesuai
     const getDashboardLink = () => {
         if (!auth.user) return route("login");
+        if (auth.user.is_super_admin) return route("superadmin.dashboard");
         if (auth.user.is_admin) return route("admin.dashboard");
         if (auth.user.is_penyelenggara) return route("penyelenggara.dashboard");
         return route("dashboard");
     };
+    // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
 
     return (
         <>
