@@ -313,10 +313,22 @@ class UmkmController extends Controller
             ->whereIn('status', ['approved', 'sudah_check_in'])
             ->orderBy('created_at', 'desc')
             ->get();
+
+        // Sisipkan data QR code ke setiap tiket
+        $tickets->each(function ($ticket) {
+            $ticket->qr_code_svg = base64_encode(
+                QrCode::format('svg')
+                    ->size(150)
+                    ->errorCorrection('H')
+                    ->generate($ticket->kode_pendaftaran)
+            );
+        });
+
         return Inertia::render('UMKM/MyTickets', [
             'tickets' => $tickets,
         ]);
     }
+
 
     public function downloadTicket(EventRegistration $registration)
     {

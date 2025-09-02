@@ -1,12 +1,12 @@
 // resources/js/Pages/UMKM/MyTickets.jsx
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, Link } from "@inertiajs/react"; // 1. Hapus Link karena tidak digunakan lagi
+import { Head } from "@inertiajs/react";
 import html2canvas from "html2canvas";
 import { useRef } from "react";
 
+// --- ▼▼▼ MODIFIKASI KOMPONEN E-TICKET CARD ▼▼▼ ---
 const ETicketCard = ({ ticket, ticketRef }) => {
-    // ... (Komponen ini tidak ada perubahan)
     const isCheckedIn = ticket.status === "sudah_check_in";
     const bannerClass = isCheckedIn ? "bg-gray-500" : "bg-green-500";
     const bannerText = isCheckedIn
@@ -43,30 +43,44 @@ const ETicketCard = ({ ticket, ticketRef }) => {
                     )}
                 </p>
             </div>
-            <div className="p-6 space-y-4">
-                <div>
-                    <p className="text-sm text-gray-500">Nama UMKM</p>
-                    <p className="font-bold text-lg">
-                        {ticket.umkm_profile.business_name}
+            {/* --- Perubahan Layout Konten --- */}
+            <div className="p-6 flex">
+                <div className="flex-grow space-y-4 pr-6">
+                    <div>
+                        <p className="text-sm text-gray-500">Nama UMKM</p>
+                        <p className="font-bold text-lg">
+                            {ticket.umkm_profile.business_name}
+                        </p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 text-center">
+                        <div className="bg-gray-100 p-4 rounded-lg">
+                            <p className="text-sm text-gray-500">Nomor Stand</p>
+                            <p className="font-bold text-3xl tracking-wider">
+                                {ticket.nomor_stand}
+                            </p>
+                        </div>
+                        <div className="bg-gray-100 p-4 rounded-lg">
+                            <p className="text-sm text-gray-500">
+                                Kode Verifikasi / PIN
+                            </p>
+                            <p className="font-bold text-3xl tracking-wider">
+                                {ticket.kode_pin}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div className="flex-shrink-0 text-center">
+                    <img
+                        src={`data:image/svg+xml;base64,${ticket.qr_code_svg}`}
+                        alt="QR Code"
+                        className="w-40 h-40"
+                    />
+                    <p className="text-xs text-gray-600 mt-1 font-mono">
+                        {ticket.kode_pendaftaran}
                     </p>
                 </div>
-                <div className="grid grid-cols-2 gap-4 text-center">
-                    <div className="bg-gray-100 p-4 rounded-lg">
-                        <p className="text-sm text-gray-500">Nomor Stand</p>
-                        <p className="font-bold text-3xl tracking-wider">
-                            {ticket.nomor_stand}
-                        </p>
-                    </div>
-                    <div className="bg-gray-100 p-4 rounded-lg">
-                        <p className="text-sm text-gray-500">
-                            Kode Verifikasi / PIN
-                        </p>
-                        <p className="font-bold text-3xl tracking-wider">
-                            {ticket.kode_pin}
-                        </p>
-                    </div>
-                </div>
             </div>
+            {/* --- Akhir Perubahan Layout Konten --- */}
             <div
                 className={`px-6 py-4 text-white text-center font-bold text-xl tracking-widest transition-colors ${bannerClass}`}
             >
@@ -75,6 +89,7 @@ const ETicketCard = ({ ticket, ticketRef }) => {
         </div>
     );
 };
+// --- ▲▲▲ AKHIR DARI MODIFIKASI ---
 
 export default function MyTickets({ auth, tickets = [] }) {
     const ticketRefs = tickets.reduce((acc, ticket) => {
@@ -121,7 +136,6 @@ export default function MyTickets({ auth, tickets = [] }) {
                                         ticket={ticket}
                                         ticketRef={ticketRefs[ticket.id]}
                                     />
-                                    {/* ▼▼▼ MODIFIKASI AREA TOMBOL ▼▼▼ */}
                                     <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <button
                                             onClick={() =>
@@ -141,7 +155,6 @@ export default function MyTickets({ auth, tickets = [] }) {
                                             Unduh E-Ticket (PDF)
                                         </a>
                                     </div>
-                                    {/* ▲▲▲ AKHIR MODIFIKASI ▲▲▲ */}
                                 </div>
                             ))}
                         </div>
