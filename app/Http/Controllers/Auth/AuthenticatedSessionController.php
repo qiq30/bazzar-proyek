@@ -1,4 +1,5 @@
 <?php
+// app/Http/Controllers/Auth/AuthenticatedSessionController.php
 
 namespace App\Http\Controllers\Auth;
 
@@ -13,6 +14,7 @@ use Inertia\Response;
 
 class AuthenticatedSessionController extends Controller
 {
+    // ... method create() tidak berubah ...
     public function create(): Response
     {
         return Inertia::render('Auth/Login', [
@@ -21,13 +23,17 @@ class AuthenticatedSessionController extends Controller
         ]);
     }
 
+
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
         $request->session()->regenerate();
         $user = $request->user();
 
+        // --- ▼▼▼ PERUBAHAN DI SINI ▼▼▼ ---
+        // Logika redirect dibuat lebih lengkap untuk semua role
         $home = match (true) {
+            $user->is_super_admin => route('superadmin.dashboard'),
             $user->is_admin => route('admin.dashboard'),
             $user->is_penyelenggara => route('penyelenggara.dashboard'),
             default => route('dashboard'), // Default untuk UMKM
@@ -36,6 +42,7 @@ class AuthenticatedSessionController extends Controller
         return redirect()->intended($home);
     }
 
+    // ... method destroy() tidak berubah ...
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();

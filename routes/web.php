@@ -13,6 +13,8 @@ use Inertia\Inertia;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Auth\RegistrationWizardController;
 use App\Http\Controllers\Auth\AdminLoginController;
+use App\Http\Controllers\Auth\SuperAdminLoginController;
+use App\Http\Controllers\SuperAdminController;
 
 
 // RUTE WIZARD REGISTRASI DITEMPATKAN DI SINI
@@ -25,6 +27,21 @@ Route::middleware('guest')->group(function () {
         ->middleware('throttle:5,1')
         ->name('register.wizard.finish');
 });
+
+// SUPER ADMIN ROUTES
+Route::middleware('guest')->group(function () {
+    // Gunakan nama rute yang tidak umum untuk membuatnya tersembunyi
+    Route::get('/super-secret-login-page', [SuperAdminLoginController::class, 'create'])->name('superadmin.login');
+    Route::post('/super-secret-login-page', [SuperAdminLoginController::class, 'store'])->name('superadmin.login.store');
+});
+
+Route::middleware(['auth', 'super_admin'])->prefix('superadmin')->name('superadmin.')->group(function () {
+    Route::get('/dashboard', [SuperAdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/admins', [SuperAdminController::class, 'manageAdmins'])->name('admins.manage');
+    Route::post('/admins', [SuperAdminController::class, 'storeAdmin'])->name('admins.store');
+    Route::delete('/admins/{admin}', [SuperAdminController::class, 'destroyAdmin'])->name('admins.destroy');
+});
+
 
 // ADMIN LOGIN ROUTE
 Route::middleware('guest')->prefix('admin')->name('admin.')->group(function () {

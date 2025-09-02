@@ -106,23 +106,26 @@ export default function AuthenticatedLayout({ header, children }) {
                 if (!user.is_admin && !user.is_penyelenggara) {
                     privateChannel.stopListening("UmkmQrisUpdated");
                 }
-                // Anda bisa tambahkan stopListening lain di sini jika ada event baru
             };
         }
     }, [user, flash]);
 
+    // --- ▼▼▼ PERBAIKAN LOGIKA RUTE DI SINI ▼▼▼ ---
     const getDashboardRoute = () => {
+        if (user.is_super_admin) return route("superadmin.dashboard");
         if (user.is_admin) return route("admin.dashboard");
         if (user.is_penyelenggara) return route("penyelenggara.dashboard");
         return route("dashboard");
     };
 
     const isDashboardActive = () => {
+        if (user.is_super_admin) return route().current("superadmin.dashboard");
         if (user.is_admin) return route().current("admin.dashboard");
         if (user.is_penyelenggara)
             return route().current("penyelenggara.dashboard");
         return route().current("dashboard");
     };
+    // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -148,7 +151,8 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
 
                         <div className="hidden sm:ms-6 sm:flex sm:items-center">
-                            <NotificationDropdown />
+                            {/* Super Admin tidak butuh notifikasi umum */}
+                            {!user.is_super_admin && <NotificationDropdown />}
 
                             <div className="relative ms-3">
                                 <Dropdown>

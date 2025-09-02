@@ -23,6 +23,7 @@ class User extends Authenticatable
         'phone',
         'is_admin',
         'is_penyelenggara',
+        'is_super_admin',
     ];
 
     /**
@@ -47,6 +48,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_admin' => 'boolean',
             'is_penyelenggara' => 'boolean',
+            'is_super_admin' => 'boolean',
         ];
     }
 

@@ -24,6 +24,9 @@ $app = Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'penyelenggara' => \App\Http\Middleware\PenyelenggaraMiddleware::class,
             'umkm' => \App\Http\Middleware\UmkmMiddleware::class,
+            'super_admin' => \App\Http\Middleware\SuperAdminMiddleware::class,
+            'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
