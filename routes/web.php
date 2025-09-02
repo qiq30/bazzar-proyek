@@ -15,6 +15,7 @@ use App\Http\Controllers\Auth\RegistrationWizardController;
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\SuperAdminLoginController;
 use App\Http\Controllers\SuperAdminController;
+use App\Http\Controllers\SuperAdmin\ImpersonateController;
 
 
 // RUTE WIZARD REGISTRASI DITEMPATKAN DI SINI
@@ -40,7 +41,14 @@ Route::middleware(['auth', 'super_admin'])->prefix('superadmin')->name('superadm
     Route::get('/admins', [SuperAdminController::class, 'manageAdmins'])->name('admins.manage');
     Route::post('/admins', [SuperAdminController::class, 'storeAdmin'])->name('admins.store');
     Route::delete('/admins/{admin}', [SuperAdminController::class, 'destroyAdmin'])->name('admins.destroy');
+
+    Route::get('/impersonate/{user}', [ImpersonateController::class, 'start'])->name('impersonate.start');
+    Route::get('/users', [SuperAdminController::class, 'manageUsers'])->name('users.manage');
 });
+
+Route::get('/impersonate/stop', [ImpersonateController::class, 'stop'])
+    ->middleware('auth') // Pastikan hanya user yang login yang bisa stop
+    ->name('impersonate.stop');
 
 
 // ADMIN LOGIN ROUTE

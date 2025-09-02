@@ -41,6 +41,7 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn() => $request->session()->pull('success'),
                 'error' => fn() => $request->session()->pull('error'),
             ],
+            'impersonating' => fn() => $request->session()->has('impersonate_by'),
         ];
     }
 }

@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
-use Inertia\Inertia;
+use Inertia\Inertia; // Pastikan ini ada
 
 class SuperAdminController extends Controller
 {
@@ -56,4 +56,23 @@ class SuperAdminController extends Controller
         $admin->delete();
         return back()->with('success', 'Akun admin berhasil dihapus.');
     }
+
+    // --- ▼▼▼ TAMBAHKAN FUNGSI BARU DI SINI ▼▼▼ ---
+    public function manageUsers()
+    {
+        return Inertia::render('SuperAdmin/UserManagement', [
+            'users' => User::where('is_super_admin', false)
+                ->orderBy('name')
+                ->get()
+                ->map(function ($user) {
+                    return [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'role' => $user->is_admin ? 'Admin' : ($user->is_penyelenggara ? 'Penyelenggara' : 'UMKM'),
+                    ];
+                }),
+        ]);
+    }
+    // --- ▲▲▲ AKHIR DARI FUNGSI BARU ---
 }

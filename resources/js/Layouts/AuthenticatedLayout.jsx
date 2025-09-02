@@ -9,6 +9,27 @@ import { Link, usePage, router } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import { Toaster, toast } from "react-hot-toast";
 
+// --- ▼▼▼ TAMBAHKAN KOMPONEN BANNER INI ▼▼▼ ---
+const ImpersonateBanner = () => {
+    const { impersonating } = usePage().props;
+
+    if (!impersonating) {
+        return null;
+    }
+
+    return (
+        <div className="w-full bg-yellow-400 text-center py-2 text-sm font-semibold text-yellow-900">
+            Anda sedang masuk sebagai pengguna lain.{" "}
+            <Link
+                href={route("impersonate.stop")}
+                className="underline hover:text-yellow-700"
+            >
+                Kembali ke akun Super Admin.
+            </Link>
+        </div>
+    );
+};
+
 export default function AuthenticatedLayout({ header, children }) {
     const { auth, flash } = usePage().props;
     const user = auth.user;
@@ -129,6 +150,8 @@ export default function AuthenticatedLayout({ header, children }) {
 
     return (
         <div className="min-h-screen bg-gray-100">
+            {/* --- ▼▼▼ TAMBAHKAN BANNER DI SINI ▼▼▼ --- */}
+            <ImpersonateBanner />
             <Toaster position="top-right" reverseOrder={false} />
 
             <nav className="border-b border-gray-100 bg-white">
