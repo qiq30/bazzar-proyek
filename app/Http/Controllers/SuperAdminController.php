@@ -60,6 +60,11 @@ class SuperAdminController extends Controller
         return back()->with('success', 'Akun admin berhasil dihapus.');
     }
 
+    public function userManagementHub()
+    {
+        return Inertia::render('SuperAdmin/UserManagementHub');
+    }
+
     public function manageUsers()
     {
         return Inertia::render('SuperAdmin/UserManagement', [

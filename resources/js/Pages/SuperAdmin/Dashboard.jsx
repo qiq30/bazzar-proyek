@@ -84,7 +84,6 @@ const LogIcon = (props) => (
         />
     </svg>
 );
-// --- ▼▼▼ TAMBAHKAN IKON BARU ▼▼▼ ---
 const UsersIcon = (props) => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -185,36 +184,18 @@ export default function Dashboard({ auth, stats }) {
                         </h4>
                         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <Link
-                                href={route("superadmin.admins.manage")}
+                                href={route("superadmin.users.hub")}
                                 className="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-lg hover:border-purple-400 hover:bg-purple-50 transition group"
                             >
                                 <div className="text-purple-600 mb-2 transition-transform group-hover:scale-110">
-                                    <AdminIcon className="h-10 w-10" />
-                                </div>
-                                <div>
-                                    <p className="font-medium text-center text-gray-900">
-                                        Kelola Admin
-                                    </p>
-                                    <p className="text-sm text-center text-gray-600">
-                                        Tambah/hapus admin
-                                    </p>
-                                </div>
-                            </Link>
-
-                            {/* --- ▼▼▼ TAMBAHKAN TOMBOL MANAJEMEN PENGGUNA ▼▼▼ --- */}
-                            <Link
-                                href={route("superadmin.users.manage")}
-                                className="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-lg hover:border-green-400 hover:bg-green-50 transition group"
-                            >
-                                <div className="text-green-600 mb-2 transition-transform group-hover:scale-110">
                                     <UsersIcon className="h-10 w-10" />
                                 </div>
                                 <div>
                                     <p className="font-medium text-center text-gray-900">
-                                        Kelola Pengguna
+                                        Manajemen Pengguna
                                     </p>
                                     <p className="text-sm text-center text-gray-600">
-                                        Masuk sebagai user lain
+                                        Kelola semua pengguna & admin
                                     </p>
                                 </div>
                             </Link>

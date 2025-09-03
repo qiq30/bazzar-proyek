@@ -39,6 +39,13 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware(['auth', 'super_admin'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/dashboard', [SuperAdminController::class, 'dashboard'])->name('dashboard');
+    // Rute baru untuk halaman hub
+    Route::get('/users/hub', [SuperAdminController::class, 'userManagementHub'])->name('users.hub');
+
+    Route::get('/admins', [SuperAdminController::class, 'manageAdmins'])->name('admins.manage');
+    Route::post('/admins', [SuperAdminController::class, 'storeAdmin'])->name('admins.store');
+    Route::delete('/admins/{admin}', [SuperAdminController::class, 'destroyAdmin'])->name('admins.destroy');
+
     Route::get('/admins', [SuperAdminController::class, 'manageAdmins'])->name('admins.manage');
     Route::post('/admins', [SuperAdminController::class, 'storeAdmin'])->name('admins.store');
     Route::delete('/admins/{admin}', [SuperAdminController::class, 'destroyAdmin'])->name('admins.destroy');
