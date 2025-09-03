@@ -1,18 +1,32 @@
-// resources/js/Pages/Admin/Reports/Index.jsx
+// File: resources/js/Pages/Admin/Reports/Index.jsx
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 import BarChart from "@/Components/BarChart";
 import PieChart from "@/Components/PieChart";
-import LineChart from "@/Components/LineChart"; // <-- IMPORT GRAFIK BARU
+import LineChart from "@/Components/LineChart";
 import { useSpring, animated } from "@react-spring/web";
+// --- Impor Ikon ---
+import {
+    FiUsers,
+    FiCheckSquare,
+    FiClock,
+    FiTrendingUp,
+    FiBriefcase,
+    FiXCircle,
+    FiArchive,
+    FiDollarSign,
+    FiBox,
+    FiBarChart2,
+} from "react-icons/fi";
 
-// Komponen Card Statistik (Tidak ada perubahan)
+// Komponen Card Statistik dengan Ikon
 const AnimatedStatCard = ({
     title,
     value,
     description,
     color = "blue",
+    icon, // <-- Prop baru untuk ikon
     isPercentage = false,
 }) => {
     const { number } = useSpring({
@@ -21,33 +35,82 @@ const AnimatedStatCard = ({
         delay: 200,
         config: { mass: 1, tension: 20, friction: 10 },
     });
+
     const colorClasses = {
-        blue: "border-blue-500",
-        green: "border-green-500",
-        yellow: "border-yellow-500",
-        red: "border-red-500",
-        purple: "border-purple-500",
-        indigo: "border-indigo-500",
-        teal: "border-teal-500",
-        orange: "border-orange-500",
+        blue: {
+            border: "border-blue-500",
+            bg: "bg-blue-100",
+            text: "text-blue-600",
+        },
+        green: {
+            border: "border-green-500",
+            bg: "bg-green-100",
+            text: "text-green-600",
+        },
+        yellow: {
+            border: "border-yellow-500",
+            bg: "bg-yellow-100",
+            text: "text-yellow-600",
+        },
+        red: {
+            border: "border-red-500",
+            bg: "bg-red-100",
+            text: "text-red-600",
+        },
+        purple: {
+            border: "border-purple-500",
+            bg: "bg-purple-100",
+            text: "text-purple-600",
+        },
+        indigo: {
+            border: "border-indigo-500",
+            bg: "bg-indigo-100",
+            text: "text-indigo-600",
+        },
+        teal: {
+            border: "border-teal-500",
+            bg: "bg-teal-100",
+            text: "text-teal-600",
+        },
+        orange: {
+            border: "border-orange-500",
+            bg: "bg-orange-100",
+            text: "text-orange-600",
+        },
     };
+
+    const selectedColor = colorClasses[color] || colorClasses.blue;
+
     return (
         <div
-            className={`bg-white p-6 rounded-lg shadow-sm border-l-4 ${colorClasses[color]} transform hover:scale-105 transition-transform duration-300`}
+            className={`bg-white p-6 rounded-lg shadow-sm border-l-4 ${selectedColor.border} transform hover:scale-105 transition-transform duration-300`}
         >
-            <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
-            <animated.p className="text-3xl font-bold text-gray-900">
-                {number.to((n) =>
-                    isPercentage
-                        ? `${n.toFixed(1)}%`
-                        : Math.floor(n).toLocaleString("id-ID")
+            <div className="flex items-center justify-between">
+                <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-600 mb-1">
+                        {title}
+                    </p>
+                    <animated.p className="text-3xl font-bold text-gray-900">
+                        {number.to((n) =>
+                            isPercentage
+                                ? `${n.toFixed(1)}%`
+                                : Math.floor(n).toLocaleString("id-ID")
+                        )}
+                    </animated.p>
+                    {description && (
+                        <p className="text-xs text-gray-500 mt-2 leading-relaxed">
+                            {description}
+                        </p>
+                    )}
+                </div>
+                {icon && (
+                    <div
+                        className={`p-3 rounded-full ${selectedColor.bg} ${selectedColor.text}`}
+                    >
+                        {icon}
+                    </div>
                 )}
-            </animated.p>
-            {description && (
-                <p className="text-xs text-gray-500 mt-2 leading-relaxed">
-                    {description}
-                </p>
-            )}
+            </div>
         </div>
     );
 };
@@ -71,13 +134,11 @@ export default function Reports({
     const calculatePercentage = (current, total) =>
         total > 0 ? (current / total) * 100 : 0;
 
-    // --- ▼▼▼ DATA BARU UNTUK GRAFIK STATUS EVENT ▼▼▼ ---
     const eventStatusData = {
         Aktif: eventStats.active,
         "Akan Datang": eventStats.upcoming,
         Selesai: eventStats.finished,
     };
-    // --- ▲▲▲ AKHIR DATA BARU ---
 
     return (
         <AuthenticatedLayout
@@ -89,12 +150,12 @@ export default function Reports({
             }
         >
             <Head title="Laporan & Statistik" />
-            <div className="py-12">
+            <div className="py-12 bg-gray-50">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
-                    {/* --- ▼▼▼ KARTU BARU: PERTUMBUHAN PLATFORM ▼▼▼ --- */}
-                    <div className="bg-white overflow-hidden shadow-lg sm:rounded-lg">
+                    {/* Pertumbuhan UMKM */}
+                    <div className="bg-white overflow-hidden shadow-lg sm:rounded-xl">
                         <SectionHeader
-                            title="Pertumbuhan Platform"
+                            title="Pertumbuhan UMKM"
                             subtitle="Pendaftaran UMKM baru dalam 6 bulan terakhir"
                         />
                         <div className="p-6">
@@ -106,10 +167,9 @@ export default function Reports({
                             </div>
                         </div>
                     </div>
-                    {/* --- ▲▲▲ AKHIR KARTU BARU --- */}
 
                     {/* Laporan UMKM */}
-                    <div className="bg-white overflow-hidden shadow-lg sm:rounded-lg">
+                    <div className="bg-white overflow-hidden shadow-lg sm:rounded-xl">
                         <SectionHeader
                             title="Laporan UMKM"
                             subtitle="Data lengkap registrasi dan verifikasi UMKM"
@@ -119,11 +179,13 @@ export default function Reports({
                                 title="Total UMKM Terdaftar"
                                 value={umkmStats.total}
                                 color="blue"
+                                icon={<FiUsers className="h-6 w-6" />}
                             />
                             <AnimatedStatCard
                                 title="UMKM Terverifikasi"
                                 value={umkmStats.verified}
                                 color="green"
+                                icon={<FiCheckSquare className="h-6 w-6" />}
                                 description={`${calculatePercentage(
                                     umkmStats.verified,
                                     umkmStats.total
@@ -133,11 +195,13 @@ export default function Reports({
                                 title="Menunggu Verifikasi"
                                 value={umkmStats.pending}
                                 color="yellow"
+                                icon={<FiClock className="h-6 w-6" />}
                             />
                             <AnimatedStatCard
                                 title="UMKM Baru (30 Hari)"
                                 value={umkmStats.new_last_30_days}
                                 color="orange"
+                                icon={<FiTrendingUp className="h-6 w-6" />}
                                 description="Pendaftar baru bulan ini"
                             />
                         </div>
@@ -152,7 +216,7 @@ export default function Reports({
                     </div>
 
                     {/* Laporan Penyelenggara */}
-                    <div className="bg-white overflow-hidden shadow-lg sm:rounded-lg">
+                    <div className="bg-white overflow-hidden shadow-lg sm:rounded-xl">
                         <SectionHeader
                             title="Laporan Penyelenggara"
                             subtitle="Data registrasi dan aktivitas penyelenggara event"
@@ -162,11 +226,13 @@ export default function Reports({
                                 title="Total Penyelenggara"
                                 value={penyelenggaraStats.total}
                                 color="purple"
+                                icon={<FiBriefcase className="h-6 w-6" />}
                             />
                             <AnimatedStatCard
-                                title="Penyelenggara Terverifikasi"
+                                title="Terverifikasi"
                                 value={penyelenggaraStats.verified}
                                 color="green"
+                                icon={<FiCheckSquare className="h-6 w-6" />}
                                 description={`${calculatePercentage(
                                     penyelenggaraStats.verified,
                                     penyelenggaraStats.total
@@ -176,52 +242,55 @@ export default function Reports({
                                 title="Menunggu Verifikasi"
                                 value={penyelenggaraStats.pending}
                                 color="yellow"
+                                icon={<FiClock className="h-6 w-6" />}
                             />
                             <AnimatedStatCard
                                 title="Ditolak"
                                 value={penyelenggaraStats.rejected}
                                 color="red"
+                                icon={<FiXCircle className="h-6 w-6" />}
                             />
                         </div>
                     </div>
 
                     {/* Laporan Event & Keuangan */}
-                    <div className="bg-white overflow-hidden shadow-lg sm:rounded-lg">
+                    <div className="bg-white overflow-hidden shadow-lg sm:rounded-xl">
                         <SectionHeader
-                            title="Laporan Event, Keuangan & Konten"
+                            title="Laporan Event & Partisipasi"
                             subtitle="Statistik lengkap event, partisipasi, dan aktivitas lainnya"
                         />
                         <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <AnimatedStatCard
-                                title="Total Event Diterbitkan"
+                                title="Total Event"
                                 value={eventStats.total}
                                 color="indigo"
+                                icon={<FiArchive className="h-6 w-6" />}
                             />
                             <AnimatedStatCard
                                 title="Pendapatan Registrasi"
                                 value={financialAndContentStats.total_revenue}
                                 color="teal"
+                                icon={<FiDollarSign className="h-6 w-6" />}
                                 description="Dari pendaftaran terkonfirmasi"
                             />
                             <AnimatedStatCard
                                 title="Total Produk UMKM"
                                 value={financialAndContentStats.total_products}
                                 color="blue"
-                                description="Produk yang diunggah UMKM"
+                                icon={<FiBox className="h-6 w-6" />}
                             />
                             <AnimatedStatCard
-                                title="Rata-rata Pendaftar / Event"
+                                title="Rata-rata Pendaftar"
                                 value={eventStats.average_registrants_per_event}
                                 color="orange"
-                                description="Tingkat partisipasi UMKM per event"
+                                icon={<FiBarChart2 className="h-6 w-6" />}
+                                description="Partisipasi per event"
                             />
                         </div>
-
-                        {/* --- ▼▼▼ GRAFIK BARU DI DALAM KARTU EVENT ▼▼▼ --- */}
                         <div className="p-6 border-t grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                             <div>
-                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                    Top 10 Event Berdasarkan Peserta
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4 text-center">
+                                    Top 10 Event Terpopuler
                                 </h4>
                                 <div className="bg-gray-50 rounded-lg p-4 h-96">
                                     <BarChart
@@ -238,16 +307,14 @@ export default function Reports({
                                 </div>
                             </div>
                             <div>
-                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4 text-center">
                                     Distribusi Status Event
                                 </h4>
                                 <div className="bg-gray-50 rounded-lg p-4 h-96">
-                                    {/* Menggunakan komponen PieChart yang sudah ada */}
                                     <PieChart data={eventStatusData} />
                                 </div>
                             </div>
                         </div>
-                        {/* --- ▲▲▲ AKHIR DARI GRAFIK BARU --- */}
                     </div>
                 </div>
             </div>

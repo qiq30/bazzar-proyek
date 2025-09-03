@@ -1,11 +1,9 @@
-// File: resources/js/Pages/SuperAdmin/UserManagementHub.jsx
+// File: resources/js/Pages/SuperAdmin/LogAktivitasHub.jsx
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link } from "@inertiajs/react";
-// Menggunakan ikon dari react-icons untuk konsistensi
-import { FiUserCheck, FiUsers, FiEye, FiUserX } from "react-icons/fi";
+import { FiBarChart2, FiGlobe, FiHeart } from "react-icons/fi";
 
-// Komponen kartu yang didesain ulang, mirip dengan LogAktivitasHub
 const HubCard = ({ href, icon, title, description, comingSoon = false }) => {
     const cardClasses = `
         relative block p-8 bg-white border border-gray-200 rounded-lg shadow-sm 
@@ -13,7 +11,7 @@ const HubCard = ({ href, icon, title, description, comingSoon = false }) => {
         ${
             comingSoon
                 ? "cursor-not-allowed bg-gray-50"
-                : "hover:shadow-lg hover:border-purple-500"
+                : "hover:shadow-lg hover:border-blue-500"
         }
     `;
 
@@ -26,7 +24,7 @@ const HubCard = ({ href, icon, title, description, comingSoon = false }) => {
             )}
             <div
                 className={`text-4xl mb-4 ${
-                    comingSoon ? "text-gray-400" : "text-purple-600"
+                    comingSoon ? "text-gray-400" : "text-blue-600"
                 }`}
             >
                 {icon}
@@ -57,43 +55,37 @@ const HubCard = ({ href, icon, title, description, comingSoon = false }) => {
     );
 };
 
-export default function UserManagementHub({ auth }) {
+export default function LogAktivitasHub({ auth }) {
     return (
         <AuthenticatedLayout
             user={auth.user}
             header={
                 <h2 className="font-semibold text-xl text-gray-800 leading-tight">
-                    Pusat Manajemen Pengguna
+                    Pusat Laporan & Aktivitas
                 </h2>
             }
         >
-            <Head title="Manajemen Pengguna" />
+            <Head title="Pusat Laporan & Aktivitas" />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         <HubCard
-                            href={route("superadmin.admins.manage")}
-                            icon={<FiUserCheck />}
-                            title="Manajemen Akun Admin"
-                            description="Tambah atau hapus akun untuk administrator sistem."
+                            href={route("superadmin.system.report")}
+                            icon={<FiBarChart2 />}
+                            title="Statistik Sistem"
+                            description="Lihat laporan lengkap dan statistik dari seluruh aktivitas, pengguna, dan event di dalam sistem."
                         />
                         <HubCard
-                            href={route("superadmin.users.manage")}
-                            icon={<FiUsers />}
-                            title="Manajemen Akun Pengguna"
-                            description="Lihat, edit, dan masuk sebagai pengguna UMKM atau Penyelenggara."
-                        />
-                        <HubCard
-                            icon={<FiEye />}
-                            title="Melihat Semua Pengguna"
-                            description="Fitur untuk melihat daftar lengkap semua pengguna dalam satu tabel."
+                            icon={<FiGlobe />}
+                            title="Log Aktivitas Global"
+                            description="Jejak audit terperinci dari semua tindakan penting yang dilakukan oleh admin dan pengguna."
                             comingSoon={true}
                         />
                         <HubCard
-                            icon={<FiUserX />}
-                            title="Menonaktifkan Akun"
-                            description="Fitur untuk menonaktifkan sementara akun pengguna tanpa menghapusnya."
+                            icon={<FiHeart />}
+                            title="Kesehatan Sistem"
+                            description="Pantau status, antrian, dan performa database untuk memastikan sistem berjalan lancar."
                             comingSoon={true}
                         />
                     </div>

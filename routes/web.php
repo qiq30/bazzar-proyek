@@ -17,7 +17,8 @@ use App\Http\Controllers\Auth\SuperAdminLoginController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\SuperAdmin\ImpersonateController;
 use App\Http\Controllers\ImpersonationApprovalController;
-use App\Http\Controllers\ReportController; // <-- TAMBAHKAN INI
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SuperAdmin\SystemReportController;
 
 // RUTE WIZARD REGISTRASI DITEMPATKAN DI SINI
 Route::middleware('guest')->group(function () {
@@ -58,6 +59,9 @@ Route::middleware(['auth', 'super_admin'])->prefix('superadmin')->name('superadm
     Route::get('/users', [SuperAdminController::class, 'manageUsers'])->name('users.manage');
     Route::get('/users/{user}/edit', [SuperAdminController::class, 'editUserProfile'])->name('users.edit');
     Route::put('/users/{user}', [SuperAdminController::class, 'updateUserProfile'])->name('users.update');
+
+    Route::get('/log-hub', [SuperAdminController::class, 'logHub'])->name('log.hub');
+    Route::get('/system-report', [SystemReportController::class, 'index'])->name('system.report');
 });
 
 Route::get('/impersonate/stop', [ImpersonateController::class, 'stop'])

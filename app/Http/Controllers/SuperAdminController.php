@@ -11,18 +11,59 @@ use App\Models\UmkmProfile;
 use App\Models\PenyelenggaraProfile;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class SuperAdminController extends Controller
 {
     public function dashboard()
     {
+        $stats = [
+            'adminCount' => User::where('is_admin', true)->count(),
+            'umkmCount' => User::where('is_admin', false)
+                ->where('is_penyelenggara', false)
+                ->where('is_super_admin', false)
+                ->count(),
+            'penyelenggaraCount' => User::where('is_penyelenggara', true)->count(),
+        ];
+
+        // --- ▼▼▼ DATA BARU UNTUK GRAFIK ▼▼▼ ---
+        $monthlyGrowth = User::select(
+            DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
+            DB::raw('count(*) as count')
+        )
+            ->where('created_at', '>=', Carbon::now()->subMonths(6))
+            ->groupBy('month')
+            ->orderBy('month', 'asc')
+            ->get()
+            ->keyBy('month')
+            ->map(fn($item) => $item->count);
+
+        $userMonthlyGrowth = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $month = Carbon::now()->subMonths($i)->format('Y-m');
+            $userMonthlyGrowth[$month] = $monthlyGrowth->get($month, 0);
+        }
+
+        $chartData = [
+            'userComposition' => [
+                'UMKM' => $stats['umkmCount'],
+                'Penyelenggara' => $stats['penyelenggaraCount'],
+                'Admin' => $stats['adminCount'],
+            ],
+            'monthlyGrowth' => $userMonthlyGrowth,
+        ];
+        // --- ▲▲▲ AKHIR DARI DATA GRAFIK ---
+
         return Inertia::render('SuperAdmin/Dashboard', [
-            'stats' => [
-                'adminCount' => User::where('is_admin', true)->count(),
-                'umkmCount' => User::where('is_penyelenggara', false)->where('is_admin', false)->where('is_super_admin', false)->count(),
-                'penyelenggaraCount' => User::where('is_penyelenggara', true)->count(),
-            ]
+            'stats' => $stats,
+            'chartData' => $chartData, // <-- Kirim data baru ke frontend
         ]);
+    }
+
+    public function logHub()
+    {
+        return Inertia::render('SuperAdmin/LogAktivitasHub');
     }
 
     public function manageAdmins()

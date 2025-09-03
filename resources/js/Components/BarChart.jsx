@@ -1,4 +1,4 @@
-// resources/js/Components/BarChart.jsx
+// File: resources/js/Components/BarChart.jsx
 
 import React from "react";
 import {
@@ -21,7 +21,8 @@ ChartJS.register(
     Legend
 );
 
-export default function BarChart({ data, label }) {
+// Tambahkan prop 'useRawData' untuk fleksibilitas
+export default function BarChart({ data, label, useRawData = false }) {
     const options = {
         responsive: true,
         maintainAspectRatio: false,
@@ -40,18 +41,21 @@ export default function BarChart({ data, label }) {
         },
     };
 
-    const chartData = {
-        labels: Object.keys(data),
-        datasets: [
-            {
-                label: label || "Data",
-                data: Object.values(data),
-                backgroundColor: "rgba(54, 162, 235, 0.6)",
-                borderColor: "rgba(54, 162, 235, 1)",
-                borderWidth: 1,
-            },
-        ],
-    };
+    // Logika untuk menentukan format data
+    const chartData = useRawData
+        ? data
+        : {
+              labels: Object.keys(data),
+              datasets: [
+                  {
+                      label: label || "Data",
+                      data: Object.values(data),
+                      backgroundColor: "rgba(54, 162, 235, 0.6)",
+                      borderColor: "rgba(54, 162, 235, 1)",
+                      borderWidth: 1,
+                  },
+              ],
+          };
 
     return <Bar options={options} data={chartData} />;
 }

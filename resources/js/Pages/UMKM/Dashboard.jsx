@@ -1,122 +1,89 @@
 // File: resources/js/Pages/UMKM/Dashboard.jsx
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, usePage } from "@inertiajs/react"; // Import usePage
+import { Head, Link, usePage } from "@inertiajs/react";
 import { Toaster } from "react-hot-toast";
+import {
+    FiUser,
+    FiCalendar,
+    FiGrid,
+    FiBox,
+    FiHome,
+    FiSettings,
+    FiTag,
+} from "react-icons/fi";
 
-// --- (Komponen Ikon tidak berubah) ---
-const ProfileIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
-        />
-    </svg>
+// --- Komponen Kartu Statistik ---
+// Disederhanakan untuk hanya menampilkan bagian atas, footer ditangani di luar
+const StatCardContent = ({ title, content, icon, color }) => (
+    <>
+        <div className="flex items-center justify-between">
+            <div>
+                <p className="text-sm font-medium text-gray-600">{title}</p>
+                <div className="text-2xl font-bold text-gray-900 mt-1">
+                    {content}
+                </div>
+            </div>
+            <div className={`p-3 rounded-full ${color.bg} ${color.text}`}>
+                {icon}
+            </div>
+        </div>
+    </>
 );
-const CalendarIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0h18M3.75 12h16.5"
-        />
-    </svg>
-);
-const QrisIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M3.75 4.5A.75.75 0 014.5 3.75h4.5a.75.75 0 01.75.75v4.5a.75.75 0 01-.75.75h-4.5a.75.75 0 01-.75-.75v-4.5zM3.75 14.25a.75.75 0 01.75-.75h4.5a.75.75 0 01.75.75v4.5a.75.75 0 01-.75.75h-4.5a.75.75 0 01-.75-.75v-4.5zM13.5 4.5a.75.75 0 01.75-.75h4.5a.75.75 0 01.75.75v4.5a.75.75 0 01-.75.75h-4.5a.75.75 0 01-.75-.75v-4.5zM13.5 14.25a.75.75 0 01.75-.75h4.5a.75.75 0 01.75.75v4.5a.75.75 0 01-.75.75h-4.5a.75.75 0 01-.75-.75v-4.5z"
-        />
-    </svg>
-);
-const ProductIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.658-.463 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
-        />
-    </svg>
-);
-const HomeIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
-        />
-    </svg>
-);
-const SettingsIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M9.594 3.94c.09-.542.56-1.003 1.11-1.226.554-.223 1.197-.223 1.75 0 .554.223 1.02.684 1.11 1.226l.043.25a2.25 2.25 0 013.484 2.25l.21.21a2.25 2.25 0 01-2.25 3.485l-.25.042a2.25 2.25 0 01-2.25 3.484l-.21.21a2.25 2.25 0 01-3.485-2.25l-.042-.25a2.25 2.25 0 01-3.484-2.25l-.21-.21a2.25 2.25 0 012.25-3.485l.25-.042a2.25 2.25 0 012.25-3.484l.21-.21zM12 10.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3z"
-        />
-    </svg>
-);
-const TicketIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-12v.75m0 3v.75m0 3v.75m0 3V18m-3-9h18M5.25 6h13.5c.621 0 1.125.504 1.125 1.125v6.75c0 .621-.504 1.125-1.125 1.125H5.25A1.125 1.125 0 014.125 15V7.125A1.125 1.125 0 015.25 6z"
-        />
-    </svg>
-);
+
+// --- Komponen Kartu Aksi/Menu (HubCard) ---
+const HubCard = ({
+    href,
+    icon,
+    title,
+    description,
+    color,
+    comingSoon = false,
+    disabled = false,
+}) => {
+    const content = (
+        <>
+            <div
+                className={`mb-2 transition-transform ${
+                    disabled ? "" : "group-hover:scale-110"
+                } ${disabled ? "text-gray-400" : color}`}
+            >
+                {icon}
+            </div>
+            <div>
+                <p
+                    className={`font-medium text-center ${
+                        disabled ? "text-gray-500" : "text-gray-900"
+                    }`}
+                >
+                    {title}
+                </p>
+                <p className="text-sm text-center text-gray-500">
+                    {description}
+                </p>
+            </div>
+        </>
+    );
+
+    if (disabled || comingSoon) {
+        return (
+            <div className="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-lg bg-gray-50 text-gray-400 cursor-not-allowed">
+                {content}
+            </div>
+        );
+    }
+
+    return (
+        <Link
+            href={href}
+            className={`flex flex-col items-center justify-center p-4 border border-gray-200 rounded-lg transition group ${color
+                .replace("text-", "hover:border-")
+                .replace(/-\d+$/, "-400")} hover:bg-gray-50`}
+        >
+            {content}
+        </Link>
+    );
+};
 
 export default function Dashboard({
     auth,
@@ -124,17 +91,16 @@ export default function Dashboard({
     umkmProfile,
     registeredEvents = [],
 }) {
-    const { impersonating } = usePage().props; // Ambil 'impersonating' dari props
+    const { impersonating } = usePage().props;
     const isProfileVerified = hasProfile && umkmProfile?.status === "verified";
 
     const getProfileStatus = () => {
-        if (!hasProfile) {
+        if (!hasProfile)
             return {
                 color: "bg-red-100 text-red-800",
                 text: "Profil Belum Dibuat",
                 action: "Buat Profil",
             };
-        }
         switch (umkmProfile.status) {
             case "pending":
                 return {
@@ -164,14 +130,12 @@ export default function Dashboard({
     };
 
     const profileStatus = getProfileStatus();
-
-    const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString("id-ID", {
+    const formatDate = (dateString) =>
+        new Date(dateString).toLocaleDateString("id-ID", {
             day: "numeric",
             month: "long",
             year: "numeric",
         });
-    };
 
     const formatRegistrationStatus = (status) => {
         const statusMap = {
@@ -237,254 +201,165 @@ export default function Dashboard({
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-6 mb-8">
-                        <div className="bg-white p-6 rounded-lg shadow-sm">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">
-                                        Status Profil
+                        {/* --- Kartu Status Profil --- */}
+                        <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-blue-500 flex flex-col justify-between">
+                            <StatCardContent
+                                title="Status Profil"
+                                icon={<FiUser className="h-6 w-6" />}
+                                color={{
+                                    bg: "bg-blue-100",
+                                    text: "text-blue-500",
+                                }}
+                                content={
+                                    <span
+                                        className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${profileStatus.color}`}
+                                    >
+                                        {profileStatus.text}
+                                    </span>
+                                }
+                            />
+                            <div className="mt-4 text-sm">
+                                {umkmProfile?.status !== "verified" ? (
+                                    <Link
+                                        href="/profile/setup"
+                                        className="font-medium text-blue-600 hover:text-blue-800"
+                                    >
+                                        {profileStatus.action} →
+                                    </Link>
+                                ) : impersonating ? (
+                                    <Link
+                                        href={route(
+                                            "superadmin.users.edit",
+                                            umkmProfile.user_id
+                                        )}
+                                        className="font-medium text-green-600 hover:text-green-800"
+                                    >
+                                        Edit Profil ini (Super Admin) →
+                                    </Link>
+                                ) : (
+                                    <p className="text-gray-500">
+                                        Profil terkunci. Hubungi admin untuk
+                                        perubahan.
                                     </p>
-                                    <p className="text-2xl font-bold text-gray-900 mt-1">
-                                        <span
-                                            className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${profileStatus.color}`}
-                                        >
-                                            {profileStatus.text}
-                                        </span>
-                                    </p>
-                                </div>
-                                <div className="text-blue-500 bg-blue-100 p-3 rounded-full">
-                                    <ProfileIcon className="h-6 w-6" />
-                                </div>
+                                )}
                             </div>
-                            {umkmProfile?.status !== "verified" ? (
-                                <Link
-                                    href="/profile/setup"
-                                    className="mt-4 inline-block text-blue-600 hover:text-blue-800 font-medium text-sm"
-                                >
-                                    {profileStatus.action} →
-                                </Link>
-                            ) : impersonating ? (
-                                <Link
-                                    href={route(
-                                        "superadmin.users.edit",
-                                        umkmProfile.user_id
-                                    )}
-                                    className="mt-4 inline-block text-green-600 hover:text-green-800 font-medium text-sm"
-                                >
-                                    Edit Profil ini (Super Admin) →
-                                </Link>
-                            ) : (
-                                <p className="mt-4 text-sm text-gray-500">
-                                    Profil terkunci. Hubungi admin untuk
-                                    perubahan.
-                                </p>
-                            )}
                         </div>
 
-                        <div className="bg-white p-6 rounded-lg shadow-sm">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">
-                                        Event Terdaftar
-                                    </p>
-                                    <p className="text-2xl font-bold text-gray-900 mt-1">
-                                        {registeredEvents.length}
-                                    </p>
-                                </div>
-                                <div className="text-green-500 bg-green-100 p-3 rounded-full">
-                                    <CalendarIcon className="h-6 w-6" />
-                                </div>
-                            </div>
+                        {/* --- Kartu Event Terdaftar --- */}
+                        <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-green-500 flex flex-col justify-between">
+                            <StatCardContent
+                                title="Event Terdaftar"
+                                icon={<FiCalendar className="h-6 w-6" />}
+                                color={{
+                                    bg: "bg-green-100",
+                                    text: "text-green-500",
+                                }}
+                                content={registeredEvents.length}
+                            />
                             <Link
                                 href="/events"
-                                className="mt-4 inline-block text-blue-600 hover:text-blue-800 font-medium text-sm"
+                                className="mt-4 text-sm font-medium text-blue-600 hover:text-blue-800"
                             >
-                                Lihat Event →
+                                Lihat Semua Event →
                             </Link>
                         </div>
 
-                        <div className="bg-white p-6 rounded-lg shadow-sm">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">
-                                        QRIS
-                                    </p>
-                                    <p className="text-2xl font-bold text-gray-900 mt-1">
-                                        {hasProfile &&
-                                        umkmProfile?.qris_path ? (
-                                            <span className="text-green-600">
-                                                ✓ Aktif
-                                            </span>
-                                        ) : (
-                                            <span className="text-red-600">
-                                                ✗ Belum
-                                            </span>
-                                        )}
-                                    </p>
-                                </div>
-                                <div className="text-purple-500 bg-purple-100 p-3 rounded-full">
-                                    <QrisIcon className="h-6 w-6" />
-                                </div>
-                            </div>
-                            <Link
-                                className={`mt-4 inline-block font-medium text-sm ${
-                                    isProfileVerified
-                                        ? "text-blue-600 hover:text-blue-800"
-                                        : "text-gray-400 cursor-not-allowed"
-                                }`}
-                                as={isProfileVerified ? "a" : "div"}
-                                href={
-                                    isProfileVerified
-                                        ? "/qris/upload"
-                                        : undefined
+                        {/* --- Kartu QRIS --- */}
+                        <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-purple-500 flex flex-col justify-between">
+                            <StatCardContent
+                                title="QRIS"
+                                icon={<FiGrid className="h-6 w-6" />}
+                                color={{
+                                    bg: "bg-purple-100",
+                                    text: "text-purple-500",
+                                }}
+                                content={
+                                    hasProfile && umkmProfile?.qris_path ? (
+                                        <span className="text-green-600">
+                                            ✓ Aktif
+                                        </span>
+                                    ) : (
+                                        <span className="text-red-600">
+                                            ✗ Belum Diunggah
+                                        </span>
+                                    )
                                 }
-                            >
-                                {hasProfile && umkmProfile?.qris_path
-                                    ? "Update QRIS"
-                                    : "Upload QRIS"}{" "}
-                                →
-                            </Link>
+                            />
+                            <div className="mt-4 text-sm">
+                                {isProfileVerified ? (
+                                    <Link
+                                        href="/qris/upload"
+                                        className="font-medium text-blue-600 hover:text-blue-800"
+                                    >
+                                        {hasProfile && umkmProfile?.qris_path
+                                            ? "Update QRIS"
+                                            : "Upload QRIS"}{" "}
+                                        →
+                                    </Link>
+                                ) : (
+                                    <p className="text-gray-500">
+                                        Verifikasi profil dahulu.
+                                    </p>
+                                )}
+                            </div>
                         </div>
                     </div>
 
+                    {/* Quick Actions */}
                     <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
                         <h4 className="text-lg font-semibold text-gray-900 mb-4">
                             Aksi Cepat
                         </h4>
-                        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
-                            {isProfileVerified ? (
-                                <Link
-                                    href={route("umkm.products")}
-                                    className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition group"
-                                >
-                                    <div className="text-purple-600 mr-3">
-                                        <ProductIcon className="w-7 h-7 transition-transform group-hover:scale-110" />
-                                    </div>
-                                    <div>
-                                        <p className="font-medium text-gray-900">
-                                            Kelola Produk
-                                        </p>
-                                        <p className="text-sm text-gray-600">
-                                            Tambah/edit produk
-                                        </p>
-                                    </div>
-                                </Link>
-                            ) : (
-                                <div className="flex items-center p-4 border border-gray-200 rounded-lg bg-gray-50 text-gray-400 cursor-not-allowed">
-                                    <div className="text-gray-400 mr-3">
-                                        <ProductIcon className="w-7 h-7" />
-                                    </div>
-                                    <div>
-                                        <p className="font-medium">
-                                            Kelola Produk
-                                        </p>
-                                        <p className="text-sm">
-                                            Verifikasi profil dulu
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
-
-                            <Link
-                                href="/"
-                                className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition group"
-                            >
-                                <div className="text-orange-600 mr-3">
-                                    <HomeIcon className="w-7 h-7 transition-transform group-hover:scale-110" />
-                                </div>
-                                <div>
-                                    <p className="font-medium text-gray-900">
-                                        Lihat Public
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                        Halaman depan
-                                    </p>
-                                </div>
-                            </Link>
-
-                            {umkmProfile?.status === "verified" ? (
-                                <div className="flex items-center p-4 border border-gray-200 rounded-lg bg-gray-100 cursor-not-allowed">
-                                    <div className="text-gray-400 mr-3">
-                                        <SettingsIcon className="w-7 h-7" />
-                                    </div>
-                                    <div>
-                                        <p className="font-medium text-gray-500">
-                                            Profile Setup
-                                        </p>
-                                        <p className="text-sm text-gray-400">
-                                            Profil terkunci
-                                        </p>
-                                    </div>
-                                </div>
-                            ) : (
-                                <Link
-                                    href={route("umkm.profile.setup")}
-                                    className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition group"
-                                >
-                                    <div className="text-blue-600 mr-3">
-                                        <SettingsIcon className="w-7 h-7 transition-transform group-hover:scale-110" />
-                                    </div>
-                                    <div>
-                                        <p className="font-medium text-gray-900">
-                                            Profile Setup
-                                        </p>
-                                        <p className="text-sm text-gray-600">
-                                            Atur profil UMKM
-                                        </p>
-                                    </div>
-                                </Link>
-                            )}
-
-                            <Link
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                            <HubCard
+                                href={route("umkm.profile.setup")}
+                                icon={<FiSettings className="w-8 h-8" />}
+                                title="Profil Setup"
+                                description={
+                                    isProfileVerified
+                                        ? "Profil Terkunci"
+                                        : hasProfile
+                                        ? "Perbarui Profil"
+                                        : "Lengkapi Profil"
+                                }
+                                color="text-blue-600"
+                                disabled={isProfileVerified}
+                            />
+                            <HubCard
+                                href={route("umkm.products")}
+                                icon={<FiBox className="w-8 h-8" />}
+                                title="Kelola Produk"
+                                description="Tambah/edit produk"
+                                color="text-purple-600"
+                                disabled={!isProfileVerified}
+                            />
+                            <HubCard
+                                href={route("umkm.tickets")}
+                                icon={<FiTag className="w-8 h-8" />}
+                                title="E-Ticket Saya"
+                                description="Lihat tiket event"
+                                color="text-teal-600"
+                                disabled={!isProfileVerified}
+                            />
+                            <HubCard
                                 href="/events"
-                                className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition group"
-                            >
-                                <div className="text-green-600 mr-3">
-                                    <TicketIcon className="w-7 h-7 transition-transform group-hover:scale-110" />
-                                </div>
-                                <div>
-                                    <p className="font-medium text-gray-900">
-                                        Daftar Event
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                        Ikut event bazar
-                                    </p>
-                                </div>
-                            </Link>
-
-                            {isProfileVerified ? (
-                                <Link
-                                    href={route("umkm.tickets")}
-                                    className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-teal-300 hover:bg-teal-50 transition group"
-                                >
-                                    <div className="text-teal-600 mr-3">
-                                        <TicketIcon className="w-7 h-7 transition-transform group-hover:scale-110" />
-                                    </div>
-                                    <div>
-                                        <p className="font-medium text-gray-900">
-                                            E-Ticket Saya
-                                        </p>
-                                        <p className="text-sm text-gray-600">
-                                            Lihat tiket event
-                                        </p>
-                                    </div>
-                                </Link>
-                            ) : (
-                                <div className="flex items-center p-4 border border-gray-200 rounded-lg bg-gray-50 text-gray-400 cursor-not-allowed">
-                                    <div className="text-gray-400 mr-3">
-                                        <TicketIcon className="w-7 h-7" />
-                                    </div>
-                                    <div>
-                                        <p className="font-medium">
-                                            E-Ticket Saya
-                                        </p>
-                                        <p className="text-sm">
-                                            Verifikasi profil dulu
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
+                                icon={<FiCalendar className="w-8 h-8" />}
+                                title="Daftar Event"
+                                description="Ikut event bazar"
+                                color="text-green-600"
+                                disabled={!isProfileVerified}
+                            />
+                            <HubCard
+                                href="/"
+                                icon={<FiHome className="w-8 h-8" />}
+                                title="Lihat Public"
+                                description="Halaman depan"
+                                color="text-orange-600"
+                            />
                         </div>
                     </div>
+
+                    {/* Event List */}
                     <div className="bg-white rounded-lg shadow-sm p-6">
                         <h4 className="text-lg font-semibold text-gray-900 mb-4">
                             Event Terbaru yang Anda Ikuti

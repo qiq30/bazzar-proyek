@@ -1,107 +1,86 @@
-// resources/js/Pages/SuperAdmin/Dashboard.jsx
+// File: resources/js/Pages/SuperAdmin/Dashboard.jsx
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link } from "@inertiajs/react";
+import { useSpring, animated } from "@react-spring/web";
+import { FiUsers, FiSettings, FiFileText, FiUserCheck } from "react-icons/fi";
+import PieChart from "@/Components/PieChart";
+import LineChart from "@/Components/LineChart";
 
-// --- Komponen Ikon SVG untuk Dashboard ---
-const AdminIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M12 11c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
-        />
-    </svg>
-);
-const UmkmIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.25a.75.75 0 01-.75-.75V10.5a.75.75 0 01.75-.75h1.5M13.5 21h3.375a.75.75 0 00.75-.75V10.5a.75.75 0 00-.75-.75h-1.5m-4.5 0H9.75v-4.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75v4.5m-4.5 0V21m-4.5-10.5h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v3a1.5 1.5 0 001.5 1.5z"
-        />
-    </svg>
-);
-const PenyelenggaraIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"
-        />
-    </svg>
-);
-const SettingsIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M9.594 3.94c.09-.542.56-1.003 1.11-1.226.554-.223 1.197-.223 1.75 0 .554.223 1.02.684 1.11 1.226l.043.25a2.25 2.25 0 013.484 2.25l.21.21a2.25 2.25 0 01-2.25 3.485l-.25.042a2.25 2.25 0 01-2.25 3.484l-.21.21a2.25 2.25 0 01-3.485-2.25l-.042-.25a2.25 2.25 0 01-3.484-2.25l-.21-.21a2.25 2.25 0 012.25-3.485l.25-.042a2.25 2.25 0 012.25-3.484l.21-.21zM12 10.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3z"
-        />
-    </svg>
-);
-const LogIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12"
-        />
-    </svg>
-);
-const UsersIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-4.663M12 12A3 3 0 1012 6a3 3 0 000 6z"
-        />
-    </svg>
-);
+// --- Komponen Kartu Statistik dengan Garis Warna di Kiri ---
+const AnimatedStatCard = ({ title, value, icon, color }) => {
+    const { number } = useSpring({
+        from: { number: 0 },
+        number: Number(value) || 0,
+        delay: 200,
+        config: { mass: 1, tension: 20, friction: 10 },
+    });
 
-export default function Dashboard({ auth, stats }) {
+    return (
+        <div
+            className={`bg-white p-6 rounded-lg shadow-sm border-l-4 ${color.border}`}
+        >
+            <div className="flex items-center justify-between">
+                <div>
+                    <p className="text-sm font-medium text-gray-600">{title}</p>
+                    <animated.p className="text-3xl font-bold text-gray-900">
+                        {number.to((n) => Math.floor(n))}
+                    </animated.p>
+                </div>
+                <div className={`p-3 rounded-full ${color.bg} ${color.text}`}>
+                    {icon}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- Komponen Kartu Aksi/Menu (HubCard) ---
+const HubCard = ({
+    href,
+    icon,
+    title,
+    description,
+    color,
+    comingSoon = false,
+}) => {
+    const content = (
+        <>
+            <div
+                className={`mb-2 transition-transform group-hover:scale-110 ${color}`}
+            >
+                {icon}
+            </div>
+            <div>
+                <p className="font-medium text-center text-gray-900">{title}</p>
+                <p className="text-sm text-center text-gray-600">
+                    {description}
+                </p>
+            </div>
+        </>
+    );
+
+    if (comingSoon) {
+        return (
+            <div className="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-lg bg-gray-50 text-gray-400 cursor-not-allowed">
+                {content}
+            </div>
+        );
+    }
+
+    return (
+        <Link
+            href={href}
+            className={`flex flex-col items-center justify-center p-4 border border-gray-200 rounded-lg transition group ${color
+                .replace("text-", "hover:border-")
+                .replace(/-\d+$/, "-400")} hover:bg-purple-50`}
+        >
+            {content}
+        </Link>
+    );
+};
+
+export default function Dashboard({ auth, stats, chartData }) {
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -130,51 +109,36 @@ export default function Dashboard({ auth, stats }) {
 
                     {/* Stats Cards */}
                     <div className="grid md:grid-cols-3 gap-6">
-                        <div className="bg-white p-6 rounded-lg shadow-sm">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">
-                                        Total Admin
-                                    </p>
-                                    <p className="text-3xl font-bold text-gray-900">
-                                        {stats.adminCount}
-                                    </p>
-                                </div>
-                                <div className="text-purple-500 bg-purple-100 p-3 rounded-full">
-                                    <AdminIcon className="h-8 w-8" />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="bg-white p-6 rounded-lg shadow-sm">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">
-                                        Total UMKM
-                                    </p>
-                                    <p className="text-3xl font-bold text-gray-900">
-                                        {stats.umkmCount}
-                                    </p>
-                                </div>
-                                <div className="text-green-500 bg-green-100 p-3 rounded-full">
-                                    <UmkmIcon className="h-8 w-8" />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="bg-white p-6 rounded-lg shadow-sm">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">
-                                        Total Penyelenggara
-                                    </p>
-                                    <p className="text-3xl font-bold text-gray-900">
-                                        {stats.penyelenggaraCount}
-                                    </p>
-                                </div>
-                                <div className="text-blue-500 bg-blue-100 p-3 rounded-full">
-                                    <PenyelenggaraIcon className="h-8 w-8" />
-                                </div>
-                            </div>
-                        </div>
+                        <AnimatedStatCard
+                            title="Total Admin"
+                            value={stats.adminCount}
+                            icon={<FiUserCheck className="h-8 w-8" />}
+                            color={{
+                                border: "border-purple-500",
+                                bg: "bg-purple-100",
+                                text: "text-purple-600",
+                            }}
+                        />
+                        <AnimatedStatCard
+                            title="Total UMKM"
+                            value={stats.umkmCount}
+                            icon={<FiUsers className="h-8 w-8" />}
+                            color={{
+                                border: "border-green-500",
+                                bg: "bg-green-100",
+                                text: "text-green-600",
+                            }}
+                        />
+                        <AnimatedStatCard
+                            title="Total Penyelenggara"
+                            value={stats.penyelenggaraCount}
+                            icon={<FiUsers className="h-8 w-8" />}
+                            color={{
+                                border: "border-blue-500",
+                                bg: "bg-blue-100",
+                                text: "text-blue-600",
+                            }}
+                        />
                     </div>
 
                     {/* Quick Actions */}
@@ -183,49 +147,49 @@ export default function Dashboard({ auth, stats }) {
                             Aksi Cepat & Alat Sistem
                         </h4>
                         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <Link
+                            <HubCard
                                 href={route("superadmin.users.hub")}
-                                className="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-lg hover:border-purple-400 hover:bg-purple-50 transition group"
-                            >
-                                <div className="text-purple-600 mb-2 transition-transform group-hover:scale-110">
-                                    <UsersIcon className="h-10 w-10" />
-                                </div>
-                                <div>
-                                    <p className="font-medium text-center text-gray-900">
-                                        Manajemen Pengguna
-                                    </p>
-                                    <p className="text-sm text-center text-gray-600">
-                                        Kelola semua pengguna & admin
-                                    </p>
-                                </div>
-                            </Link>
+                                icon={<FiUsers className="h-10 w-10" />}
+                                title="Manajemen Pengguna"
+                                description="Kelola semua pengguna & admin"
+                                color="text-purple-600"
+                            />
+                            <HubCard
+                                href={route("superadmin.log.hub")}
+                                icon={<FiFileText className="h-10 w-10" />}
+                                title="Laporan & Aktivitas"
+                                description="Lihat laporan sistem"
+                                color="text-blue-600"
+                            />
+                            <HubCard
+                                icon={<FiSettings className="h-10 w-10" />}
+                                title="Pengaturan Sistem"
+                                description="Segera Hadir"
+                                comingSoon={true}
+                                color="text-gray-400"
+                            />
+                        </div>
+                    </div>
 
-                            <div className="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-lg bg-gray-50 text-gray-400 cursor-not-allowed">
-                                <div className="text-gray-400 mb-2">
-                                    <SettingsIcon className="h-10 w-10" />
-                                </div>
-                                <div>
-                                    <p className="font-medium text-center">
-                                        Pengaturan Sistem
-                                    </p>
-                                    <p className="text-sm text-center">
-                                        Segera hadir
-                                    </p>
-                                </div>
+                    {/* --- Bagian Grafik --- */}
+                    <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                        <div className="lg:col-span-3 bg-white p-6 rounded-lg shadow-sm">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                                Pertumbuhan Pengguna Baru (6 Bulan)
+                            </h3>
+                            <div className="h-80">
+                                <LineChart
+                                    data={chartData.monthlyGrowth}
+                                    label="Pengguna Baru"
+                                />
                             </div>
-
-                            <div className="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-lg bg-gray-50 text-gray-400 cursor-not-allowed">
-                                <div className="text-gray-400 mb-2">
-                                    <LogIcon className="h-10 w-10" />
-                                </div>
-                                <div>
-                                    <p className="font-medium text-center">
-                                        Log Aktivitas
-                                    </p>
-                                    <p className="text-sm text-center">
-                                        Segera hadir
-                                    </p>
-                                </div>
+                        </div>
+                        <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                                Komposisi Pengguna
+                            </h3>
+                            <div className="h-80">
+                                <PieChart data={chartData.userComposition} />
                             </div>
                         </div>
                     </div>
