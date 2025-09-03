@@ -8,7 +8,7 @@ use App\Events\ProposalStatusUpdated;
 use App\Models\Event;
 use App\Models\UmkmProfile;
 use App\Models\EventRegistration;
-use App\Models\User;
+use App\Models\User; // <-- Pastikan User model di-import
 use App\Events\RegistrationFinalized;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -20,36 +20,62 @@ use App\Events\EventPublished;
 
 class AdminController extends Controller
 {
-    // ... (method dashboard() tidak berubah) ...
     public function dashboard()
     {
-        $totalEvents = Event::whereNotNull('status')->count();
-        $totalUmkm = UmkmProfile::count();
-        $totalPenyelenggara = PenyelenggaraProfile::count();
-        $activeEvents = Event::where('status', 'active')->count();
+        // --- DATA STATISTIK KARTU (TIDAK BERUBAH) ---
+        $stats = [
+            'totalEvents' => Event::whereNotNull('status')->count(),
+            'activeEvents' => Event::where('status', 'active')->count(),
+            'totalUmkm' => UmkmProfile::count(),
+            'verifiedUmkm' => UmkmProfile::where('status', 'verified')->count(),
+            'pendingUmkm' => UmkmProfile::where('status', 'pending')->count(),
+            'totalPenyelenggara' => PenyelenggaraProfile::count(),
+            'verifiedPenyelenggara' => PenyelenggaraProfile::where('status', 'verified')->count(),
+            'pendingPenyelenggara' => PenyelenggaraProfile::where('status', 'pending')->count(),
+            'pendingProposals' => Event::where('status_proposal', 'menunggu_persetujuan')->count(),
+        ];
+
+        // --- ▼▼▼ DATA BARU UNTUK GRAFIK ▼▼▼ ---
+        $chartData = [
+            // Grafik 1: Komposisi Pengguna (UMKM vs Penyelenggara)
+            'userComposition' => [
+                'UMKM' => UmkmProfile::count(),
+                'Penyelenggara' => PenyelenggaraProfile::count(),
+            ],
+
+            // Grafik 2: Event Terpopuler berdasarkan pendaftar
+            'popularEvents' => Event::withCount(['eventRegistrations' => function ($query) {
+                $query->whereIn('status', ['approved', 'sudah_check_in', 'pembayaran_terkonfirmasi']);
+            }])
+                ->whereIn('status', ['active', 'upcoming'])
+                ->orderBy('event_registrations_count', 'desc')
+                ->limit(5)
+                ->get(['nama_event', 'event_registrations_count'])
+                ->mapWithKeys(function ($event) {
+                    // Mengubah format agar mudah dibaca oleh komponen chart
+                    return [$event->nama_event => $event->event_registrations_count];
+                }),
+        ];
+        // --- ▲▲▲ AKHIR DARI DATA GRAFIK ---
 
         return Inertia::render('Admin/AdminDashboard', [
-            'stats' => [
-                'totalEvents' => $totalEvents,
-                'totalUmkm' => $totalUmkm,
-                'totalPenyelenggara' => $totalPenyelenggara,
-                'activeEvents' => $activeEvents,
-            ],
+            'stats' => $stats,
+            'chartData' => $chartData, // <-- Kirim data baru ke frontend
         ]);
     }
 
-    // --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ ---
+    // ... (sisa method lainnya tidak perlu diubah) ...
+
     public function events()
     {
         $events = Event::whereNotNull('status')
-            ->orderBy('tanggal_mulai_acara', 'desc') // Mengganti 'tanggal_mulai' menjadi 'tanggal_mulai_acara'
+            ->orderBy('tanggal_mulai_acara', 'desc')
             ->get();
 
         return Inertia::render('Admin/EventManagement', [
             'events' => $events
         ]);
     }
-    // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
 
     public function showPublishForm()
     {
@@ -65,28 +91,21 @@ class AdminController extends Controller
 
     public function storeEventFromProposal(Request $request)
     {
-        // --- ▼▼▼ VALIDASI DISESUAIKAN DI SINI ▼▼▼ ---
-        // Validasi hanya field yang bisa diubah oleh admin di form
         $request->validate([
             'proposal_id' => 'required|exists:events,id',
             'nama_event' => 'required|string|max:255',
             'deskripsi_event' => 'required|string',
             'status' => 'required|in:upcoming,active',
         ]);
-        // --- ▲▲▲ AKHIR DARI PENYESUAIAN VALIDASI ---
 
         $event = Event::findOrFail($request->proposal_id);
         $panitiaPin = rand(100000, 999999);
 
-        // --- ▼▼▼ LOGIKA UPDATE DI SINI ▼▼▼ ---
-        // Update data berdasarkan kombinasi dari form dan data asli proposal
         $event->update([
             'nama_event' => $request->nama_event,
             'deskripsi_event' => $request->deskripsi_event,
             'status' => $request->status,
             'panitia_pin' => $panitiaPin,
-            // Data di bawah ini diambil dari proposal asli, bukan dari request,
-            // untuk memastikan konsistensi dan keamanan.
             'pendaftaran_dibuka' => $event->pendaftaran_dibuka,
             'pendaftaran_ditutup' => $event->pendaftaran_ditutup,
             'tanggal_mulai_acara' => $event->tanggal_mulai_acara,
@@ -95,7 +114,6 @@ class AdminController extends Controller
             'biaya_pendaftaran_umkm' => $event->biaya_pendaftaran_umkm,
             'kuota_umkm' => $event->kuota_umkm,
         ]);
-        // --- ▲▲▲ AKHIR DARI LOGIKA UPDATE ---
 
         EventPublished::dispatch($event);
 
@@ -123,7 +141,6 @@ class AdminController extends Controller
         return back()->with('success', 'Event berhasil diupdate!');
     }
 
-    // ... (sisa controller tidak berubah) ...
     public function destroyEvent(Event $event)
     {
         if ($event->poster_event) {
@@ -179,7 +196,7 @@ class AdminController extends Controller
     public function verifyUmkm(UmkmProfile $umkm)
     {
         $umkm->update(['status' => 'verified', 'rejection_reason' => null]);
-        $umkm->refresh(); // Ambil data terbaru
+        $umkm->refresh();
         ProfileStatusUpdated::dispatch($umkm);
         return back()->with('success', 'UMKM berhasil diverifikasi!');
     }
@@ -193,7 +210,7 @@ class AdminController extends Controller
             'rejection_reason' => $request->rejection_reason,
         ]);
 
-        $umkm->refresh(); // <-- TAMBAHKAN INI
+        $umkm->refresh();
         ProfileStatusUpdated::dispatch($umkm);
 
         return back()->with('success', 'UMKM ditolak.');
@@ -220,7 +237,7 @@ class AdminController extends Controller
     public function verifyPenyelenggara(PenyelenggaraProfile $penyelenggara)
     {
         $penyelenggara->update(['status' => 'verified', 'rejection_reason' => null]);
-        $penyelenggara->refresh(); // Ambil data terbaru
+        $penyelenggara->refresh();
         ProfileStatusUpdated::dispatch($penyelenggara);
         return back()->with('success', 'Profil Penyelenggara berhasil diverifikasi!');
     }
@@ -234,7 +251,7 @@ class AdminController extends Controller
             'rejection_reason' => $request->rejection_reason,
         ]);
 
-        $penyelenggara->refresh(); // <-- TAMBAHKAN INI
+        $penyelenggara->refresh();
         ProfileStatusUpdated::dispatch($penyelenggara);
 
         return back()->with('success', 'Profil Penyelenggara ditolak.');
@@ -278,7 +295,7 @@ class AdminController extends Controller
             'rejection_reason' => null,
         ]);
 
-        $event->refresh(); // Ambil data terbaru
+        $event->refresh();
         ProposalStatusUpdated::dispatch($event);
 
         return redirect()->route('admin.proposals.list')->with('success', 'Proposal event telah disetujui dan siap untuk diterbitkan.');

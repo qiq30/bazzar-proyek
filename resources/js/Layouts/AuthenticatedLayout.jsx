@@ -6,17 +6,13 @@ import NavLink from "@/Components/NavLink";
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
 import NotificationDropdown from "@/Components/NotificationDropdown";
 import { Link, usePage, router } from "@inertiajs/react";
-import React, { useState, useEffect } from "react"; // Tambahkan React di sini
+import React, { useState, useEffect } from "react";
 import { Toaster, toast } from "react-hot-toast";
 
 // --- Komponen Banner Impersonasi ---
 const ImpersonateBanner = () => {
     const { impersonating } = usePage().props;
-
-    if (!impersonating) {
-        return null;
-    }
-
+    if (!impersonating) return null;
     return (
         <div className="w-full bg-yellow-400 text-center py-2 text-sm font-semibold text-yellow-900">
             Anda sedang masuk sebagai pengguna lain.{" "}
@@ -33,11 +29,9 @@ const ImpersonateBanner = () => {
 // --- Komponen Alert Permintaan Impersonasi ---
 const ImpersonationRequestAlert = ({ user }) => {
     const { pendingImpersonationRequest } = usePage().props;
-
     if (!pendingImpersonationRequest || user.is_super_admin || user.is_admin) {
         return null;
     }
-
     return (
         <div className="w-full bg-orange-100 border-b-2 border-orange-500">
             <div className="max-w-7xl mx-auto py-2 px-4 sm:px-6 lg:px-8 text-center text-sm font-semibold text-orange-800">
@@ -60,19 +54,12 @@ export default function AuthenticatedLayout({ header, children }) {
         useState(false);
 
     useEffect(() => {
-        // Tampilkan flash messages dari sesi
-        if (flash?.success) {
-            toast.success(flash.success);
-        }
-        if (flash?.error) {
-            toast.error(flash.error);
-        }
+        if (flash?.success) toast.success(flash.success);
+        if (flash?.error) toast.error(flash.error);
 
-        // Setup listener HANYA jika user login
         if (user) {
             const privateChannel = window.Echo.private(`user.${user.id}`);
 
-            // Listener 1: Untuk notifikasi lonceng (dari database)
             privateChannel.listen("NotificationReceived", (e) => {
                 toast.success(
                     (t) => (
@@ -93,9 +80,8 @@ export default function AuthenticatedLayout({ header, children }) {
                     { duration: 10000 }
                 );
 
-                // Selalu refresh data 'auth' untuk update lonceng
                 router.reload({
-                    only: ["auth", "pendingImpersonationRequest"], // <-- Tambahkan ini
+                    only: ["auth", "pendingImpersonationRequest"],
                     preserveState: true,
                     preserveScroll: true,
                 });
@@ -103,7 +89,6 @@ export default function AuthenticatedLayout({ header, children }) {
                 const notificationType = e.notification.type;
                 const currentRoute = route().current();
 
-                // Refresh data halaman jika notifikasi relevan
                 if (notificationType.includes("ProfileStatusUpdated")) {
                     if (currentRoute === "dashboard") {
                         router.reload({
@@ -121,9 +106,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 }
             });
 
-            // Listener 2: Untuk update UI langsung (tanpa notifikasi lonceng)
             if (!user.is_admin && !user.is_penyelenggara) {
-                // Hanya untuk UMKM
                 privateChannel.listen("UmkmQrisUpdated", () => {
                     toast.success("Status QRIS berhasil diperbarui!");
                     if (route().current("dashboard")) {
@@ -136,7 +119,6 @@ export default function AuthenticatedLayout({ header, children }) {
                 });
             }
 
-            // Cleanup: Hentikan semua listener saat komponen unmount
             return () => {
                 privateChannel.stopListening("NotificationReceived");
                 if (!user.is_admin && !user.is_penyelenggara) {
@@ -167,13 +149,19 @@ export default function AuthenticatedLayout({ header, children }) {
             <ImpersonationRequestAlert user={user} />
             <Toaster position="top-right" reverseOrder={false} />
 
-            <nav className="border-b border-gray-100 bg-white">
+            {/* Navigasi tetap di atas (sticky) */}
+            <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between">
                         <div className="flex">
                             <div className="flex shrink-0 items-center">
                                 <Link href="/">
-                                    <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
+                                    {/* Menggunakan tag img untuk logo */}
+                                    <img
+                                        src="/images/Banjarmasin-A-Thousand-River-City-Logo.png"
+                                        alt="Logo Banjarmasin"
+                                        className="block h-9 w-auto"
+                                    />
                                 </Link>
                             </div>
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
@@ -188,7 +176,6 @@ export default function AuthenticatedLayout({ header, children }) {
 
                         <div className="hidden sm:ms-6 sm:flex sm:items-center">
                             <NotificationDropdown />
-
                             <div className="relative ms-3">
                                 <Dropdown>
                                     <Dropdown.Trigger>
@@ -313,8 +300,11 @@ export default function AuthenticatedLayout({ header, children }) {
                 </div>
             </nav>
 
+            {/* Header tidak sticky, akan discroll bersama konten */}
             {header && (
                 <header className="bg-white shadow">
+                    {" "}
+                    {/* Menghapus kelas 'sticky' dan 'z-40' dari sini */}
                     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                         {header}
                     </div>

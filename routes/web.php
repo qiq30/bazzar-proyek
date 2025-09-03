@@ -17,7 +17,7 @@ use App\Http\Controllers\Auth\SuperAdminLoginController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\SuperAdmin\ImpersonateController;
 use App\Http\Controllers\ImpersonationApprovalController;
-
+use App\Http\Controllers\ReportController; // <-- TAMBAHKAN INI
 
 // RUTE WIZARD REGISTRASI DITEMPATKAN DI SINI
 Route::middleware('guest')->group(function () {
@@ -135,6 +135,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/penyelenggara/{penyelenggara}/verify', [AdminController::class, 'verifyPenyelenggara'])->name('penyelenggara.verify');
     Route::post('/penyelenggara/{penyelenggara}/reject', [AdminController::class, 'rejectPenyelenggara'])->name('penyelenggara.reject');
     Route::delete('/proposals/{id}/force-delete', [AdminController::class, 'permanentlyDeleteProposal'])->name('proposals.forceDelete');
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index'); // <-- TAMBAHKAN INI
 });
 
 // Penyelenggara Routes

@@ -2,16 +2,19 @@
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link } from "@inertiajs/react";
+import { useSpring, animated } from "@react-spring/web";
+import PieChart from "@/Components/PieChart"; // <-- IMPORT PIE CHART
+import BarChart from "@/Components/BarChart"; // <-- IMPORT BAR CHART
 
-// --- Komponen Ikon SVG untuk Dashboard ---
-const EventIcon = (props) => (
+// --- Komponen Ikon SVG (tidak berubah) ---
+const EventIcon = (p) => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
         strokeWidth={1.5}
         stroke="currentColor"
-        {...props}
+        {...p}
     >
         <path
             strokeLinecap="round"
@@ -20,14 +23,14 @@ const EventIcon = (props) => (
         />
     </svg>
 );
-const UmkmIcon = (props) => (
+const UmkmIcon = (p) => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
         strokeWidth={1.5}
         stroke="currentColor"
-        {...props}
+        {...p}
     >
         <path
             strokeLinecap="round"
@@ -36,14 +39,14 @@ const UmkmIcon = (props) => (
         />
     </svg>
 );
-const PenyelenggaraIcon = (props) => (
+const PenyelenggaraIcon = (p) => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
         strokeWidth={1.5}
         stroke="currentColor"
-        {...props}
+        {...p}
     >
         <path
             strokeLinecap="round"
@@ -52,35 +55,14 @@ const PenyelenggaraIcon = (props) => (
         />
     </svg>
 );
-const ActiveEventIcon = (props) => (
+const VerificationIcon = (p) => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
         strokeWidth={1.5}
         stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.362-6.867 8.209 8.209 0 013 2.48Z"
-        />
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925 3.546 5.974 5.974 0 01-2.133-1.001A3.75 3.75 0 0012 18z"
-        />
-    </svg>
-);
-const VerificationIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
+        {...p}
     >
         <path
             strokeLinecap="round"
@@ -89,14 +71,14 @@ const VerificationIcon = (props) => (
         />
     </svg>
 );
-const UserVerificationIcon = (props) => (
+const UserVerificationIcon = (p) => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
         strokeWidth={1.5}
         stroke="currentColor"
-        {...props}
+        {...p}
     >
         <path
             strokeLinecap="round"
@@ -105,14 +87,14 @@ const UserVerificationIcon = (props) => (
         />
     </svg>
 );
-const ProposalIcon = (props) => (
+const ProposalIcon = (p) => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
         strokeWidth={1.5}
         stroke="currentColor"
-        {...props}
+        {...p}
     >
         <path
             strokeLinecap="round"
@@ -121,14 +103,14 @@ const ProposalIcon = (props) => (
         />
     </svg>
 );
-const HomeIcon = (props) => (
+const HomeIcon = (p) => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
         strokeWidth={1.5}
         stroke="currentColor"
-        {...props}
+        {...p}
     >
         <path
             strokeLinecap="round"
@@ -137,14 +119,14 @@ const HomeIcon = (props) => (
         />
     </svg>
 );
-const ReportIcon = (props) => (
+const ReportIcon = (p) => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
         strokeWidth={1.5}
         stroke="currentColor"
-        {...props}
+        {...p}
     >
         <path
             strokeLinecap="round"
@@ -154,7 +136,40 @@ const ReportIcon = (props) => (
     </svg>
 );
 
-export default function AdminDashboard({ auth, stats }) {
+// --- Komponen Kartu Statistik (Sudah diperbaiki sebelumnya) ---
+const AnimatedStatCard = ({ title, value, icon, color, subValue, subText }) => {
+    const { number } = useSpring({
+        from: { number: 0 },
+        number: value,
+        delay: 200,
+        config: { mass: 1, tension: 20, friction: 10 },
+    });
+
+    return (
+        <div
+            className={`bg-white p-6 rounded-lg shadow-sm border-l-4 ${color.border}`}
+        >
+            <div className="flex items-center justify-between">
+                <div>
+                    <p className="text-sm font-medium text-gray-600">{title}</p>
+                    <animated.p className="text-4xl font-bold text-gray-900">
+                        {number.to((n) => Math.round(n))}
+                    </animated.p>
+                    {(subValue !== undefined || subText) && (
+                        <p className="text-xs text-gray-500 mt-1">
+                            {subValue !== undefined ? `${subValue} ` : ""}
+                            {subText}
+                        </p>
+                    )}
+                </div>
+                <div className={`p-3 rounded-full ${color.bg}`}>{icon}</div>
+            </div>
+        </div>
+    );
+};
+
+export default function AdminDashboard({ auth, stats, chartData }) {
+    // <-- Terima prop chartData
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -168,7 +183,7 @@ export default function AdminDashboard({ auth, stats }) {
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    {/* Welcome Section */}
+                    {/* Welcome Banner */}
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                         <div className="p-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
                             <h3 className="text-2xl font-bold mb-2">
@@ -181,79 +196,94 @@ export default function AdminDashboard({ auth, stats }) {
                         </div>
                     </div>
 
-                    {/* Stats Cards */}
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        <div className="bg-white p-6 rounded-lg shadow-sm">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">
-                                        Total Event
-                                    </p>
-                                    <p className="text-3xl font-bold text-gray-900">
-                                        {stats.totalEvents}
-                                    </p>
-                                </div>
-                                <div className="text-blue-500 bg-blue-100 p-3 rounded-full">
-                                    <EventIcon className="h-8 w-8" />
-                                </div>
-                            </div>
+                    {/* --- Bagian Statistik (tidak berubah) --- */}
+                    <div className="mb-8">
+                        <h3 className="text-lg font-semibold text-gray-700 mb-4">
+                            Statistik Event & Proposal
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <AnimatedStatCard
+                                title="Total Event Diterbitkan"
+                                value={stats.totalEvents}
+                                icon={
+                                    <EventIcon className="h-8 w-8 text-blue-600" />
+                                }
+                                color={{
+                                    border: "border-blue-500",
+                                    bg: "bg-blue-100",
+                                }}
+                                subValue={stats.activeEvents}
+                                subText="sedang aktif"
+                            />
+                            <AnimatedStatCard
+                                title="Proposal Masuk"
+                                value={stats.pendingProposals}
+                                icon={
+                                    <ProposalIcon className="h-8 w-8 text-yellow-600" />
+                                }
+                                color={{
+                                    border: "border-yellow-500",
+                                    bg: "bg-yellow-100",
+                                }}
+                                subText="menunggu persetujuan"
+                            />
                         </div>
-
-                        <div className="bg-white p-6 rounded-lg shadow-sm">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">
-                                        Total UMKM
-                                    </p>
-                                    <p className="text-3xl font-bold text-gray-900">
-                                        {stats.totalUmkm}
-                                    </p>
-                                </div>
-                                <div className="text-green-500 bg-green-100 p-3 rounded-full">
-                                    <UmkmIcon className="h-8 w-8" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-white p-6 rounded-lg shadow-sm">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">
-                                        Total Penyelenggara
-                                    </p>
-                                    <p className="text-3xl font-bold text-gray-900">
-                                        {stats.totalPenyelenggara}
-                                    </p>
-                                </div>
-                                <div className="text-purple-500 bg-purple-100 p-3 rounded-full">
-                                    <PenyelenggaraIcon className="h-8 w-8" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-white p-6 rounded-lg shadow-sm">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">
-                                        Event Aktif
-                                    </p>
-                                    <p className="text-3xl font-bold text-orange-600">
-                                        {stats.activeEvents}
-                                    </p>
-                                </div>
-                                <div className="text-orange-500 bg-orange-100 p-3 rounded-full">
-                                    <ActiveEventIcon className="h-8 w-8" />
-                                </div>
-                            </div>
+                    </div>
+                    <div className="mb-8">
+                        <h3 className="text-lg font-semibold text-gray-700 mb-4">
+                            Statistik Pengguna
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <AnimatedStatCard
+                                title="Total UMKM"
+                                value={stats.totalUmkm}
+                                icon={
+                                    <UmkmIcon className="h-8 w-8 text-green-600" />
+                                }
+                                color={{
+                                    border: "border-green-500",
+                                    bg: "bg-green-100",
+                                }}
+                                subValue={stats.verifiedUmkm}
+                                subText="terverifikasi"
+                            />
+                            <AnimatedStatCard
+                                title="Total Penyelenggara"
+                                value={stats.totalPenyelenggara}
+                                icon={
+                                    <PenyelenggaraIcon className="h-8 w-8 text-purple-600" />
+                                }
+                                color={{
+                                    border: "border-purple-500",
+                                    bg: "bg-purple-100",
+                                }}
+                                subValue={stats.verifiedPenyelenggara}
+                                subText="terverifikasi"
+                            />
+                            <AnimatedStatCard
+                                title="Profil Menunggu Verifikasi"
+                                value={
+                                    stats.pendingUmkm +
+                                    stats.pendingPenyelenggara
+                                }
+                                icon={
+                                    <UserVerificationIcon className="h-8 w-8 text-orange-600" />
+                                }
+                                color={{
+                                    border: "border-orange-500",
+                                    bg: "bg-orange-100",
+                                }}
+                                subText={`${stats.pendingUmkm} UMKM, ${stats.pendingPenyelenggara} Penyelenggara`}
+                            />
                         </div>
                     </div>
 
-                    {/* Quick Actions */}
-                    <div className="mt-8 bg-white rounded-lg shadow-sm p-6">
+                    {/* --- Quick Actions (tidak berubah) --- */}
+                    <div className="bg-white rounded-lg shadow-sm p-6">
                         <h4 className="text-lg font-semibold text-gray-900 mb-4">
                             Aksi Cepat
                         </h4>
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                             <Link
                                 href={route("admin.events")}
                                 className="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition group"
@@ -270,7 +300,6 @@ export default function AdminDashboard({ auth, stats }) {
                                     </p>
                                 </div>
                             </Link>
-
                             <Link
                                 href={route("admin.umkm.verification")}
                                 className="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-lg hover:border-orange-400 hover:bg-orange-50 transition group"
@@ -287,7 +316,6 @@ export default function AdminDashboard({ auth, stats }) {
                                     </p>
                                 </div>
                             </Link>
-
                             <Link
                                 href={route("admin.penyelenggara.verification")}
                                 className="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-lg hover:border-purple-400 hover:bg-purple-50 transition group"
@@ -304,7 +332,6 @@ export default function AdminDashboard({ auth, stats }) {
                                     </p>
                                 </div>
                             </Link>
-
                             <Link
                                 href={route("admin.proposals.list")}
                                 className="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-lg hover:border-indigo-400 hover:bg-indigo-50 transition group"
@@ -321,7 +348,22 @@ export default function AdminDashboard({ auth, stats }) {
                                     </p>
                                 </div>
                             </Link>
-
+                            <Link
+                                href={route("admin.reports.index")}
+                                className="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-lg hover:border-teal-400 hover:bg-teal-50 transition group"
+                            >
+                                <div className="text-teal-600 mb-2 transition-transform group-hover:scale-110">
+                                    <ReportIcon className="h-10 w-10" />
+                                </div>
+                                <div>
+                                    <p className="font-medium text-center text-gray-900">
+                                        Laporan
+                                    </p>
+                                    <p className="text-sm text-center text-gray-600">
+                                        Lihat statistik detail
+                                    </p>
+                                </div>
+                            </Link>
                             <Link
                                 href="/"
                                 target="_blank"
@@ -339,22 +381,39 @@ export default function AdminDashboard({ auth, stats }) {
                                     </p>
                                 </div>
                             </Link>
+                        </div>
+                    </div>
 
-                            <div className="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-lg bg-gray-50 text-gray-400 cursor-not-allowed">
-                                <div className="text-gray-400 mb-2">
-                                    <ReportIcon className="h-10 w-10" />
+                    {/* --- ▼▼▼ BAGIAN GRAFIK BARU ▼▼▼ --- */}
+                    <div className="mt-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                            {/* Grafik Komposisi Pengguna */}
+                            <div className="lg:col-span-2 bg-white rounded-lg shadow-sm p-6">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Komposisi Pengguna
+                                </h4>
+                                <div className="h-72">
+                                    <PieChart
+                                        data={chartData.userComposition}
+                                    />
                                 </div>
-                                <div>
-                                    <p className="font-medium text-center">
-                                        Laporan
-                                    </p>
-                                    <p className="text-sm text-center">
-                                        Segera hadir
-                                    </p>
+                            </div>
+
+                            {/* Grafik Event Terpopuler */}
+                            <div className="lg:col-span-3 bg-white rounded-lg shadow-sm p-6">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                    5 Event Terpopuler (Aktif & Akan Datang)
+                                </h4>
+                                <div className="h-72">
+                                    <BarChart
+                                        data={chartData.popularEvents}
+                                        label="Jumlah Pendaftar"
+                                    />
                                 </div>
                             </div>
                         </div>
                     </div>
+                    {/* --- ▲▲▲ AKHIR BAGIAN GRAFIK BARU --- */}
                 </div>
             </div>
         </AuthenticatedLayout>

@@ -215,7 +215,7 @@ export default function HomePage({ events, filters }) {
                                     className="flex items-center space-x-4"
                                 >
                                     <img
-                                        src="/images/logo-banjarmasin.png"
+                                        src="/images/Banjarmasin-A-Thousand-River-City-Logo.png"
                                         alt="Logo Pemko Banjarmasin"
                                         className="h-12 w-auto"
                                     />
