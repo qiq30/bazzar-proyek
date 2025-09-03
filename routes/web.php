@@ -16,6 +16,7 @@ use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\SuperAdminLoginController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\SuperAdmin\ImpersonateController;
+use App\Http\Controllers\ImpersonationApprovalController;
 
 
 // RUTE WIZARD REGISTRASI DITEMPATKAN DI SINI
@@ -42,7 +43,11 @@ Route::middleware(['auth', 'super_admin'])->prefix('superadmin')->name('superadm
     Route::post('/admins', [SuperAdminController::class, 'storeAdmin'])->name('admins.store');
     Route::delete('/admins/{admin}', [SuperAdminController::class, 'destroyAdmin'])->name('admins.destroy');
 
-    Route::get('/impersonate/{user}', [ImpersonateController::class, 'start'])->name('impersonate.start');
+    // Rute untuk MEMINTA akses impersonate
+    Route::post('/impersonate/request/{user}', [ImpersonateController::class, 'request'])->name('impersonate.request');
+    // Rute untuk MEMULAI impersonate SETELAH disetujui
+    Route::get('/impersonate/start/{impersonationRequest}', [ImpersonateController::class, 'start'])->name('impersonate.start');
+
     Route::get('/users', [SuperAdminController::class, 'manageUsers'])->name('users.manage');
     Route::get('/users/{user}/edit', [SuperAdminController::class, 'editUserProfile'])->name('users.edit');
     Route::put('/users/{user}', [SuperAdminController::class, 'updateUserProfile'])->name('users.update');
@@ -94,8 +99,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
-
     Route::delete('/notifications', [NotificationController::class, 'clear'])->name('notifications.clear');
+
+    Route::get('/impersonate-requests', [ImpersonationApprovalController::class, 'index'])->name('impersonate.requests.index');
+    Route::post('/impersonate-requests/{impersonationRequest}/respond', [ImpersonationApprovalController::class, 'respond'])->name('impersonate.requests.respond');
 });
 
 // Admin Routes

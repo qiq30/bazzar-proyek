@@ -5,6 +5,8 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use App\Models\ImpersonationRequest;
+
 
 class HandleInertiaRequests extends Middleware
 {
@@ -30,18 +32,25 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        return [
-            ...parent::share($request),
+        return array_merge(parent::share($request), [
             'auth' => [
                 'user' => $request->user(),
-                'notifications' => fn() => $request->user() ? $request->user()->notifications()->latest()->take(10)->get() : null,
-                'unreadNotifications' => fn() => $request->user() ? $request->user()->unreadNotifications()->count() : 0,
+                // Ambil semua notifikasi dari relasi di model User
+                'notifications' => $request->user() ? $request->user()->notifications : [],
+                // Ambil jumlah notifikasi yang belum dibaca
+                'unreadNotifications' => $request->user() ? $request->user()->unreadNotifications()->count() : 0,
             ],
             'flash' => [
-                'success' => fn() => $request->session()->pull('success'),
-                'error' => fn() => $request->session()->pull('error'),
+                'success' => fn() => $request->session()->get('success'),
+                'error' => fn() => $request->session()->get('error'),
             ],
             'impersonating' => fn() => $request->session()->has('impersonate_by'),
-        ];
+            'pendingImpersonationRequest' => fn() => $request->user()
+                ? ImpersonationRequest::where('target_user_id', $request->user()->id)
+                ->where('status', 'pending')
+                ->where('expires_at', '>', now())
+                ->exists()
+                : null,
+        ]);
     }
 }

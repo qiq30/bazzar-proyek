@@ -10,7 +10,7 @@ use Inertia\Inertia;
 use App\Models\UmkmProfile;
 use App\Models\PenyelenggaraProfile;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Storage; // <-- Tambahkan ini
+use Illuminate\Support\Facades\Storage;
 
 class SuperAdminController extends Controller
 {

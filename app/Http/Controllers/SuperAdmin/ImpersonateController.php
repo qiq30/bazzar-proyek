@@ -1,34 +1,80 @@
 <?php
 
-namespace App\http\Controllers\SuperAdmin;
+namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ImpersonationRequest;
+use App\Events\ImpersonationRequested;
+use Carbon\Carbon;
 
 class ImpersonateController extends Controller
 {
     /**
-     * Mulai proses impersonasi user lain.
+     * Meminta izin untuk impersonasi user lain.
      */
-    public function start(User $user)
+    public function request(User $user) // <-- UBAH NAMA METHOD DAN PARAMETER
     {
-        // Pastikan hanya super admin yang bisa melakukan ini
-        if (!session()->has('impersonate_by')) {
-            session(['impersonate_by' => Auth::id()]);
+        $superAdmin = Auth::user();
+
+        // Cek apakah ada permintaan yang masih pending
+        $existingRequest = ImpersonationRequest::where('super_admin_id', $superAdmin->id)
+            ->where('target_user_id', $user->id)
+            ->where('status', 'pending')
+            ->where('expires_at', '>', now())
+            ->first();
+
+        if ($existingRequest) {
+            return back()->with('error', 'Anda sudah memiliki permintaan akses yang pending untuk pengguna ini.');
         }
 
-        Auth::login($user);
+        // Buat permintaan baru di database
+        $impersonationRequest = ImpersonationRequest::create([
+            'super_admin_id' => $superAdmin->id,
+            'target_user_id' => $user->id,
+            'status' => 'pending',
+            'expires_at' => Carbon::now()->addMinutes(15), // Permintaan berlaku 15 menit
+        ]);
+
+        // Load relasi untuk dikirim via event
+        $impersonationRequest->load('superAdmin', 'targetUser');
+
+        // Picu event untuk notifikasi ke target user
+        ImpersonationRequested::dispatch($impersonationRequest);
+
+        return back()->with('success', 'Permintaan akses telah dikirim ke ' . $user->name);
+    }
+
+    /**
+     * Mulai proses impersonasi SETELAH disetujui.
+     */
+    public function start(ImpersonationRequest $impersonationRequest)
+    {
+        // Validasi: Pastikan yang mengakses adalah super admin yang meminta
+        // dan statusnya sudah 'approved'
+        if ($impersonationRequest->super_admin_id !== Auth::id() || $impersonationRequest->status !== 'approved') {
+            abort(403, 'Akses Ditolak.');
+        }
+
+        // Hapus permintaan setelah berhasil digunakan
+        $targetUser = $impersonationRequest->targetUser;
+        $impersonationRequest->delete();
+
+        // Lanjutkan proses login
+        session(['impersonate_by' => Auth::id()]);
+        Auth::login($targetUser);
 
         $home = match (true) {
-            $user->is_admin => route('admin.dashboard'),
-            $user->is_penyelenggara => route('penyelenggara.dashboard'),
-            default => route('dashboard'), // Default untuk UMKM
+            $targetUser->is_admin => route('admin.dashboard'),
+            $targetUser->is_penyelenggara => route('penyelenggara.dashboard'),
+            default => route('dashboard'),
         };
 
-        return redirect($home)->with('success', 'Anda sekarang masuk sebagai ' . $user->name);
+        return redirect($home)->with('success', 'Anda sekarang masuk sebagai ' . $targetUser->name);
     }
+
 
     /**
      * Hentikan proses impersonasi dan kembali ke akun asli.

@@ -6,10 +6,10 @@ import NavLink from "@/Components/NavLink";
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
 import NotificationDropdown from "@/Components/NotificationDropdown";
 import { Link, usePage, router } from "@inertiajs/react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react"; // Tambahkan React di sini
 import { Toaster, toast } from "react-hot-toast";
 
-// --- ▼▼▼ TAMBAHKAN KOMPONEN BANNER INI ▼▼▼ ---
+// --- Komponen Banner Impersonasi ---
 const ImpersonateBanner = () => {
     const { impersonating } = usePage().props;
 
@@ -26,6 +26,29 @@ const ImpersonateBanner = () => {
             >
                 Kembali ke akun Super Admin.
             </Link>
+        </div>
+    );
+};
+
+// --- Komponen Alert Permintaan Impersonasi ---
+const ImpersonationRequestAlert = ({ user }) => {
+    const { pendingImpersonationRequest } = usePage().props;
+
+    if (!pendingImpersonationRequest || user.is_super_admin || user.is_admin) {
+        return null;
+    }
+
+    return (
+        <div className="w-full bg-orange-100 border-b-2 border-orange-500">
+            <div className="max-w-7xl mx-auto py-2 px-4 sm:px-6 lg:px-8 text-center text-sm font-semibold text-orange-800">
+                ⚠️ Super Admin meminta izin untuk mengakses akun Anda.{" "}
+                <Link
+                    href={route("impersonate.requests.index")}
+                    className="underline hover:text-orange-600 font-bold"
+                >
+                    Lihat Permintaan & Respons
+                </Link>
+            </div>
         </div>
     );
 };
@@ -47,14 +70,10 @@ export default function AuthenticatedLayout({ header, children }) {
 
         // Setup listener HANYA jika user login
         if (user) {
-            console.log(
-                `(Layout) Setting up ALL listeners for user.${user.id}`
-            );
             const privateChannel = window.Echo.private(`user.${user.id}`);
 
             // Listener 1: Untuk notifikasi lonceng (dari database)
             privateChannel.listen("NotificationReceived", (e) => {
-                console.log("(Layout) NotificationReceived event received:", e);
                 toast.success(
                     (t) => (
                         <div className="flex flex-col items-start">
@@ -76,7 +95,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
                 // Selalu refresh data 'auth' untuk update lonceng
                 router.reload({
-                    only: ["auth"],
+                    only: ["auth", "pendingImpersonationRequest"], // <-- Tambahkan ini
                     preserveState: true,
                     preserveScroll: true,
                 });
@@ -106,7 +125,6 @@ export default function AuthenticatedLayout({ header, children }) {
             if (!user.is_admin && !user.is_penyelenggara) {
                 // Hanya untuk UMKM
                 privateChannel.listen("UmkmQrisUpdated", () => {
-                    console.log("(Layout) UmkmQrisUpdated event received.");
                     toast.success("Status QRIS berhasil diperbarui!");
                     if (route().current("dashboard")) {
                         router.reload({
@@ -120,9 +138,6 @@ export default function AuthenticatedLayout({ header, children }) {
 
             // Cleanup: Hentikan semua listener saat komponen unmount
             return () => {
-                console.log(
-                    `(Layout) Stopping ALL listeners for user.${user.id}`
-                );
                 privateChannel.stopListening("NotificationReceived");
                 if (!user.is_admin && !user.is_penyelenggara) {
                     privateChannel.stopListening("UmkmQrisUpdated");
@@ -131,7 +146,6 @@ export default function AuthenticatedLayout({ header, children }) {
         }
     }, [user, flash]);
 
-    // --- ▼▼▼ PERBAIKAN LOGIKA RUTE DI SINI ▼▼▼ ---
     const getDashboardRoute = () => {
         if (user.is_super_admin) return route("superadmin.dashboard");
         if (user.is_admin) return route("admin.dashboard");
@@ -146,12 +160,11 @@ export default function AuthenticatedLayout({ header, children }) {
             return route().current("penyelenggara.dashboard");
         return route().current("dashboard");
     };
-    // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
 
     return (
         <div className="min-h-screen bg-gray-100">
-            {/* --- ▼▼▼ TAMBAHKAN BANNER DI SINI ▼▼▼ --- */}
             <ImpersonateBanner />
+            <ImpersonationRequestAlert user={user} />
             <Toaster position="top-right" reverseOrder={false} />
 
             <nav className="border-b border-gray-100 bg-white">
@@ -174,8 +187,7 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
 
                         <div className="hidden sm:ms-6 sm:flex sm:items-center">
-                            {/* Super Admin tidak butuh notifikasi umum */}
-                            {!user.is_super_admin && <NotificationDropdown />}
+                            <NotificationDropdown />
 
                             <div className="relative ms-3">
                                 <Dropdown>

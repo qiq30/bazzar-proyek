@@ -1,14 +1,24 @@
+// resources/js/Pages/SuperAdmin/UserManagement.jsx
+
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, Link } from "@inertiajs/react";
+import { Head, Link, router } from "@inertiajs/react"; // Import router
 
 export default function UserManagement({ auth, users }) {
-    const handleImpersonate = (userId) => {
+    // UBAH FUNGSI INI
+    const handleRequestImpersonate = (userId, userName) => {
         if (
             confirm(
-                "Apakah Anda yakin ingin masuk sebagai pengguna ini? Anda akan logout dari sesi Super Admin."
+                `Kirim permintaan untuk masuk sebagai ${userName}? Pengguna akan menerima notifikasi.`
             )
         ) {
-            // Inertia Link handles the GET request, no separate handler needed here.
+            // Gunakan router.post untuk mengirim request ke rute baru
+            router.post(
+                route("superadmin.impersonate.request", userId),
+                {},
+                {
+                    preserveScroll: true,
+                }
+            );
         }
     };
 
@@ -49,6 +59,7 @@ export default function UserManagement({ auth, users }) {
                             </h3>
                             <div className="overflow-x-auto">
                                 <table className="min-w-full">
+                                    {/* ... thead tidak berubah ... */}
                                     <thead className="bg-gray-50">
                                         <tr>
                                             <th className="py-3 px-6 text-left">
@@ -78,20 +89,19 @@ export default function UserManagement({ auth, users }) {
                                                     {getRoleBadge(user.role)}
                                                 </td>
                                                 <td className="py-4 px-6 space-x-4">
-                                                    <Link
-                                                        href={route(
-                                                            "superadmin.impersonate.start",
-                                                            user.id
-                                                        )}
+                                                    {/* UBAH LINK MENJADI BUTTON */}
+                                                    <button
                                                         onClick={() =>
-                                                            handleImpersonate(
-                                                                user.id
+                                                            handleRequestImpersonate(
+                                                                user.id,
+                                                                user.name
                                                             )
                                                         }
                                                         className="text-indigo-600 hover:text-indigo-900 text-sm font-semibold"
                                                     >
                                                         Masuk sebagai
-                                                    </Link>
+                                                    </button>
+                                                    {/* ... sisa link tidak berubah ... */}
                                                     {(user.role === "UMKM" ||
                                                         user.role ===
                                                             "Penyelenggara") && (
