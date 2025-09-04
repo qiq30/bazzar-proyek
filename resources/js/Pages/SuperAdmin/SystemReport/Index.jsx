@@ -2,6 +2,7 @@
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
+import { useSpring, animated } from "@react-spring/web"; // Pastikan diimpor
 import PieChart from "@/Components/PieChart";
 import BarChart from "@/Components/BarChart";
 import LineChart from "@/Components/LineChart";
@@ -14,10 +15,20 @@ import {
     FiFileText,
 } from "react-icons/fi";
 
-// --- Komponen Kartu Statistik ---
+// --- Komponen Kartu Statistik dengan Animasi Angka ---
 const StatCard = ({ title, value, icon, color }) => {
     const valueStr = String(value);
     const isCurrency = valueStr.startsWith("Rp");
+
+    // Ekstrak hanya angka dari string untuk dianimasikan
+    const numericValue = Number(valueStr.replace(/[^0-9.-]+/g, "")) || 0;
+
+    const { number } = useSpring({
+        from: { number: 0 },
+        number: numericValue,
+        delay: 200,
+        config: { mass: 1, tension: 20, friction: 14 },
+    });
 
     return (
         <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100 flex items-center space-x-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
@@ -28,7 +39,17 @@ const StatCard = ({ title, value, icon, color }) => {
             </div>
             <div>
                 <p className="text-sm font-medium text-gray-500">{title}</p>
-                <p className="text-2xl font-bold text-gray-900">{valueStr}</p>
+                {isCurrency ? (
+                    <p className="text-2xl font-bold text-gray-900">
+                        {valueStr}
+                    </p>
+                ) : (
+                    <animated.p className="text-2xl font-bold text-gray-900">
+                        {number.to((n) =>
+                            Math.floor(n).toLocaleString("id-ID")
+                        )}
+                    </animated.p>
+                )}
             </div>
         </div>
     );
@@ -159,8 +180,6 @@ export default function SystemReport({
                     >
                         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center">
                             <div className="lg:col-span-3 h-96">
-                                {" "}
-                                {/* <-- PERBAIKAN DI SINI */}
                                 <h4 className="text-lg font-semibold text-gray-800 mb-4">
                                     Pertumbuhan Pengguna Baru (6 Bulan)
                                 </h4>
@@ -170,8 +189,6 @@ export default function SystemReport({
                                 />
                             </div>
                             <div className="lg:col-span-2 h-96">
-                                {" "}
-                                {/* <-- PERBAIKAN DI SINI */}
                                 <h4 className="text-lg font-semibold text-gray-800 mb-4 text-center">
                                     Komposisi Peran
                                 </h4>
@@ -241,8 +258,6 @@ export default function SystemReport({
                                 Status Proposal Event
                             </h4>
                             <div className="h-96">
-                                {" "}
-                                {/* <-- PERBAIKAN DI SINI */}
                                 <PieChart data={proposalStatusData} />
                             </div>
                         </div>
