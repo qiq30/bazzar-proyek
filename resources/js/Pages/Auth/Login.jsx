@@ -30,14 +30,23 @@ export default function Login({ status, canResetPassword }) {
     return (
         <>
             <Head title="Log in" />
-            <div className="flex items-center justify-center min-h-screen bg-gray-100">
-                <div className="relative flex flex-col m-6 space-y-8 bg-white shadow-2xl rounded-2xl md:flex-row md:space-y-0">
-                    {/* Kolom Kanan (Form Login) */}
-                    <div className="flex flex-col justify-center p-8 md:p-14">
+            <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4 sm:p-6">
+                {/* PENYESUAIAN RESPONSIVE:
+                  - flex-col-reverse: Di layar kecil, gambar akan muncul di ATAS form.
+                  - md:flex-row: Di layar medium ke atas, layout kembali menjadi berdampingan.
+                  - overflow-hidden: Memastikan sudut rounded-2xl teraplikasi sempurna ke gambar dan form.
+                */}
+                <div className="relative flex flex-col-reverse w-full max-w-4xl bg-white shadow-2xl rounded-2xl md:flex-row overflow-hidden">
+                    {/* Kolom Kiri (Form Login) */}
+                    <div className="flex flex-col justify-center w-full md:w-1/2 p-8 md:p-14">
                         <motion.div
                             initial={{ opacity: 0, x: 50 }}
                             animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.6, ease: "easeOut" }}
+                            transition={{
+                                duration: 0.6,
+                                ease: "easeOut",
+                                delay: 0.4,
+                            }}
                         >
                             <div className="text-center">
                                 <h2 className="mb-3 text-4xl font-bold text-gray-800">
@@ -94,8 +103,8 @@ export default function Login({ status, canResetPassword }) {
                                     />
                                 </div>
 
-                                <div className="flex items-center justify-between mt-6">
-                                    <label className="flex items-center">
+                                <div className="flex flex-col items-center justify-between mt-6 sm:flex-row">
+                                    <label className="flex items-center mb-4 sm:mb-0">
                                         <Checkbox
                                             name="remember"
                                             checked={data.remember}
@@ -123,8 +132,7 @@ export default function Login({ status, canResetPassword }) {
                                 </div>
 
                                 <PrimaryButton
-                                    className="w-full py-3 mt-8 font-bold bg-blue-600 hover:bg-blue-700 
-                    focus:bg-blue-700 active:bg-blue-800 focus:ring-blue-500"
+                                    className="flex items-center justify-center w-full py-3 mt-8 font-bold bg-blue-600 hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-800 focus:ring-blue-500"
                                     disabled={processing}
                                 >
                                     <AnimatePresence>
@@ -173,24 +181,30 @@ export default function Login({ status, canResetPassword }) {
                         </motion.div>
                     </div>
 
-                    {/* Kolom Kiri (Gambar) */}
-                    <motion.div
-                        initial={{ opacity: 0, x: -50 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.6, ease: "easeOut" }}
-                        className="relative hidden w-[400px] lg:block rounded-r-2xl"
-                    >
-                        <div
-                            className="object-cover w-full h-full rounded-r-2xl"
+                    {/* Kolom Kanan (Gambar) */}
+                    <div className="relative w-full h-64 md:w-1/2 md:h-auto">
+                        <motion.div
+                            className="w-full h-full bg-center bg-cover"
                             style={{
                                 backgroundImage: `url('/images/BAJARDIGG.png')`,
-                                backgroundSize: "cover",
-                                backgroundPosition: "center",
                             }}
-                        ></div>
-                        {/* Overlay untuk efek visual */}
-                        <div className="absolute inset-0 bg-white opacity-20 rounded-r-2xl"></div>
-                    </motion.div>
+                            initial={{ scale: 1.2, opacity: 0.5 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{
+                                duration: 1.2,
+                                ease: [0.43, 0.13, 0.23, 0.96],
+                            }}
+                        ></motion.div>
+                        <motion.div
+                            className="absolute inset-0 bg-white"
+                            initial={{ x: 0 }}
+                            animate={{ x: "100%" }}
+                            transition={{
+                                duration: 0.8,
+                                ease: [0.22, 1, 0.36, 1],
+                            }}
+                        ></motion.div>
+                    </div>
                 </div>
             </div>
         </>

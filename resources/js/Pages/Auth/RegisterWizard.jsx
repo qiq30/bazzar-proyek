@@ -1,95 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Head, useForm, Link } from "@inertiajs/react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+    FiUser,
+    FiMail,
+    FiLock,
+    FiUploadCloud,
+    FiCheck,
+    FiBriefcase,
+    FiAlertCircle,
+} from "react-icons/fi";
+
+// Asumsi komponen ini sudah ada dari proyek Laravel Breeze/Jetstream Anda
 import GuestLayout from "@/Layouts/GuestLayout";
 import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
 import InputLabel from "@/Components/InputLabel";
 import InputError from "@/Components/InputError";
 
-// --- Komponen Ikon SVG ---
-const UserCircleIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"
-        />
-    </svg>
-);
-const EnvelopeIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
-        />
-    </svg>
-);
-const LockIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
-        />
-    </svg>
-);
-const IdCardIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15A2.25 2.25 0 002.25 6.75v10.5A2.25 2.25 0 004.5 19.5z"
-        />
-    </svg>
-);
-const UploadIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
-        />
-    </svg>
-);
+// --- Komponen Bantuan ---
 const Spinner = () => (
     <svg
-        className="animate-spin -ml-1 mr-3 h-5 w-5"
+        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
@@ -110,52 +42,102 @@ const Spinner = () => (
     </svg>
 );
 
-// Komponen Input dengan Ikon
-const IconTextInput = ({ icon, ...props }) => (
+const IconTextInput = ({
+    icon,
+    className = "",
+    isInvalid = false,
+    ...props
+}) => (
     <div className="relative">
         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            {icon}
+            <div
+                className={`transition-colors duration-200 ${
+                    isInvalid ? "text-red-500" : "text-gray-400"
+                }`}
+            >
+                {icon}
+            </div>
         </div>
         <TextInput
             {...props}
-            className={`mt-1 block w-full pl-10 ${props.className || ""}`}
+            className={`mt-1 block w-full pl-10 transition-all duration-200 ${
+                isInvalid
+                    ? "border-red-500 focus:border-red-500 focus:ring-red-500 bg-red-50"
+                    : "focus:border-blue-500 focus:ring-blue-500"
+            } ${className}`}
         />
     </div>
 );
 
-// Komponen Upload File yang Diperbarui
 const FileUpload = ({
     label,
     required,
     preview,
     error,
-    isInvalid,
     onFileChange,
+    isInvalid = false,
     ...props
 }) => (
     <div>
-        <InputLabel value={`${label}${required ? " *" : ""}`} />
-        <div
-            className={`mt-2 relative border-2 border-dashed rounded-lg p-4 text-center h-32 flex flex-col items-center justify-center transition-colors ${
+        <InputLabel
+            value={`${label}${required ? " *" : ""}`}
+            className={isInvalid ? "text-red-600" : ""}
+        />
+        <motion.div
+            className={`group mt-2 relative border-2 border-dashed rounded-lg p-4 text-center h-40 flex flex-col items-center justify-center transition-all duration-300 ${
                 isInvalid
+                    ? "border-red-500 bg-red-50"
+                    : error
                     ? "border-red-500"
-                    : "border-gray-300 hover:border-blue-400"
+                    : "border-gray-300 hover:border-blue-500 hover:bg-blue-50"
             }`}
+            whileHover={{ scale: 1.01 }}
+            transition={{ type: "spring", stiffness: 300 }}
         >
-            {preview ? (
-                <img
-                    src={preview}
-                    alt="Preview"
-                    className="max-h-full w-auto object-contain rounded"
-                />
-            ) : (
-                <>
-                    <UploadIcon className="h-8 w-8 text-gray-400 mb-1" />
-                    <span className="text-sm text-gray-500">
-                        Klik untuk mengunggah
-                    </span>
-                </>
-            )}
+            <AnimatePresence mode="wait">
+                {preview ? (
+                    <motion.img
+                        key="preview"
+                        src={preview}
+                        alt="Preview"
+                        className="max-h-full w-auto object-contain rounded"
+                        initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
+                        animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                        exit={{ opacity: 0, scale: 0.8, rotate: 5 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                    />
+                ) : (
+                    <motion.div
+                        key="placeholder"
+                        className="text-center"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <motion.div
+                            animate={{
+                                y: [0, -5, 0],
+                                color: isInvalid ? "#ef4444" : undefined,
+                            }}
+                            transition={{
+                                duration: 2,
+                                repeat: Infinity,
+                                ease: "easeInOut",
+                            }}
+                        >
+                            <FiUploadCloud className="mx-auto h-10 w-10 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                        </motion.div>
+                        <span
+                            className={`mt-2 block text-sm transition-colors ${
+                                isInvalid ? "text-red-500" : "text-gray-500"
+                            }`}
+                        >
+                            Klik atau seret file untuk mengunggah
+                        </span>
+                    </motion.div>
+                )}
+            </AnimatePresence>
             <input
                 type="file"
                 accept="image/*"
@@ -163,89 +145,165 @@ const FileUpload = ({
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 {...props}
             />
-        </div>
+        </motion.div>
         <InputError message={error} className="mt-2" />
     </div>
 );
 
-// --- Step 1 ---
-const Step1Account = ({ data, setData, errors }) => (
-    <>
-        <h2 className="text-2xl font-bold text-center mb-1">
-            Langkah 1: Buat Akun Anda
-        </h2>
-        <p className="text-center text-sm text-gray-600 mb-6">
-            Mulai dengan informasi dasar untuk login.
-        </p>
-        <div>
-            <InputLabel htmlFor="name" value="Nama Lengkap" />
-            <IconTextInput
-                id="name"
-                value={data.name}
-                onChange={(e) => setData("name", e.target.value)}
-                required
-                isFocused
-                icon={<UserCircleIcon className="h-5 w-5 text-gray-400" />}
-                className={!data.name ? "border-red-500" : ""}
-            />
-            <InputError message={errors.name} className="mt-2" />
-        </div>
-        <div className="mt-4">
-            <InputLabel htmlFor="email" value="Email" />
-            <IconTextInput
-                id="email"
-                type="email"
-                value={data.email}
-                onChange={(e) => setData("email", e.target.value)}
-                required
-                icon={<EnvelopeIcon className="h-5 w-5 text-gray-400" />}
-                className={!data.email ? "border-red-500" : ""}
-            />
-            <InputError message={errors.email} className="mt-2" />
-        </div>
-        <div className="mt-4">
-            <InputLabel htmlFor="password" value="Password" />
-            <IconTextInput
-                id="password"
-                type="password"
-                value={data.password}
-                onChange={(e) => setData("password", e.target.value)}
-                required
-                icon={<LockIcon className="h-5 w-5 text-gray-400" />}
-                className={!data.password ? "border-red-500" : ""}
-            />
-            <InputError message={errors.password} className="mt-2" />
-        </div>
-        <div className="mt-4">
-            <InputLabel
-                htmlFor="password_confirmation"
-                value="Konfirmasi Password"
-            />
-            <IconTextInput
-                id="password_confirmation"
-                type="password"
-                value={data.password_confirmation}
-                onChange={(e) =>
-                    setData("password_confirmation", e.target.value)
-                }
-                required
-                icon={<LockIcon className="h-5 w-5 text-gray-400" />}
-                className={
-                    !data.password_confirmation ||
-                    data.password !== data.password_confirmation
-                        ? "border-red-500"
-                        : ""
-                }
-            />
-            <InputError
-                message={errors.password_confirmation}
-                className="mt-2"
-            />
-        </div>
-    </>
-);
+// --- Komponen Langkah (Steps) ---
+const formVariants = {
+    hidden: {
+        opacity: 0,
+        x: 50,
+        scale: 0.95,
+    },
+    visible: {
+        opacity: 1,
+        x: 0,
+        scale: 1,
+        transition: {
+            duration: 0.6,
+            ease: [0.25, 0.46, 0.45, 0.94],
+            staggerChildren: 0.1,
+        },
+    },
+    exit: {
+        opacity: 0,
+        x: -50,
+        scale: 0.95,
+        transition: {
+            duration: 0.4,
+            ease: [0.25, 0.46, 0.45, 0.94],
+        },
+    },
+};
 
-// --- Step 2 UMKM ---
+const inputVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.3 },
+    },
+};
+
+const Step1Account = ({ data, setData, errors, requiredFields }) => {
+    const isFieldInvalid = (field) => {
+        return (
+            requiredFields.includes(field) &&
+            (!data[field] || data[field].trim() === "")
+        );
+    };
+
+    return (
+        <motion.div
+            variants={formVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="space-y-4"
+        >
+            <motion.div
+                className="text-center"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+            >
+                <h2 className="text-3xl font-bold text-gray-800">
+                    Buat Akun Anda
+                </h2>
+                <p className="mt-2 text-gray-600">
+                    Mulai perjalanan Anda bersama kami.
+                </p>
+            </motion.div>
+
+            <motion.div variants={inputVariants}>
+                <InputLabel
+                    htmlFor="name"
+                    value="Nama Lengkap *"
+                    className={isFieldInvalid("name") ? "text-red-600" : ""}
+                />
+                <IconTextInput
+                    id="name"
+                    value={data.name}
+                    onChange={(e) => setData("name", e.target.value)}
+                    required
+                    isFocused
+                    icon={<FiUser className="h-5 w-5" />}
+                    isInvalid={isFieldInvalid("name") || errors.name}
+                />
+                <InputError message={errors.name} className="mt-2" />
+            </motion.div>
+
+            <motion.div variants={inputVariants}>
+                <InputLabel
+                    htmlFor="email"
+                    value="Email *"
+                    className={isFieldInvalid("email") ? "text-red-600" : ""}
+                />
+                <IconTextInput
+                    id="email"
+                    type="email"
+                    value={data.email}
+                    onChange={(e) => setData("email", e.target.value)}
+                    required
+                    icon={<FiMail className="h-5 w-5" />}
+                    isInvalid={isFieldInvalid("email") || errors.email}
+                />
+                <InputError message={errors.email} className="mt-2" />
+            </motion.div>
+
+            <motion.div variants={inputVariants}>
+                <InputLabel
+                    htmlFor="password"
+                    value="Password *"
+                    className={isFieldInvalid("password") ? "text-red-600" : ""}
+                />
+                <IconTextInput
+                    id="password"
+                    type="password"
+                    value={data.password}
+                    onChange={(e) => setData("password", e.target.value)}
+                    required
+                    icon={<FiLock className="h-5 w-5" />}
+                    isInvalid={isFieldInvalid("password") || errors.password}
+                />
+                <InputError message={errors.password} className="mt-2" />
+            </motion.div>
+
+            <motion.div variants={inputVariants}>
+                <InputLabel
+                    htmlFor="password_confirmation"
+                    value="Konfirmasi Password *"
+                    className={
+                        isFieldInvalid("password_confirmation")
+                            ? "text-red-600"
+                            : ""
+                    }
+                />
+                <IconTextInput
+                    id="password_confirmation"
+                    type="password"
+                    value={data.password_confirmation}
+                    onChange={(e) =>
+                        setData("password_confirmation", e.target.value)
+                    }
+                    required
+                    icon={<FiLock className="h-5 w-5" />}
+                    isInvalid={
+                        isFieldInvalid("password_confirmation") ||
+                        errors.password_confirmation
+                    }
+                />
+                <InputError
+                    message={errors.password_confirmation}
+                    className="mt-2"
+                />
+            </motion.div>
+        </motion.div>
+    );
+};
+
 const Step2UmkmProfile = ({
     data,
     setData,
@@ -253,6 +311,7 @@ const Step2UmkmProfile = ({
     handleFileChange,
     logoPreview,
     ktpPreview,
+    requiredFields,
 }) => {
     const businessTypes = [
         "Kuliner",
@@ -264,26 +323,65 @@ const Step2UmkmProfile = ({
         "Jasa",
         "Lainnya",
     ];
+
+    const isFieldInvalid = (field) => {
+        if (field === "ktp") {
+            return requiredFields.includes(field) && !data[field];
+        }
+        return (
+            requiredFields.includes(field) &&
+            (!data[field] || data[field].trim() === "")
+        );
+    };
+
+    const inputErrorClass =
+        "border-red-500 focus:border-red-500 focus:ring-red-500 bg-red-50";
+    const inputDefaultClass =
+        "border-gray-300 focus:border-blue-500 focus:ring-blue-500";
+
     return (
-        <>
-            <h2 className="text-2xl font-bold text-center mb-1">
-                Lengkapi Profil UMKM
-            </h2>
-            <p className="text-center text-sm text-gray-600 mb-6">
-                Informasi ini akan ditampilkan di halaman publik setelah
-                diverifikasi.
-            </p>
-            <div className="space-y-6">
-                <div>
-                    <InputLabel htmlFor="business_name" value="Nama Usaha *" />
+        <motion.div
+            variants={formVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+        >
+            <motion.div
+                className="text-center mb-6"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+            >
+                <h2 className="text-3xl font-bold text-gray-800">
+                    Profil UMKM
+                </h2>
+                <p className="mt-2 text-gray-600">
+                    Ceritakan lebih banyak tentang usaha Anda.
+                </p>
+            </motion.div>
+
+            <div className="space-y-4">
+                <motion.div variants={inputVariants}>
+                    <InputLabel
+                        htmlFor="business_name"
+                        value="Nama Usaha *"
+                        className={
+                            isFieldInvalid("business_name")
+                                ? "text-red-600"
+                                : ""
+                        }
+                    />
                     <TextInput
                         id="business_name"
                         value={data.business_name}
                         onChange={(e) =>
                             setData("business_name", e.target.value)
                         }
-                        className={`mt-1 block w-full ${
-                            !data.business_name ? "border-red-500" : ""
+                        className={`mt-1 block w-full transition-all duration-200 ${
+                            isFieldInvalid("business_name") ||
+                            errors.business_name
+                                ? inputErrorClass
+                                : inputDefaultClass
                         }`}
                         required
                     />
@@ -291,17 +389,29 @@ const Step2UmkmProfile = ({
                         message={errors.business_name}
                         className="mt-2"
                     />
-                </div>
-                <div>
-                    <InputLabel htmlFor="business_type" value="Jenis Usaha *" />
+                </motion.div>
+
+                <motion.div variants={inputVariants}>
+                    <InputLabel
+                        htmlFor="business_type"
+                        value="Jenis Usaha *"
+                        className={
+                            isFieldInvalid("business_type")
+                                ? "text-red-600"
+                                : ""
+                        }
+                    />
                     <select
                         id="business_type"
                         value={data.business_type}
                         onChange={(e) =>
                             setData("business_type", e.target.value)
                         }
-                        className={`mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm ${
-                            !data.business_type ? "border-red-500" : ""
+                        className={`mt-1 block w-full rounded-md shadow-sm transition-all duration-200 ${
+                            isFieldInvalid("business_type") ||
+                            errors.business_type
+                                ? inputErrorClass
+                                : inputDefaultClass
                         }`}
                         required
                     >
@@ -316,63 +426,55 @@ const Step2UmkmProfile = ({
                         message={errors.business_type}
                         className="mt-2"
                     />
-                </div>
-                <div>
-                    <InputLabel htmlFor="address" value="Alamat Usaha *" />
+                </motion.div>
+
+                <motion.div variants={inputVariants}>
+                    <InputLabel
+                        htmlFor="address"
+                        value="Alamat Usaha *"
+                        className={
+                            isFieldInvalid("address") ? "text-red-600" : ""
+                        }
+                    />
                     <textarea
                         id="address"
                         value={data.address}
                         onChange={(e) => setData("address", e.target.value)}
                         rows="3"
-                        className={`mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm ${
-                            !data.address ? "border-red-500" : ""
+                        className={`mt-1 block w-full rounded-md shadow-sm transition-all duration-200 ${
+                            isFieldInvalid("address") || errors.address
+                                ? inputErrorClass
+                                : inputDefaultClass
                         }`}
                         required
                     />
                     <InputError message={errors.address} className="mt-2" />
-                </div>
-                <div>
-                    <InputLabel
-                        htmlFor="description"
-                        value="Deskripsi Usaha *"
-                    />
-                    <textarea
-                        id="description"
-                        value={data.description}
-                        onChange={(e) => setData("description", e.target.value)}
-                        rows="4"
-                        className={`mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm ${
-                            !data.description ? "border-red-500" : ""
-                        }`}
-                        required
-                    />
-                    <InputError message={errors.description} className="mt-2" />
-                </div>
-                <div className="grid md:grid-cols-2 gap-6">
+                </motion.div>
+
+                <motion.div
+                    className="grid md:grid-cols-2 gap-6"
+                    variants={inputVariants}
+                >
                     <FileUpload
                         label="Logo Usaha (Opsional)"
                         preview={logoPreview}
-                        onFileChange={(e) =>
-                            handleFileChange(e, "logo", "setLogoPreview")
-                        }
+                        onFileChange={(e) => handleFileChange(e, "logo")}
+                        error={errors.logo}
                     />
                     <FileUpload
                         label="Foto KTP"
                         required
                         preview={ktpPreview}
                         error={errors.ktp}
-                        isInvalid={!data.ktp}
-                        onFileChange={(e) =>
-                            handleFileChange(e, "ktp", "setKtpPreview")
-                        }
+                        isInvalid={isFieldInvalid("ktp")}
+                        onFileChange={(e) => handleFileChange(e, "ktp")}
                     />
-                </div>
+                </motion.div>
             </div>
-        </>
+        </motion.div>
     );
 };
 
-// --- Step 2 Penyelenggara ---
 const Step2PenyelenggaraProfile = ({
     data,
     setData,
@@ -380,93 +482,130 @@ const Step2PenyelenggaraProfile = ({
     handleFileChange,
     logoPreview,
     docPreview,
-}) => (
-    <>
-        <h2 className="text-2xl font-bold text-center mb-1">
-            Lengkapi Profil Penyelenggara
-        </h2>
-        <p className="text-center text-sm text-gray-600 mb-6">
-            Profil ini akan diverifikasi oleh Admin.
-        </p>
-        <div className="space-y-6">
-            <div>
-                <InputLabel
-                    htmlFor="organizer_name"
-                    value="Nama Instansi/Organisasi *"
-                />
-                <TextInput
-                    id="organizer_name"
-                    value={data.organizer_name}
-                    onChange={(e) => setData("organizer_name", e.target.value)}
-                    className={`mt-1 block w-full ${
-                        !data.organizer_name ? "border-red-500" : ""
-                    }`}
-                    required
-                />
-                <InputError message={errors.organizer_name} className="mt-2" />
-            </div>
-            <div>
-                <InputLabel htmlFor="address" value="Alamat Instansi *" />
-                <textarea
-                    id="address"
-                    value={data.address}
-                    onChange={(e) => setData("address", e.target.value)}
-                    rows="3"
-                    className={`mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm ${
-                        !data.address ? "border-red-500" : ""
-                    }`}
-                    required
-                />
-                <InputError message={errors.address} className="mt-2" />
-            </div>
-            <div>
-                <InputLabel
-                    htmlFor="description"
-                    value="Deskripsi Instansi *"
-                />
-                <textarea
-                    id="description"
-                    value={data.description}
-                    onChange={(e) => setData("description", e.target.value)}
-                    rows="4"
-                    className={`mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm ${
-                        !data.description ? "border-red-500" : ""
-                    }`}
-                    required
-                />
-                <InputError message={errors.description} className="mt-2" />
-            </div>
-            <div className="grid md:grid-cols-2 gap-6">
-                <FileUpload
-                    label="Logo Instansi (Opsional)"
-                    preview={logoPreview}
-                    onFileChange={(e) =>
-                        handleFileChange(e, "logo", "setLogoPreview")
-                    }
-                />
-                <FileUpload
-                    label="Dokumen (KTP/Surat Izin)"
-                    required
-                    preview={docPreview}
-                    error={errors.verification_document}
-                    isInvalid={!data.verification_document}
-                    onFileChange={(e) =>
-                        handleFileChange(
-                            e,
-                            "verification_document",
-                            "setDocPreview"
-                        )
-                    }
-                />
-            </div>
-        </div>
-    </>
-);
+    requiredFields,
+}) => {
+    const isFieldInvalid = (field) => {
+        if (field === "verification_document") {
+            return requiredFields.includes(field) && !data[field];
+        }
+        return (
+            requiredFields.includes(field) &&
+            (!data[field] || data[field].trim() === "")
+        );
+    };
 
+    const inputErrorClass =
+        "border-red-500 focus:border-red-500 focus:ring-red-500 bg-red-50";
+    const inputDefaultClass =
+        "border-gray-300 focus:border-blue-500 focus:ring-blue-500";
+
+    return (
+        <motion.div
+            variants={formVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+        >
+            <motion.div
+                className="text-center mb-6"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+            >
+                <h2 className="text-3xl font-bold text-gray-800">
+                    Profil Penyelenggara
+                </h2>
+                <p className="mt-2 text-gray-600">
+                    Lengkapi informasi instansi Anda.
+                </p>
+            </motion.div>
+
+            <div className="space-y-4">
+                <motion.div variants={inputVariants}>
+                    <InputLabel
+                        htmlFor="organizer_name"
+                        value="Nama Instansi/Organisasi *"
+                        className={
+                            isFieldInvalid("organizer_name")
+                                ? "text-red-600"
+                                : ""
+                        }
+                    />
+                    <TextInput
+                        id="organizer_name"
+                        value={data.organizer_name}
+                        onChange={(e) =>
+                            setData("organizer_name", e.target.value)
+                        }
+                        className={`mt-1 block w-full transition-all duration-200 ${
+                            isFieldInvalid("organizer_name") ||
+                            errors.organizer_name
+                                ? inputErrorClass
+                                : inputDefaultClass
+                        }`}
+                        required
+                    />
+                    <InputError
+                        message={errors.organizer_name}
+                        className="mt-2"
+                    />
+                </motion.div>
+
+                <motion.div variants={inputVariants}>
+                    <InputLabel
+                        htmlFor="address"
+                        value="Alamat Instansi *"
+                        className={
+                            isFieldInvalid("address") ? "text-red-600" : ""
+                        }
+                    />
+                    <textarea
+                        id="address"
+                        value={data.address}
+                        onChange={(e) => setData("address", e.target.value)}
+                        rows="3"
+                        className={`mt-1 block w-full rounded-md shadow-sm transition-all duration-200 ${
+                            isFieldInvalid("address") || errors.address
+                                ? inputErrorClass
+                                : inputDefaultClass
+                        }`}
+                        required
+                    />
+                    <InputError message={errors.address} className="mt-2" />
+                </motion.div>
+
+                <motion.div
+                    className="grid md:grid-cols-2 gap-6"
+                    variants={inputVariants}
+                >
+                    <FileUpload
+                        label="Logo Instansi (Opsional)"
+                        preview={logoPreview}
+                        onFileChange={(e) => handleFileChange(e, "logo")}
+                        error={errors.logo}
+                    />
+                    <FileUpload
+                        label="Dokumen (KTP/Surat Izin)"
+                        required
+                        preview={docPreview}
+                        error={errors.verification_document}
+                        isInvalid={isFieldInvalid("verification_document")}
+                        onFileChange={(e) =>
+                            handleFileChange(e, "verification_document")
+                        }
+                    />
+                </motion.div>
+            </div>
+        </motion.div>
+    );
+};
+
+// --- Komponen Wizard Utama ---
 export default function RegisterWizard({ role, initialStep }) {
     const [logoPreview, setLogoPreview] = useState(null);
     const [ktpPreview, setKtpPreview] = useState(null);
     const [docPreview, setDocPreview] = useState(null);
+    const [requiredFields, setRequiredFields] = useState([]);
 
     const { data, setData, post, processing, errors } = useForm({
         name: "",
@@ -484,150 +623,361 @@ export default function RegisterWizard({ role, initialStep }) {
         verification_document: null,
     });
 
-    const handleFileChange = (e, field, previewSetter) => {
+    // Update required fields based on step and role
+    useEffect(() => {
+        if (initialStep === 1) {
+            setRequiredFields([
+                "name",
+                "email",
+                "password",
+                "password_confirmation",
+            ]);
+        } else if (initialStep === 2) {
+            if (role === "umkm") {
+                setRequiredFields([
+                    "business_name",
+                    "business_type",
+                    "address",
+                    "ktp",
+                ]);
+            } else {
+                setRequiredFields([
+                    "organizer_name",
+                    "address",
+                    "verification_document",
+                ]);
+            }
+        }
+    }, [initialStep, role]);
+
+    const handleFileChange = (e, field) => {
         const file = e.target.files[0];
         if (file) {
             setData(field, file);
             const reader = new FileReader();
             reader.onload = (ev) => {
-                if (previewSetter === "setLogoPreview")
-                    setLogoPreview(ev.target.result);
-                else if (previewSetter === "setKtpPreview")
-                    setKtpPreview(ev.target.result);
-                else if (previewSetter === "setDocPreview")
+                if (field === "logo") setLogoPreview(ev.target.result);
+                else if (field === "ktp") setKtpPreview(ev.target.result);
+                else if (field === "verification_document")
                     setDocPreview(ev.target.result);
             };
             reader.readAsDataURL(file);
         }
     };
 
-    const isStep1Invalid =
-        !data.name ||
-        !data.email ||
-        !data.password ||
-        !data.password_confirmation ||
-        data.password !== data.password_confirmation;
-
-    const isStep2Invalid =
-        role === "umkm"
-            ? !data.business_name ||
-              !data.business_type ||
-              !data.address ||
-              !data.description ||
-              !data.ktp
-            : !data.organizer_name ||
-              !data.address ||
-              !data.description ||
-              !data.verification_document;
-
     const handleFormSubmit = (e) => {
         e.preventDefault();
         if (initialStep === 1) {
-            if (!isStep1Invalid) post(route("register.wizard.step1"));
+            post(route("register.wizard.step1"));
         } else {
-            if (!isStep2Invalid)
-                post(route("register.wizard.finish"), { forceFormData: true });
+            post(route("register.wizard.finish"), { forceFormData: true });
         }
     };
 
-    const StepIcon = ({ step, currentStep, icon }) => {
-        const isActive = currentStep >= step;
-        const isInvalid =
-            (step === 1 && isStep1Invalid) || (step === 2 && isStep2Invalid);
-        let bgColor = isActive
-            ? "bg-blue-600 text-white"
-            : "bg-gray-200 text-gray-500";
-        if (currentStep === step && isInvalid) {
-            bgColor = "bg-red-500 text-white";
+    // Check if step is complete
+    const isStepComplete = (step) => {
+        if (step === 1) {
+            return (
+                data.name &&
+                data.email &&
+                data.password &&
+                data.password_confirmation
+            );
+        } else if (step === 2) {
+            if (role === "umkm") {
+                return (
+                    data.business_name &&
+                    data.business_type &&
+                    data.address &&
+                    data.ktp
+                );
+            } else {
+                return (
+                    data.organizer_name &&
+                    data.address &&
+                    data.verification_document
+                );
+            }
         }
+        return false;
+    };
+
+    const StepIcon = ({ step, currentStep, icon, label }) => {
+        const isActive = currentStep >= step;
+        const isComplete =
+            currentStep > step ||
+            (currentStep === step && isStepComplete(step));
+        const hasErrors = currentStep === step && !isStepComplete(step);
+
         return (
-            <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg transition-colors ${bgColor}`}
-            >
-                {icon}
+            <div className="flex flex-col items-center">
+                <motion.div
+                    className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-300 relative
+                        ${
+                            isComplete
+                                ? "bg-green-600 text-white shadow-lg"
+                                : isActive
+                                ? hasErrors
+                                    ? "bg-red-500 text-white shadow-lg"
+                                    : "bg-blue-600 text-white shadow-lg"
+                                : "bg-gray-200 text-gray-500"
+                        }`}
+                    animate={{
+                        scale: currentStep === step ? 1.1 : 1,
+                        rotate: isComplete ? [0, 360] : 0,
+                    }}
+                    transition={{
+                        type: "spring",
+                        stiffness: 300,
+                        duration: isComplete ? 0.6 : 0.3,
+                    }}
+                    whileHover={{ scale: 1.15 }}
+                >
+                    <AnimatePresence mode="wait">
+                        {isComplete ? (
+                            <motion.div
+                                key="check"
+                                initial={{ scale: 0, rotate: -180 }}
+                                animate={{ scale: 1, rotate: 0 }}
+                                exit={{ scale: 0, rotate: 180 }}
+                                transition={{ duration: 0.3 }}
+                            >
+                                <FiCheck size={24} />
+                            </motion.div>
+                        ) : hasErrors ? (
+                            <motion.div
+                                key="error"
+                                initial={{ scale: 0, rotate: -180 }}
+                                animate={{ scale: 1, rotate: 0 }}
+                                exit={{ scale: 0, rotate: 180 }}
+                                transition={{ duration: 0.3 }}
+                            >
+                                <FiAlertCircle size={24} />
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key="icon"
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                exit={{ scale: 0 }}
+                                transition={{ duration: 0.3 }}
+                            >
+                                {icon}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </motion.div>
+                <p
+                    className={`mt-2 text-sm font-semibold transition-colors duration-300 ${
+                        isComplete
+                            ? "text-green-600"
+                            : isActive
+                            ? hasErrors
+                                ? "text-red-500"
+                                : "text-blue-600"
+                            : "text-gray-500"
+                    }`}
+                >
+                    {label}
+                </p>
             </div>
         );
     };
 
     return (
-        <GuestLayout>
+        <motion.div
+            className="min-h-screen bg-gray-50 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
+        >
             <Head
                 title={`Daftar sebagai ${
                     role === "umkm" ? "UMKM" : "Penyelenggara"
                 }`}
             />
+            <motion.div
+                className="relative w-full max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 shadow-2xl rounded-xl overflow-hidden"
+                initial={{ y: 50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+            >
+                {/* Kolom Kiri - Gambar & Branding */}
+                <div className="hidden md:block relative overflow-hidden">
+                    {/* Background Gambar */}
+                    <motion.div
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{
+                            backgroundImage: "url('images/fotobajardig.png')",
+                        }}
+                        initial={{ scale: 1.1 }}
+                        animate={{ scale: 1 }}
+                        transition={{ duration: 1.2 }}
+                    ></motion.div>
 
-            <div className="flex justify-center items-center mb-8">
-                <StepIcon
-                    step={1}
-                    currentStep={initialStep}
-                    icon={<UserCircleIcon className="w-6 h-6" />}
-                />
-                <div
-                    className={`flex-1 h-1 mx-2 transition-colors ${
-                        initialStep > 1 ? "bg-blue-600" : "bg-gray-200"
-                    }`}
-                ></div>
-                <StepIcon
-                    step={2}
-                    currentStep={initialStep}
-                    icon={<IdCardIcon className="w-6 h-6" />}
-                />
-            </div>
+                    {/* Overlay Warna */}
+                    <div className="absolute inset-0 bg-blue-800 bg-opacity-60"></div>
 
-            <form onSubmit={handleFormSubmit}>
-                {initialStep === 1 && (
-                    <Step1Account
-                        data={data}
-                        setData={setData}
-                        errors={errors}
-                    />
-                )}
-                {initialStep === 2 && role === "umkm" && (
-                    <Step2UmkmProfile
-                        data={data}
-                        setData={setData}
-                        errors={errors}
-                        handleFileChange={handleFileChange}
-                        logoPreview={logoPreview}
-                        ktpPreview={ktpPreview}
-                    />
-                )}
-                {initialStep === 2 && role === "penyelenggara" && (
-                    <Step2PenyelenggaraProfile
-                        data={data}
-                        setData={setData}
-                        errors={errors}
-                        handleFileChange={handleFileChange}
-                        logoPreview={logoPreview}
-                        docPreview={docPreview}
-                    />
-                )}
+                    {/* Konten Teks */}
+                    <motion.div
+                        className="relative h-full flex flex-col justify-start p-12 text-white z-10"
+                        initial={{ x: -50, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ duration: 0.8, delay: 0.3 }}
+                    >
+                        <h1 className="text-4xl font-bold leading-tight">
+                            Wadah Kreatif, Wadah Usaha
+                        </h1>
+                        <p className="mt-4 text-blue-100">
+                            Digital website bazar Banjarmasin hadir gasan UMKM
+                            supaya makin maju, gasan penyelenggara supaya bisa
+                            ngatur acara bamanfaat, lawan gasan masyarakat umum
+                            supaya bisa marasai raminya, manungkar, lawan
+                            balilihat bazar UMKM Online
+                        </p>
+                    </motion.div>
 
-                <div className="flex items-center justify-between mt-6">
-                    {initialStep === 1 ? (
-                        <Link
-                            href={route("login")}
-                            className="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                            Sudah punya akun?
-                        </Link>
-                    ) : (
-                        <Link
-                            href={route("register.wizard", { role })}
-                            className="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                            &larr; Kembali
-                        </Link>
-                    )}
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        {processing && <Spinner />}
-                        {initialStep === 1
-                            ? "Lanjutkan"
-                            : "Selesaikan Pendaftaran"}
-                    </PrimaryButton>
+                    {/* Logo / Foto tambahan di tengah */}
+                    <motion.div
+                        className="absolute inset-0 flex items-center justify-center z-20"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 1, delay: 0.6 }}
+                    >
+                        <img
+                            src="images/bajardiglogo.png"
+                            alt="Logo"
+                            className="mt-20"
+                            style={{ width: "800px", height: "auto" }}
+                        />
+                    </motion.div>
                 </div>
-            </form>
-        </GuestLayout>
+
+                {/* Kolom Kanan - Form Wizard */}
+                <div className="bg-white p-8 md:p-12 flex flex-col justify-center">
+                    {/* Progress Bar */}
+                    <motion.div
+                        className="flex justify-center items-center mb-10"
+                        initial={{ y: -30, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ duration: 0.6, delay: 0.2 }}
+                    >
+                        <StepIcon
+                            step={1}
+                            currentStep={initialStep}
+                            icon={<FiUser size={24} />}
+                            label="Akun"
+                        />
+                        <div className="flex-1 h-1 mx-4 bg-gray-200 rounded-full overflow-hidden">
+                            <motion.div
+                                className="h-1 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"
+                                initial={{ width: 0 }}
+                                animate={{
+                                    width: initialStep === 2 ? "100%" : "0%",
+                                }}
+                                transition={{
+                                    duration: 0.8,
+                                    ease: "easeInOut",
+                                    delay: 0.3,
+                                }}
+                            />
+                        </div>
+                        <StepIcon
+                            step={2}
+                            currentStep={initialStep}
+                            icon={<FiBriefcase size={24} />}
+                            label="Profil"
+                        />
+                    </motion.div>
+
+                    <form onSubmit={handleFormSubmit}>
+                        <AnimatePresence mode="wait">
+                            {initialStep === 1 && (
+                                <Step1Account
+                                    key="step1"
+                                    data={data}
+                                    setData={setData}
+                                    errors={errors}
+                                    requiredFields={requiredFields}
+                                />
+                            )}
+                            {initialStep === 2 && role === "umkm" && (
+                                <Step2UmkmProfile
+                                    key="step2umkm"
+                                    data={data}
+                                    setData={setData}
+                                    errors={errors}
+                                    handleFileChange={handleFileChange}
+                                    logoPreview={logoPreview}
+                                    ktpPreview={ktpPreview}
+                                    requiredFields={requiredFields}
+                                />
+                            )}
+                            {initialStep === 2 && role === "penyelenggara" && (
+                                <Step2PenyelenggaraProfile
+                                    key="step2penyelenggara"
+                                    data={data}
+                                    setData={setData}
+                                    errors={errors}
+                                    handleFileChange={handleFileChange}
+                                    logoPreview={logoPreview}
+                                    docPreview={docPreview}
+                                    requiredFields={requiredFields}
+                                />
+                            )}
+                        </AnimatePresence>
+
+                        <motion.div
+                            className="flex items-center justify-between mt-8"
+                            initial={{ y: 30, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ duration: 0.6, delay: 0.4 }}
+                        >
+                            {initialStep === 1 ? (
+                                <motion.div
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                >
+                                    <Link
+                                        href={route("login")}
+                                        className="text-sm text-gray-600 hover:text-blue-600 transition-colors duration-200"
+                                    >
+                                        Sudah punya akun?
+                                    </Link>
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                >
+                                    <Link
+                                        href={route("register.wizard", {
+                                            role,
+                                        })}
+                                        className="text-sm text-gray-600 hover:text-blue-600 transition-colors duration-200"
+                                    >
+                                        &larr; Kembali
+                                    </Link>
+                                </motion.div>
+                            )}
+                            <motion.div
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                            >
+                                <PrimaryButton
+                                    className="ms-4 !px-6 !py-3 !bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 !shadow-lg !transform transition-all duration-200"
+                                    disabled={processing}
+                                >
+                                    {processing && <Spinner />}
+                                    {initialStep === 1
+                                        ? "Lanjutkan"
+                                        : "Selesaikan Pendaftaran"}
+                                </PrimaryButton>
+                            </motion.div>
+                        </motion.div>
+                    </form>
+                </div>
+            </motion.div>
+        </motion.div>
     );
 }

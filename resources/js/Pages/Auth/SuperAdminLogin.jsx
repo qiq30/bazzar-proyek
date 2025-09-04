@@ -10,7 +10,6 @@ export default function SuperAdminLogin() {
     const { data, setData, post, processing, errors, reset } = useForm({
         email: "",
         password: "",
-        remember: false,
     });
 
     useEffect(() => {
@@ -27,14 +26,24 @@ export default function SuperAdminLogin() {
     return (
         <>
             <Head title="Super Admin Login" />
-            <div className="flex items-center justify-center min-h-screen bg-gray-100">
-                <div className="relative flex flex-col m-6 space-y-8 bg-white shadow-2xl rounded-2xl md:flex-row md:space-y-0">
-                    {/* Kolom Form */}
-                    <div className="flex flex-col justify-center p-8 md:p-14">
+            <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4 sm:p-6">
+                {/*
+                  Container utama yang responsif:
+                  - flex-col-reverse: Gambar di atas form pada mobile.
+                  - md:flex-row: Gambar di samping form pada desktop.
+                  - overflow-hidden: Menjaga sudut tumpul (rounded corners) tetap sempurna.
+                */}
+                <div className="relative flex flex-col-reverse w-full max-w-4xl bg-white shadow-2xl rounded-2xl md:flex-row overflow-hidden">
+                    {/* Kolom Kiri (Form Login) */}
+                    <div className="flex flex-col justify-center w-full md:w-1/2 p-8 md:p-14">
                         <motion.div
                             initial={{ opacity: 0, x: 50 }}
                             animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.6, ease: "easeOut" }}
+                            transition={{
+                                duration: 0.6,
+                                ease: "easeOut",
+                                delay: 0.4,
+                            }} // Animasi form muncul setelah gambar
                         >
                             <div className="text-center">
                                 <h2 className="mb-3 text-4xl font-bold text-gray-800">
@@ -86,7 +95,7 @@ export default function SuperAdminLogin() {
                                 </div>
 
                                 <PrimaryButton
-                                    className="w-full py-3 mt-8 font-bold bg-indigo-600 hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-800 focus:ring-indigo-500"
+                                    className="flex items-center justify-center w-full py-3 mt-8 font-bold bg-indigo-600 hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-800 focus:ring-indigo-500"
                                     disabled={processing}
                                 >
                                     <AnimatePresence>
@@ -135,23 +144,30 @@ export default function SuperAdminLogin() {
                         </motion.div>
                     </div>
 
-                    {/* Kolom Gambar */}
-                    <motion.div
-                        initial={{ opacity: 0, x: -50 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.6, ease: "easeOut" }}
-                        className="relative hidden w-[400px] lg:block rounded-r-2xl"
-                    >
-                        <div
-                            className="object-cover w-full h-full rounded-r-2xl"
+                    {/* Kolom Kanan (Gambar dengan animasi reveal) */}
+                    <div className="relative w-full h-64 md:w-1/2 md:h-auto">
+                        <motion.div
+                            className="w-full h-full bg-center bg-cover"
                             style={{
                                 backgroundImage: `url('/images/BAJARDIGG.png')`,
-                                backgroundSize: "cover",
-                                backgroundPosition: "center",
                             }}
-                        ></div>
-                        <div className="absolute inset-0 bg-white opacity-30 rounded-r-2xl"></div>
-                    </motion.div>
+                            initial={{ scale: 1.2, opacity: 0.5 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{
+                                duration: 1.2,
+                                ease: [0.43, 0.13, 0.23, 0.96],
+                            }}
+                        ></motion.div>
+                        <motion.div
+                            className="absolute inset-0 bg-white"
+                            initial={{ x: 0 }}
+                            animate={{ x: "100%" }}
+                            transition={{
+                                duration: 0.8,
+                                ease: [0.22, 1, 0.36, 1],
+                            }}
+                        ></motion.div>
+                    </div>
                 </div>
             </div>
         </>
