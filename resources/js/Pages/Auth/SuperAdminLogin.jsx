@@ -1,9 +1,10 @@
-import GuestLayout from "@/Layouts/GuestLayout";
-import { Head, useForm } from "@inertiajs/react";
+import { useEffect } from "react";
 import InputError from "@/Components/InputError";
-import InputLabel from "@/Components/InputLabel";
-import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
+import PrimaryButton from "@/Components/PrimaryButton";
+import { Head, useForm } from "@inertiajs/react";
+import { EnvelopeIcon, LockClosedIcon } from "@heroicons/react/24/solid";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function SuperAdminLogin() {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -12,58 +13,147 @@ export default function SuperAdminLogin() {
         remember: false,
     });
 
+    useEffect(() => {
+        return () => {
+            reset("password");
+        };
+    }, []);
+
     const submit = (e) => {
         e.preventDefault();
-        post(route("superadmin.login.store"), {
-            onFinish: () => reset("password"),
-        });
+        post(route("superadmin.login.store"));
     };
 
     return (
-        <GuestLayout>
+        <>
             <Head title="Super Admin Login" />
-            <div className="mb-4 text-center">
-                <h2 className="text-2xl font-bold text-gray-800">
-                    Super Admin Access
-                </h2>
-                <p className="text-sm text-gray-500">Authentication Required</p>
-            </div>
+            <div className="flex items-center justify-center min-h-screen bg-gray-100">
+                <div className="relative flex flex-col m-6 space-y-8 bg-white shadow-2xl rounded-2xl md:flex-row md:space-y-0">
+                    {/* Kolom Form */}
+                    <div className="flex flex-col justify-center p-8 md:p-14">
+                        <motion.div
+                            initial={{ opacity: 0, x: 50 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.6, ease: "easeOut" }}
+                        >
+                            <div className="text-center">
+                                <h2 className="mb-3 text-4xl font-bold text-gray-800">
+                                    Super Admin Access
+                                </h2>
+                                <p className="mb-8 text-gray-600">
+                                    Authentication Required
+                                </p>
+                            </div>
 
-            <form onSubmit={submit}>
-                <div>
-                    <InputLabel htmlFor="email" value="Email" />
-                    <TextInput
-                        id="email"
-                        type="email"
-                        value={data.email}
-                        className="mt-1 block w-full"
-                        isFocused={true}
-                        onChange={(e) => setData("email", e.target.value)}
-                    />
-                    <InputError message={errors.email} className="mt-2" />
-                </div>
+                            <form onSubmit={submit} className="space-y-6">
+                                <div className="relative">
+                                    <EnvelopeIcon className="absolute w-5 h-5 text-gray-400 left-4 top-1/2 -translate-y-1/2" />
+                                    <TextInput
+                                        id="email"
+                                        type="email"
+                                        value={data.email}
+                                        className="block w-full py-3 pl-12 pr-4 border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                                        autoComplete="username"
+                                        isFocused={true}
+                                        onChange={(e) =>
+                                            setData("email", e.target.value)
+                                        }
+                                        placeholder="Super Admin Email"
+                                    />
+                                    <InputError
+                                        message={errors.email}
+                                        className="mt-2"
+                                    />
+                                </div>
 
-                <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
-                    <TextInput
-                        id="password"
-                        type="password"
-                        value={data.password}
-                        className="mt-1 block w-full"
-                        onChange={(e) => setData("password", e.target.value)}
-                    />
-                    <InputError message={errors.password} className="mt-2" />
-                </div>
+                                <div className="relative">
+                                    <LockClosedIcon className="absolute w-5 h-5 text-gray-400 left-4 top-1/2 -translate-y-1/2" />
+                                    <TextInput
+                                        id="password"
+                                        type="password"
+                                        value={data.password}
+                                        className="block w-full py-3 pl-12 pr-4 border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                                        autoComplete="current-password"
+                                        onChange={(e) =>
+                                            setData("password", e.target.value)
+                                        }
+                                        placeholder="Password"
+                                    />
+                                    <InputError
+                                        message={errors.password}
+                                        className="mt-2"
+                                    />
+                                </div>
 
-                <div className="mt-4 flex items-center justify-end">
-                    <PrimaryButton
-                        className="w-full justify-center"
-                        disabled={processing}
+                                <PrimaryButton
+                                    className="w-full py-3 mt-8 font-bold bg-indigo-600 hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-800 focus:ring-indigo-500"
+                                    disabled={processing}
+                                >
+                                    <AnimatePresence>
+                                        {processing && (
+                                            <motion.div
+                                                initial={{
+                                                    opacity: 0,
+                                                    scale: 0.5,
+                                                }}
+                                                animate={{
+                                                    opacity: 1,
+                                                    scale: 1,
+                                                }}
+                                                exit={{
+                                                    opacity: 0,
+                                                    scale: 0.5,
+                                                }}
+                                                className="mr-2"
+                                            >
+                                                <svg
+                                                    className="w-5 h-5 text-white animate-spin"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <circle
+                                                        className="opacity-25"
+                                                        cx="12"
+                                                        cy="12"
+                                                        r="10"
+                                                        stroke="currentColor"
+                                                        strokeWidth="4"
+                                                    ></circle>
+                                                    <path
+                                                        className="opacity-75"
+                                                        fill="currentColor"
+                                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                                    ></path>
+                                                </svg>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                    <span>Secure Login</span>
+                                </PrimaryButton>
+                            </form>
+                        </motion.div>
+                    </div>
+
+                    {/* Kolom Gambar */}
+                    <motion.div
+                        initial={{ opacity: 0, x: -50 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.6, ease: "easeOut" }}
+                        className="relative hidden w-[400px] lg:block rounded-r-2xl"
                     >
-                        Secure Login
-                    </PrimaryButton>
+                        <div
+                            className="object-cover w-full h-full rounded-r-2xl"
+                            style={{
+                                backgroundImage: `url('/images/BAJARDIGG.png')`,
+                                backgroundSize: "cover",
+                                backgroundPosition: "center",
+                            }}
+                        ></div>
+                        <div className="absolute inset-0 bg-white opacity-30 rounded-r-2xl"></div>
+                    </motion.div>
                 </div>
-            </form>
-        </GuestLayout>
+            </div>
+        </>
     );
 }

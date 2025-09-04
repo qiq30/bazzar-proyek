@@ -8,8 +8,10 @@ import NotificationDropdown from "@/Components/NotificationDropdown";
 import { Link, usePage, router } from "@inertiajs/react";
 import React, { useState, useEffect } from "react";
 import { Toaster, toast } from "react-hot-toast";
+// --- Impor Ikon ---
+import { FiGrid, FiUser, FiLogOut } from "react-icons/fi";
 
-// --- Komponen Banner Impersonasi ---
+// --- Komponen Banner Impersonasi (tidak berubah) ---
 const ImpersonateBanner = () => {
     const { impersonating } = usePage().props;
     if (!impersonating) return null;
@@ -26,7 +28,7 @@ const ImpersonateBanner = () => {
     );
 };
 
-// --- Komponen Alert Permintaan Impersonasi ---
+// --- Komponen Alert Permintaan Impersonasi (tidak berubah) ---
 const ImpersonationRequestAlert = ({ user }) => {
     const { pendingImpersonationRequest } = usePage().props;
     if (!pendingImpersonationRequest || user.is_super_admin || user.is_admin) {
@@ -144,19 +146,17 @@ export default function AuthenticatedLayout({ header, children }) {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100">
+        <div className="min-h-screen bg-gray-100 flex flex-col">
             <ImpersonateBanner />
             <ImpersonationRequestAlert user={user} />
             <Toaster position="top-right" reverseOrder={false} />
 
-            {/* Navigasi tetap di atas (sticky) */}
             <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between">
                         <div className="flex">
                             <div className="flex shrink-0 items-center">
                                 <Link href="/">
-                                    {/* Menggunakan tag img untuk logo */}
                                     <img
                                         src="/images/Banjarmasin-A-Thousand-River-City-Logo.png"
                                         alt="Logo Banjarmasin"
@@ -169,6 +169,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                     href={getDashboardRoute()}
                                     active={isDashboardActive()}
                                 >
+                                    <FiGrid className="mr-2" />
                                     Dashboard
                                 </NavLink>
                             </div>
@@ -203,15 +204,17 @@ export default function AuthenticatedLayout({ header, children }) {
                                     <Dropdown.Content>
                                         <Dropdown.Link
                                             href={route("profile.edit")}
+                                            className="flex items-center gap-2"
                                         >
-                                            Profile
+                                            <FiUser /> Profile
                                         </Dropdown.Link>
                                         <Dropdown.Link
                                             href={route("logout")}
                                             method="post"
                                             as="button"
+                                            className="flex items-center gap-2"
                                         >
-                                            Log Out
+                                            <FiLogOut /> Log Out
                                         </Dropdown.Link>
                                     </Dropdown.Content>
                                 </Dropdown>
@@ -272,7 +275,7 @@ export default function AuthenticatedLayout({ header, children }) {
                             href={getDashboardRoute()}
                             active={isDashboardActive()}
                         >
-                            Dashboard
+                            <FiGrid className="mr-2" /> Dashboard
                         </ResponsiveNavLink>
                     </div>
                     <div className="border-t border-gray-200 pb-1 pt-4">
@@ -285,33 +288,42 @@ export default function AuthenticatedLayout({ header, children }) {
                             </div>
                         </div>
                         <div className="mt-3 space-y-1">
-                            <ResponsiveNavLink href={route("profile.edit")}>
-                                Profile
+                            <ResponsiveNavLink
+                                href={route("profile.edit")}
+                                className="flex items-center"
+                            >
+                                <FiUser className="mr-2" /> Profile
                             </ResponsiveNavLink>
                             <ResponsiveNavLink
                                 method="post"
                                 href={route("logout")}
                                 as="button"
+                                className="flex items-center"
                             >
-                                Log Out
+                                <FiLogOut className="mr-2" /> Log Out
                             </ResponsiveNavLink>
                         </div>
                     </div>
                 </div>
             </nav>
 
-            {/* Header tidak sticky, akan discroll bersama konten */}
-            {header && (
-                <header className="bg-white shadow">
-                    {" "}
-                    {/* Menghapus kelas 'sticky' dan 'z-40' dari sini */}
-                    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                        {header}
-                    </div>
-                </header>
-            )}
+            <div className="flex-grow">
+                {header && (
+                    <header className="bg-white shadow">
+                        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                            {header}
+                        </div>
+                    </header>
+                )}
+                <main>{children}</main>
+            </div>
 
-            <main>{children}</main>
+            <footer className="bg-white border-t mt-auto">
+                <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-500">
+                    &copy; {new Date().getFullYear()} Pemerintah Kota
+                    Banjarmasin. All Rights Reserved.
+                </div>
+            </footer>
         </div>
     );
 }
