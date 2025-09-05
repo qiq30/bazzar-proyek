@@ -2,7 +2,6 @@
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, usePage } from "@inertiajs/react";
-// --- Impor Ikon dari React-Icons ---
 import {
     FiUser,
     FiFileText,
@@ -12,7 +11,6 @@ import {
     FiHome,
 } from "react-icons/fi";
 
-// --- Komponen Kartu Statistik dengan Garis Warna di Kiri ---
 const StatCard = ({
     title,
     content,
@@ -53,7 +51,6 @@ const StatCard = ({
     </div>
 );
 
-// --- Komponen Kartu Aksi/Menu (HubCard) ---
 const HubCard = ({
     href,
     icon,
@@ -106,7 +103,6 @@ const HubCard = ({
     );
 };
 
-// Komponen Badge Status
 const StatusBadge = ({ proposalStatus, eventStatus }) => {
     let config = { text: "Unknown", className: "bg-gray-100 text-gray-800" };
     if (proposalStatus === "menunggu_persetujuan")
@@ -161,7 +157,8 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
                 return {
                     color: "bg-green-100 text-green-800",
                     text: "Terverifikasi",
-                    actionText: "Anda dapat mengajukan proposal.",
+                    actionText:
+                        "Profil terkunci. Hubungi admin untuk perubahan.",
                     actionLink: null,
                     isVerified: true,
                 };
@@ -196,7 +193,6 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
             }
         >
             <Head title="Dashboard Penyelenggara" />
-
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">

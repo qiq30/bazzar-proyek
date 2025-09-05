@@ -5,166 +5,112 @@ import Dropdown from "@/Components/Dropdown";
 import NavLink from "@/Components/NavLink";
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
 import NotificationDropdown from "@/Components/NotificationDropdown";
+import FloatingWhatsAppButton from "@/Components/FloatingWhatsAppButton";
+import ImpersonateBanner from "@/Components/ImpersonateBanner";
 import { Link, usePage, router } from "@inertiajs/react";
 import React, { useState, useEffect } from "react";
 import { Toaster, toast } from "react-hot-toast";
-// --- Impor Ikon ---
 import { FiGrid, FiUser, FiLogOut } from "react-icons/fi";
 
-// --- Komponen Banner Impersonasi (tidak berubah) ---
-const ImpersonateBanner = () => {
-    const { impersonating } = usePage().props;
-    if (!impersonating) return null;
-    return (
-        <div className="w-full bg-yellow-400 text-center py-2 text-sm font-semibold text-yellow-900">
-            Anda sedang masuk sebagai pengguna lain.{" "}
-            <Link
-                href={route("impersonate.stop")}
-                className="underline hover:text-yellow-700"
-            >
-                Kembali ke akun Super Admin.
-            </Link>
-        </div>
-    );
-};
+export default function AuthenticatedLayout({ user, header, children }) {
+    // Ambil semua props yang dibutuhkan dari usePage() untuk menjaga layout tetap bersih
+    const { flash, adminContact } = usePage().props;
 
-// --- Komponen Alert Permintaan Impersonasi (tidak berubah) ---
-const ImpersonationRequestAlert = ({ user }) => {
-    const { pendingImpersonationRequest } = usePage().props;
-    if (!pendingImpersonationRequest || user.is_super_admin || user.is_admin) {
-        return null;
-    }
-    return (
-        <div className="w-full bg-orange-100 border-b-2 border-orange-500">
-            <div className="max-w-7xl mx-auto py-2 px-4 sm:px-6 lg:px-8 text-center text-sm font-semibold text-orange-800">
-                ⚠️ Super Admin meminta izin untuk mengakses akun Anda.{" "}
-                <Link
-                    href={route("impersonate.requests.index")}
-                    className="underline hover:text-orange-600 font-bold"
-                >
-                    Lihat Permintaan & Respons
-                </Link>
-            </div>
-        </div>
-    );
-};
-
-export default function AuthenticatedLayout({ header, children }) {
-    const { auth, flash } = usePage().props;
-    const user = auth.user;
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
 
+    // useEffect hook untuk menampilkan notifikasi real-time
     useEffect(() => {
-        if (flash?.success) toast.success(flash.success);
-        if (flash?.error) toast.error(flash.error);
-
-        if (user) {
-            const privateChannel = window.Echo.private(`user.${user.id}`);
-
-            privateChannel.listen("NotificationReceived", (e) => {
-                toast.success(
-                    (t) => (
-                        <div className="flex flex-col items-start">
-                            <b className="mb-1">{e.notification.data.title}</b>
-                            <p className="text-sm">
-                                {e.notification.data.message}
-                            </p>
-                            <Link
-                                href={e.notification.data.url || "#"}
-                                className="mt-3 w-full text-center bg-blue-500 text-white px-3 py-1.5 rounded-md text-sm font-semibold hover:bg-blue-600"
-                                onClick={() => toast.dismiss(t.id)}
-                            >
-                                Lihat Detail
-                            </Link>
-                        </div>
-                    ),
-                    { duration: 10000 }
-                );
-
-                router.reload({
-                    only: ["auth", "pendingImpersonationRequest"],
-                    preserveState: true,
-                    preserveScroll: true,
-                });
-
-                const notificationType = e.notification.type;
-                const currentRoute = route().current();
-
-                if (notificationType.includes("ProfileStatusUpdated")) {
-                    if (currentRoute === "dashboard") {
-                        router.reload({
-                            only: ["hasProfile", "umkmProfile"],
-                            preserveState: true,
-                            preserveScroll: true,
-                        });
-                    } else if (currentRoute === "penyelenggara.dashboard") {
-                        router.reload({
-                            only: ["hasProfile", "profile"],
-                            preserveState: true,
-                            preserveScroll: true,
-                        });
-                    }
-                }
-            });
-
-            if (!user.is_admin && !user.is_penyelenggara) {
-                privateChannel.listen("UmkmQrisUpdated", () => {
-                    toast.success("Status QRIS berhasil diperbarui!");
-                    if (route().current("dashboard")) {
-                        router.reload({
-                            only: ["umkmProfile", "hasProfile"],
-                            preserveState: true,
-                            preserveScroll: true,
-                        });
-                    }
-                });
-            }
-
-            return () => {
-                privateChannel.stopListening("NotificationReceived");
-                if (!user.is_admin && !user.is_penyelenggara) {
-                    privateChannel.stopListening("UmkmQrisUpdated");
-                }
-            };
+        if (flash && flash.success) {
+            toast.success(flash.success);
         }
-    }, [user, flash]);
+        if (flash && flash.error) {
+            toast.error(flash.error);
+        }
 
+        const channel = Echo.private(`App.Models.User.${user.id}`);
+
+        const handleNotification = (notificationData) => {
+            toast.custom(
+                (t) => (
+                    <div
+                        className={`${
+                            t.visible ? "animate-enter" : "animate-leave"
+                        } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+                    >
+                        <div className="flex-1 w-0 p-4">
+                            <div className="flex items-start">
+                                <div className="ml-3 flex-1">
+                                    <p className="text-sm font-medium text-gray-900">
+                                        {notificationData.title}
+                                    </p>
+                                    <p className="mt-1 text-sm text-gray-500">
+                                        {notificationData.message}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex border-l border-gray-200">
+                            <button
+                                onClick={() => {
+                                    toast.dismiss(t.id);
+                                    if (notificationData.link) {
+                                        router.visit(notificationData.link);
+                                    }
+                                }}
+                                className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            >
+                                Lihat
+                            </button>
+                        </div>
+                    </div>
+                ),
+                {
+                    duration: 10000,
+                }
+            );
+            router.reload({ only: ["auth"] });
+        };
+
+        channel.listen("NotificationReceived", handleNotification);
+
+        return () => {
+            channel.stopListening("NotificationReceived", handleNotification);
+        };
+    }, [flash, user.id, router]);
+
+    // Fungsi untuk menentukan rute dasbor berdasarkan peran pengguna
     const getDashboardRoute = () => {
         if (user.is_super_admin) return route("superadmin.dashboard");
         if (user.is_admin) return route("admin.dashboard");
         if (user.is_penyelenggara) return route("penyelenggara.dashboard");
-        return route("dashboard");
+        return route("umkm.dashboard");
     };
 
+    // Fungsi untuk menandai link dasbor sebagai aktif
     const isDashboardActive = () => {
-        if (user.is_super_admin) return route().current("superadmin.dashboard");
-        if (user.is_admin) return route().current("admin.dashboard");
-        if (user.is_penyelenggara)
-            return route().current("penyelenggara.dashboard");
-        return route().current("dashboard");
+        return (
+            route().current("umkm.dashboard") ||
+            route().current("penyelenggara.dashboard") ||
+            route().current("admin.dashboard") ||
+            route().current("superadmin.dashboard")
+        );
     };
 
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col">
             <ImpersonateBanner />
-            <ImpersonationRequestAlert user={user} />
-            <Toaster position="top-right" reverseOrder={false} />
-
-            <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div className="flex h-16 justify-between">
+            <nav className="bg-white border-b border-gray-100">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between h-16">
                         <div className="flex">
-                            <div className="flex shrink-0 items-center">
+                            <div className="shrink-0 flex items-center">
                                 <Link href="/">
-                                    <img
-                                        src="/images/Banjarmasin-A-Thousand-River-City-Logo.png"
-                                        alt="Logo Banjarmasin"
-                                        className="block h-9 w-auto"
-                                    />
+                                    <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
                                 </Link>
                             </div>
-                            <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+
+                            <div className="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                                 <NavLink
                                     href={getDashboardRoute()}
                                     active={isDashboardActive()}
@@ -175,19 +121,19 @@ export default function AuthenticatedLayout({ header, children }) {
                             </div>
                         </div>
 
-                        <div className="hidden sm:ms-6 sm:flex sm:items-center">
+                        <div className="hidden sm:flex sm:items-center sm:ml-6">
                             <NotificationDropdown />
-                            <div className="relative ms-3">
+                            <div className="ml-3 relative">
                                 <Dropdown>
                                     <Dropdown.Trigger>
                                         <span className="inline-flex rounded-md">
                                             <button
                                                 type="button"
-                                                className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
+                                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
                                             >
                                                 {user.name}
                                                 <svg
-                                                    className="-me-0.5 ms-2 h-4 w-4"
+                                                    className="ml-2 -mr-0.5 h-4 w-4"
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     viewBox="0 0 20 20"
                                                     fill="currentColor"
@@ -201,34 +147,35 @@ export default function AuthenticatedLayout({ header, children }) {
                                             </button>
                                         </span>
                                     </Dropdown.Trigger>
+
                                     <Dropdown.Content>
                                         <Dropdown.Link
                                             href={route("profile.edit")}
-                                            className="flex items-center gap-2"
                                         >
-                                            <FiUser /> Profile
+                                            <FiUser className="mr-2" />
+                                            Profile
                                         </Dropdown.Link>
                                         <Dropdown.Link
                                             href={route("logout")}
                                             method="post"
                                             as="button"
-                                            className="flex items-center gap-2"
                                         >
-                                            <FiLogOut /> Log Out
+                                            <FiLogOut className="mr-2" />
+                                            Log Out
                                         </Dropdown.Link>
                                     </Dropdown.Content>
                                 </Dropdown>
                             </div>
                         </div>
 
-                        <div className="-me-2 flex items-center sm:hidden">
+                        <div className="-mr-2 flex items-center sm:hidden">
                             <button
                                 onClick={() =>
                                     setShowingNavigationDropdown(
                                         (previousState) => !previousState
                                     )
                                 }
-                                className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
+                                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out"
                             >
                                 <svg
                                     className="h-6 w-6"
@@ -270,53 +217,62 @@ export default function AuthenticatedLayout({ header, children }) {
                         " sm:hidden"
                     }
                 >
-                    <div className="space-y-1 pb-3 pt-2">
+                    <div className="pt-2 pb-3 space-y-1">
                         <ResponsiveNavLink
                             href={getDashboardRoute()}
                             active={isDashboardActive()}
                         >
-                            <FiGrid className="mr-2" /> Dashboard
+                            Dashboard
                         </ResponsiveNavLink>
                     </div>
-                    <div className="border-t border-gray-200 pb-1 pt-4">
+
+                    <div className="pt-4 pb-1 border-t border-gray-200">
                         <div className="px-4">
-                            <div className="text-base font-medium text-gray-800">
+                            <div className="font-medium text-base text-gray-800">
                                 {user.name}
                             </div>
-                            <div className="text-sm font-medium text-gray-500">
+                            <div className="font-medium text-sm text-gray-500">
                                 {user.email}
                             </div>
                         </div>
+
                         <div className="mt-3 space-y-1">
-                            <ResponsiveNavLink
-                                href={route("profile.edit")}
-                                className="flex items-center"
-                            >
-                                <FiUser className="mr-2" /> Profile
+                            <ResponsiveNavLink href={route("profile.edit")}>
+                                Profile
                             </ResponsiveNavLink>
                             <ResponsiveNavLink
                                 method="post"
                                 href={route("logout")}
                                 as="button"
-                                className="flex items-center"
                             >
-                                <FiLogOut className="mr-2" /> Log Out
+                                Log Out
                             </ResponsiveNavLink>
                         </div>
                     </div>
                 </div>
             </nav>
 
+            {header && (
+                <header className="bg-white shadow">
+                    <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                        {header}
+                    </div>
+                </header>
+            )}
+
             <div className="flex-grow">
-                {header && (
-                    <header className="bg-white shadow">
-                        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                            {header}
-                        </div>
-                    </header>
-                )}
                 <main>{children}</main>
             </div>
+
+            {/* Tombol WhatsApp Melayang untuk UMKM dan Penyelenggara */}
+            {user &&
+                (user.is_penyelenggara ||
+                    (!user.is_admin && !user.is_super_admin)) && (
+                    <FloatingWhatsAppButton
+                        adminPhoneNumber={adminContact}
+                        user={user}
+                    />
+                )}
 
             <footer className="bg-white border-t mt-auto">
                 <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-500">

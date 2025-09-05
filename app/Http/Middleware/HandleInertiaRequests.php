@@ -44,6 +44,7 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn() => $request->session()->get('success'),
                 'error' => fn() => $request->session()->get('error'),
             ],
+            'adminContact' => fn() => config('contact.admin_whatsapp'), // <-- Tambahkan baris ini
             'impersonating' => fn() => $request->session()->has('impersonate_by'),
             'pendingImpersonationRequest' => fn() => $request->user()
                 ? ImpersonationRequest::where('target_user_id', $request->user()->id)

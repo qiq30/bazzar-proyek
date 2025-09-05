@@ -86,7 +86,7 @@ require __DIR__ . '/auth.php';
 // UMKM Routes (Authenticated Users)
 // Terapkan middleware 'umkm'
 Route::middleware(['auth', 'verified', 'umkm'])->group(function () {
-    Route::get('/dashboard', [UmkmController::class, 'dashboard'])->name('dashboard');
+    Route::get('/dashboard', [UmkmController::class, 'dashboard'])->name('umkm.dashboard');
     Route::get('/profile/setup', [UmkmController::class, 'profileSetup'])->name('umkm.profile.setup');
     Route::post('/profile/setup', [UmkmController::class, 'storeProfile'])->name('umkm.profile.store');
     Route::get('/events', [UmkmController::class, 'events'])->name('umkm.events');

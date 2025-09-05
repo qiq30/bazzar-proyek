@@ -13,8 +13,6 @@ import {
     FiTag,
 } from "react-icons/fi";
 
-// --- Komponen Kartu Statistik ---
-// Disederhanakan untuk hanya menampilkan bagian atas, footer ditangani di luar
 const StatCardContent = ({ title, content, icon, color }) => (
     <>
         <div className="flex items-center justify-between">
@@ -31,7 +29,6 @@ const StatCardContent = ({ title, content, icon, color }) => (
     </>
 );
 
-// --- Komponen Kartu Aksi/Menu (HubCard) ---
 const HubCard = ({
     href,
     icon,

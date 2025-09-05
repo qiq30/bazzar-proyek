@@ -2,7 +2,7 @@
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
-import { useSpring, animated } from "@react-spring/web"; // Pastikan diimpor
+import { useSpring, animated } from "@react-spring/web";
 import PieChart from "@/Components/PieChart";
 import BarChart from "@/Components/BarChart";
 import LineChart from "@/Components/LineChart";
@@ -15,7 +15,7 @@ import {
     FiFileText,
 } from "react-icons/fi";
 
-// --- Komponen Kartu Statistik dengan Animasi Angka ---
+// --- Komponen Kartu Statistik dengan Animasi Angka dan Strip Warna Vertikal ---
 const StatCard = ({ title, value, icon, color }) => {
     const valueStr = String(value);
     const isCurrency = valueStr.startsWith("Rp");
@@ -30,26 +30,52 @@ const StatCard = ({ title, value, icon, color }) => {
         config: { mass: 1, tension: 20, friction: 14 },
     });
 
+    // Mapping warna untuk strip vertikal yang lebih bold
+    const getStripColor = (colorConfig) => {
+        const colorMap = {
+            "bg-blue-100": "bg-blue-500",
+            "bg-indigo-100": "bg-indigo-500",
+            "bg-green-100": "bg-green-500",
+            "bg-emerald-100": "bg-emerald-500",
+            "bg-yellow-100": "bg-yellow-500",
+            "bg-cyan-100": "bg-cyan-500",
+            "bg-rose-100": "bg-rose-500",
+            "bg-slate-100": "bg-slate-500",
+        };
+        return colorMap[colorConfig.bg] || "bg-gray-500";
+    };
+
     return (
-        <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100 flex items-center space-x-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+        <div className="relative bg-white rounded-xl shadow-md border border-gray-100 flex items-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 overflow-hidden">
+            {/* Strip Warna Vertikal di Sisi Kiri */}
             <div
-                className={`text-2xl p-4 rounded-lg ${color.bg} ${color.text}`}
-            >
-                {icon}
-            </div>
-            <div>
-                <p className="text-sm font-medium text-gray-500">{title}</p>
-                {isCurrency ? (
-                    <p className="text-2xl font-bold text-gray-900">
-                        {valueStr}
+                className={`absolute left-0 top-0 bottom-0 w-1.5 ${getStripColor(
+                    color
+                )}`}
+            ></div>
+
+            <div className="flex items-center space-x-4 p-5 pl-7 w-full">
+                <div
+                    className={`text-2xl p-4 rounded-lg ${color.bg} ${color.text}`}
+                >
+                    {icon}
+                </div>
+                <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-500 mb-1">
+                        {title}
                     </p>
-                ) : (
-                    <animated.p className="text-2xl font-bold text-gray-900">
-                        {number.to((n) =>
-                            Math.floor(n).toLocaleString("id-ID")
-                        )}
-                    </animated.p>
-                )}
+                    {isCurrency ? (
+                        <p className="text-2xl font-bold text-gray-900">
+                            {valueStr}
+                        </p>
+                    ) : (
+                        <animated.p className="text-2xl font-bold text-gray-900">
+                            {number.to((n) =>
+                                Math.floor(n).toLocaleString("id-ID")
+                            )}
+                        </animated.p>
+                    )}
+                </div>
             </div>
         </div>
     );
