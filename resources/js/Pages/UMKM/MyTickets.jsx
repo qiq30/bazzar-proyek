@@ -5,10 +5,10 @@ import { Head } from "@inertiajs/react";
 import html2canvas from "html2canvas";
 import { useRef } from "react";
 
-// --- ▼▼▼ MODIFIKASI KOMPONEN E-TICKET CARD ▼▼▼ ---
+// --- ▼▼▼ MODIFIKASI KOMPONEN E-TICKET CARD (Tampilan Baru) ▼▼▼ ---
 const ETicketCard = ({ ticket, ticketRef }) => {
     const isCheckedIn = ticket.status === "sudah_check_in";
-    const bannerClass = isCheckedIn ? "bg-gray-500" : "bg-green-500";
+    const bannerClass = isCheckedIn ? "bg-slate-600" : "bg-blue-600";
     const bannerText = isCheckedIn
         ? "RIWAYAT CHECK-IN"
         : "PENDAFTARAN BERHASIL";
@@ -30,59 +30,79 @@ const ETicketCard = ({ ticket, ticketRef }) => {
     return (
         <div
             ref={ticketRef}
-            className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden"
+            className="bg-white rounded-xl shadow-lg font-sans overflow-hidden border border-gray-200"
         >
-            <div className="p-6 bg-blue-600 text-white">
-                <h3 className="text-2xl font-bold">
-                    {ticket.event.nama_event}
-                </h3>
-                <p className="opacity-90">
-                    {formatEventDate(
-                        ticket.event.tanggal_mulai_acara,
-                        ticket.event.tanggal_selesai_acara
-                    )}
-                </p>
-            </div>
-            {/* --- Perubahan Layout Konten --- */}
-            <div className="p-6 flex">
-                <div className="flex-grow space-y-4 pr-6">
-                    <div>
-                        <p className="text-sm text-gray-500">Nama UMKM</p>
-                        <p className="font-bold text-lg">
+            {/* Wrapper utama untuk layout responsif */}
+            <div className="md:flex">
+                {/* Bagian Informasi Utama (Kiri di desktop) */}
+                <div className="p-6 md:p-8 flex-grow">
+                    <div className="mb-6">
+                        <p className="text-sm text-blue-600 font-semibold">
+                            {formatEventDate(
+                                ticket.event.tanggal_mulai_acara,
+                                ticket.event.tanggal_selesai_acara
+                            )}
+                        </p>
+                        <h3 className="text-2xl md:text-3xl font-bold text-gray-800">
+                            {ticket.event.nama_event}
+                        </h3>
+                    </div>
+
+                    <div className="mb-6">
+                        <p className="text-xs text-gray-500 uppercase tracking-wider">
+                            Nama UMKM
+                        </p>
+                        <p className="font-bold text-xl text-gray-900">
                             {ticket.umkm_profile.business_name}
                         </p>
                     </div>
-                    <div className="grid grid-cols-2 gap-4 text-center">
-                        <div className="bg-gray-100 p-4 rounded-lg">
-                            <p className="text-sm text-gray-500">Nomor Stand</p>
-                            <p className="font-bold text-3xl tracking-wider">
+
+                    <div className="flex flex-col sm:flex-row gap-4 text-center">
+                        <div className="flex-1 bg-gray-50 p-4 rounded-lg border">
+                            <p className="text-xs text-gray-500 uppercase tracking-wider">
+                                Nomor Stand
+                            </p>
+                            <p className="font-mono font-bold text-3xl text-gray-900 tracking-wider">
                                 {ticket.nomor_stand}
                             </p>
                         </div>
-                        <div className="bg-gray-100 p-4 rounded-lg">
-                            <p className="text-sm text-gray-500">
+                        <div className="flex-1 bg-gray-50 p-4 rounded-lg border">
+                            <p className="text-xs text-gray-500 uppercase tracking-wider">
                                 Kode Verifikasi / PIN
                             </p>
-                            <p className="font-bold text-3xl tracking-wider">
+                            <p className="font-mono font-bold text-3xl text-gray-900 tracking-wider">
                                 {ticket.kode_pin}
                             </p>
                         </div>
                     </div>
                 </div>
-                <div className="flex-shrink-0 text-center">
+
+                {/* Garis Pemisah (dashed) */}
+                <div className="relative md:w-auto w-full">
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 md:top-1/2 md:left-0 md:-translate-x-1/2 md:-translate-y-1/2 w-8 h-8 bg-gray-100 rounded-full"></div>
+                    <div className="border-t-2 md:border-t-0 md:border-l-2 border-dashed border-gray-300 h-full w-full"></div>
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 md:bottom-1/2 md:left-0 md:-translate-x-1/2 md:translate-y-1/2 w-8 h-8 bg-gray-100 rounded-full"></div>
+                </div>
+
+                {/* Bagian QR Code (Kanan di desktop) */}
+                <div className="p-6 md:p-8 flex flex-col items-center justify-center md:w-64 bg-gray-50">
                     <img
                         src={`data:image/svg+xml;base64,${ticket.qr_code_svg}`}
                         alt="QR Code"
-                        className="w-40 h-40"
+                        className="w-40 h-40 mb-2 rounded-lg"
                     />
-                    <p className="text-xs text-gray-600 mt-1 font-mono">
+                    <p className="text-sm text-gray-600 font-mono tracking-widest">
                         {ticket.kode_pendaftaran}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-2 text-center">
+                        Pindai kode ini saat check-in
                     </p>
                 </div>
             </div>
-            {/* --- Akhir Perubahan Layout Konten --- */}
+
+            {/* Banner Status di bagian bawah */}
             <div
-                className={`px-6 py-4 text-white text-center font-bold text-xl tracking-widest transition-colors ${bannerClass}`}
+                className={`px-6 py-3 text-white text-center font-bold text-base tracking-widest transition-colors ${bannerClass}`}
             >
                 {bannerText}
             </div>
@@ -127,7 +147,7 @@ export default function MyTickets({ auth, tickets = [] }) {
             <Head title="E-Ticket Saya" />
 
             <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div className="max-w-4xl mx-auto sm:px-6 lg:px-8">
                     {tickets.length > 0 ? (
                         <div className="space-y-8">
                             {tickets.map((ticket) => (
@@ -141,7 +161,7 @@ export default function MyTickets({ auth, tickets = [] }) {
                                             onClick={() =>
                                                 handleDownloadImage(ticket)
                                             }
-                                            className="w-full block text-center py-3 px-4 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 transition"
+                                            className="w-full block text-center py-3 px-4 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 transition-transform transform hover:scale-105"
                                         >
                                             Unduh E-Ticket (Gambar)
                                         </button>
@@ -150,7 +170,7 @@ export default function MyTickets({ auth, tickets = [] }) {
                                                 "umkm.tickets.download",
                                                 { registration: ticket.id }
                                             )}
-                                            className="w-full block text-center py-3 px-4 bg-red-700 text-white font-semibold rounded-lg hover:bg-red-800 transition"
+                                            className="w-full block text-center py-3 px-4 bg-red-700 text-white font-semibold rounded-lg hover:bg-red-800 transition-transform transform hover:scale-105"
                                         >
                                             Unduh E-Ticket (PDF)
                                         </a>

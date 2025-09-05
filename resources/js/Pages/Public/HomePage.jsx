@@ -53,7 +53,7 @@ const HeroSection = () => {
         title = `Selamat Datang, ${auth.user.name}!`;
         description =
             "Temukan peluang baru dan kembangkan bisnis Anda di sini.";
-        link = route("dashboard");
+        link = route("umkm.dashboard");
         linkText = "Lihat Dashboard Saya";
     }
 

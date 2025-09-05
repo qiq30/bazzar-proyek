@@ -23,7 +23,7 @@ export default function PublicLayout({ children }) {
         if (user.is_super_admin) return route("superadmin.dashboard");
         if (user.is_admin) return route("admin.dashboard");
         if (user.is_penyelenggara) return route("penyelenggara.dashboard");
-        return route("dashboard");
+        return route("umkm.dashboard");
     };
 
     return (
