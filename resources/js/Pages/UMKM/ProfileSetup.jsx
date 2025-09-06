@@ -101,7 +101,7 @@ const PendingProfileView = ({ profile }) => (
         </div>
         <div className="p-6 bg-gray-50 border-t text-right">
             <Link
-                href={route("dashboard")}
+                href={route("umkm.dashboard")}
                 className="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700"
             >
                 Kembali ke Dashboard
@@ -341,7 +341,7 @@ const ProfileForm = ({ umkmProfile }) => {
 
                     <div className="flex justify-between items-center pt-4 border-t">
                         <Link
-                            href={route("dashboard")}
+                            href={route("umkm.dashboard")}
                             className="text-sm text-gray-600 hover:text-gray-900"
                         >
                             &larr; Kembali ke Dashboard

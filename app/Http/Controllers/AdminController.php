@@ -259,6 +259,11 @@ class AdminController extends Controller
 
     public function listProposals()
     {
+        $pendingDocumentProposals = Event::with('user')
+            ->where('document_verification_status', 'pending_document_verification')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         $pendingProposals = Event::with('user')
             ->where('status_proposal', 'menunggu_persetujuan')
             ->orderBy('created_at', 'desc')
@@ -270,11 +275,15 @@ class AdminController extends Controller
             ->get();
 
         $rejectedProposals = Event::withTrashed()->with('user')
-            ->where('status_proposal', 'ditolak')
+            ->where(function ($query) {
+                $query->where('status_proposal', 'ditolak')
+                    ->orWhere('document_verification_status', 'document_rejected');
+            })
             ->orderBy('deleted_at', 'desc')
             ->get();
 
         return Inertia::render('Admin/ProposalList', [
+            'pendingDocumentProposals' => $pendingDocumentProposals, // Kirim data baru
             'pendingProposals' => $pendingProposals,
             'approvedProposals' => $approvedProposals,
             'rejectedProposals' => $rejectedProposals,
@@ -357,5 +366,41 @@ class AdminController extends Controller
         ]);
 
         return back()->with('success', 'Pendaftaran UMKM ditolak.');
+    }
+
+    public function showDocumentReview(Event $event)
+    {
+        $event->load('user.penyelenggaraProfile');
+        return Inertia::render('Admin/ProposalDocumentReview', ['proposal' => $event]);
+    }
+
+    public function approveDocument(Event $event)
+    {
+        $event->update([
+            'document_verification_status' => 'document_approved',
+            'document_rejection_reason' => null,
+        ]);
+
+        // Kirim notifikasi ke Penyelenggara (akan dibuat nanti)
+        // ProposalDocumentApproved::dispatch($event);
+
+        return redirect()->route('admin.proposals.list')->with('success', 'Dokumen proposal telah disetujui. Penyelenggara dapat melanjutkan pengisian detail event.');
+    }
+
+    public function rejectDocument(Request $request, Event $event)
+    {
+        $request->validate([
+            'document_rejection_reason' => 'required|string|min:10',
+        ]);
+
+        $event->update([
+            'document_verification_status' => 'document_rejected',
+            'document_rejection_reason' => $request->document_rejection_reason,
+        ]);
+
+        // Kirim notifikasi ke Penyelenggara (akan dibuat nanti)
+        // ProposalDocumentRejected::dispatch($event);
+
+        return redirect()->route('admin.proposals.list')->with('success', 'Dokumen proposal telah ditolak.');
     }
 }

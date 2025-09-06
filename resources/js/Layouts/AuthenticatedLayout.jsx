@@ -28,7 +28,8 @@ export default function AuthenticatedLayout({ user, header, children }) {
             toast.error(flash.error);
         }
 
-        const channel = Echo.private(`App.Models.User.${user.id}`);
+        // --- PERBAIKAN DI SINI ---
+        const channel = Echo.private(`user.${user.id}`);
 
         const handleNotification = (notificationData) => {
             toast.custom(

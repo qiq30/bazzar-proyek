@@ -30,13 +30,11 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
         $user = $request->user();
 
-        // --- ▼▼▼ PERUBAHAN DI SINI ▼▼▼ ---
-        // Logika redirect dibuat lebih lengkap untuk semua role
         $home = match (true) {
             $user->is_super_admin => route('superadmin.dashboard'),
             $user->is_admin => route('admin.dashboard'),
             $user->is_penyelenggara => route('penyelenggara.dashboard'),
-            default => route('dashboard'), // Default untuk UMKM
+            default => route('umkm.dashboard'),
         };
 
         return redirect()->intended($home);

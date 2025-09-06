@@ -1,13 +1,12 @@
-// resources/js/Pages/Admin/ProposalList.jsx
-
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, useForm } from "@inertiajs/react";
 
 export default function ProposalList({
     auth,
+    pendingDocumentProposals = [], // <-- TERIMA PROPS BARU
     pendingProposals = [],
     approvedProposals = [],
-    rejectedProposals = [], // Terima props untuk proposal yang ditolak
+    rejectedProposals = [],
 }) {
     // Form hook untuk aksi hapus permanen
     const { delete: forceDelete, processing } = useForm();
@@ -36,20 +35,98 @@ export default function ProposalList({
             <Head title="Persetujuan Proposal" />
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
-                    {/* BAGIAN 1: PROPOSAL MASUK */}
+                    {/* --- ▼▼▼ TAMBAHKAN BAGIAN BARU UNTUK VERIFIKASI DOKUMEN ▼▼▼ --- */}
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 border-b border-gray-200">
                             <h3 className="text-xl font-bold text-gray-900">
-                                Proposal Masuk
+                                Tahap 1: Verifikasi Dokumen Proposal
+                            </h3>
+                            <p className="text-gray-600 mt-1">
+                                Terdapat{" "}
+                                <strong>
+                                    {pendingDocumentProposals.length} proposal
+                                </strong>{" "}
+                                yang dokumennya perlu Anda tinjau.
+                            </p>
+                        </div>
+                        <div className="overflow-x-auto">
+                            {pendingDocumentProposals.length > 0 ? (
+                                <table className="min-w-full">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="py-3 px-6 text-left">
+                                                Nama Event
+                                            </th>
+                                            <th className="py-3 px-6 text-left">
+                                                Penyelenggara
+                                            </th>
+                                            <th className="py-3 px-6 text-left">
+                                                Tanggal Pengajuan
+                                            </th>
+                                            <th className="py-3 px-6 text-left">
+                                                Aksi
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200">
+                                        {pendingDocumentProposals.map((p) => (
+                                            <tr
+                                                key={p.id}
+                                                className="hover:bg-gray-50"
+                                            >
+                                                <td className="py-4 px-6 font-medium">
+                                                    {p.nama_event}
+                                                </td>
+                                                <td className="py-4 px-6 text-gray-500">
+                                                    {p.user.name}
+                                                </td>
+                                                <td className="py-4 px-6 text-sm text-gray-500">
+                                                    {new Date(
+                                                        p.created_at
+                                                    ).toLocaleDateString(
+                                                        "id-ID"
+                                                    )}
+                                                </td>
+                                                <td className="py-4 px-6">
+                                                    <Link
+                                                        href={route(
+                                                            "admin.proposals.document.review",
+                                                            p.id
+                                                        )}
+                                                        className="px-4 py-2 bg-yellow-500 text-white text-xs font-semibold rounded-md hover:bg-yellow-600"
+                                                    >
+                                                        Tinjau Dokumen
+                                                    </Link>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            ) : (
+                                <p className="text-center text-gray-500 p-6">
+                                    Tidak ada dokumen proposal baru yang
+                                    menunggu persetujuan.
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                    {/* --- ▲▲▲ AKHIR DARI BAGIAN BARU --- */}
+
+                    {/* BAGIAN 1: PROPOSAL MASUK (Ganti judulnya) */}
+                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div className="p-6 border-b border-gray-200">
+                            <h3 className="text-xl font-bold text-gray-900">
+                                Tahap 2: Persetujuan Detail Event
                             </h3>
                             <p className="text-gray-600 mt-1">
                                 Terdapat{" "}
                                 <strong>
                                     {pendingProposals.length} proposal
                                 </strong>{" "}
-                                baru yang memerlukan persetujuan Anda.
+                                yang detailnya perlu Anda setujui.
                             </p>
                         </div>
+                        {/* ... (isi tabel proposal masuk yang sudah ada tidak berubah) ... */}
                         <div className="overflow-x-auto">
                             {pendingProposals.length > 0 ? (
                                 <table className="min-w-full">
@@ -105,7 +182,7 @@ export default function ProposalList({
                                 </table>
                             ) : (
                                 <p className="text-center text-gray-500 p-6">
-                                    Tidak ada proposal baru yang menunggu
+                                    Tidak ada detail proposal baru yang menunggu
                                     persetujuan.
                                 </p>
                             )}
@@ -244,7 +321,8 @@ export default function ProposalList({
                                                     {p.user.name}
                                                 </td>
                                                 <td className="py-4 px-6 text-sm text-gray-600">
-                                                    {p.rejection_reason}
+                                                    {p.rejection_reason ||
+                                                        p.document_rejection_reason}
                                                 </td>
                                                 <td className="py-4 px-6">
                                                     <button

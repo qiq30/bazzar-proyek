@@ -38,21 +38,54 @@ class PenyelenggaraController extends Controller
         ]);
     }
 
-
-    public function createProposal()
+    public function proposalWizard(Event $event = null)
     {
-        $serverToday = Carbon::now()->toDateString();
+        // Jika ada event dan statusnya sudah lolos verifikasi dokumen,
+        // tampilkan step 2 untuk melengkapi data.
+        if ($event && $event->user_id === Auth::id() && $event->document_verification_status === 'document_approved') {
+            return Inertia::render('Penyelenggara/ProposalWizard', [
+                'step' => 2,
+                'event' => $event
+            ]);
+        }
 
-        return Inertia::render('Penyelenggara/CreateProposal', [
-            'serverDate' => $serverToday,
+        // Jika tidak, tampilkan step 1 untuk membuat proposal baru.
+        return Inertia::render('Penyelenggara/ProposalWizard', [
+            'step' => 1,
+            'event' => null
         ]);
     }
 
-
-    public function storeProposal(Request $request)
+    public function storeProposalStep1(Request $request)
     {
         $request->validate([
             'nama_event' => 'required|string|max:255',
+            'proposal_document' => 'required|file|mimes:pdf|max:5120', // PDF, max 5MB
+        ]);
+
+        $documentPath = $request->file('proposal_document')->store('proposals/documents', 'public');
+
+        $event = Event::create([
+            'user_id' => Auth::id(),
+            'nama_event' => $request->nama_event,
+            'proposal_document_path' => $documentPath,
+            'document_verification_status' => 'pending_document_verification',
+            'status_proposal' => 'draft', // Status awal sebagai draft
+        ]);
+
+        // Kirim notifikasi ke Admin (akan dibuat di tahap selanjutnya)
+
+        return redirect()->route('penyelenggara.dashboard')->with('success', 'Proposal awal berhasil diajukan. Mohon tunggu verifikasi dokumen dari Admin.');
+    }
+
+    public function storeProposalStep2(Request $request, Event $event)
+    {
+        // Pastikan event ini milik user yang sedang login dan sudah disetujui dokumennya
+        if ($event->user_id !== Auth::id() || $event->document_verification_status !== 'document_approved') {
+            abort(403, 'Aksi tidak diizinkan.');
+        }
+
+        $request->validate([
             'deskripsi_event' => 'required|string',
             'poster_event' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'pendaftaran_dibuka' => 'required|date|after_or_equal:today',
@@ -69,9 +102,8 @@ class PenyelenggaraController extends Controller
 
         $posterPath = $request->file('poster_event')->store('events/posters', 'public');
 
-        $proposal = Event::create([
-            'user_id' => Auth::id(),
-            'nama_event' => $request->nama_event,
+        $event->update([
+            // Update semua field dari form step 2
             'deskripsi_event' => $request->deskripsi_event,
             'poster_event' => $posterPath,
             'pendaftaran_dibuka' => $request->pendaftaran_dibuka,
@@ -84,17 +116,15 @@ class PenyelenggaraController extends Controller
             'nama_bank_penyelenggara' => $request->nama_bank_penyelenggara,
             'nomor_rekening_penyelenggara' => $request->nomor_rekening_penyelenggara,
             'nama_pemilik_rekening' => $request->nama_pemilik_rekening,
-            'status_proposal' => 'menunggu_persetujuan',
-            'status' => null,
+            'status_proposal' => 'menunggu_persetujuan', // Status proposal berubah menunggu persetujuan akhir
         ]);
 
-        $proposal->load('user');
+        $event->load('user');
 
-        ProposalSubmitted::dispatch($proposal);
+        ProposalSubmitted::dispatch($event);
 
-        return redirect()->route('penyelenggara.dashboard')->with('success', 'Proposal event berhasil diajukan dan sedang menunggu persetujuan admin.');
+        return redirect()->route('penyelenggara.dashboard')->with('success', 'Detail proposal berhasil dikirim dan sedang menunggu persetujuan akhir dari admin.');
     }
-
 
     public function createProfile()
     {
@@ -265,5 +295,26 @@ class PenyelenggaraController extends Controller
         ]);
 
         return back()->with('success', 'Nomor stand berhasil ditetapkan.');
+    }
+
+    public function downloadTemplate()
+    {
+        // Path file RELATIF terhadap folder /storage/app/public
+        $path = 'templates/template_proposal_event.pdf';
+
+        // Cek apakah file ada SECARA SPESIFIK di disk 'public'
+        if (!Storage::disk('public')->exists($path)) {
+            // Jika tidak ditemukan, tampilkan pesan error yang jelas
+            abort(404, 'File tidak ditemukan di storage/app/public/' . $path);
+        }
+
+        // Ambil path absolut dari file tersebut
+        $fullPath = Storage::disk('public')->path($path);
+
+        // Ambil nama file asli untuk di-download
+        $fileName = basename($path);
+
+        // Kirimkan file untuk di-download menggunakan path absolutnya
+        return response()->download($fullPath, $fileName);
     }
 }

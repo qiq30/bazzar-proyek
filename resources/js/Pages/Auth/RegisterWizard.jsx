@@ -393,6 +393,29 @@ const Step2UmkmProfile = ({
 
                 <motion.div variants={inputVariants}>
                     <InputLabel
+                        htmlFor="description"
+                        value="Deskripsi Usaha *"
+                        className={
+                            isFieldInvalid("description") ? "text-red-600" : ""
+                        }
+                    />
+                    <textarea
+                        id="description"
+                        value={data.description}
+                        onChange={(e) => setData("description", e.target.value)}
+                        rows="3"
+                        className={`mt-1 block w-full rounded-md shadow-sm transition-all duration-200 ${
+                            isFieldInvalid("description") || errors.description
+                                ? inputErrorClass
+                                : inputDefaultClass
+                        }`}
+                        required
+                    />
+                    <InputError message={errors.description} className="mt-2" />
+                </motion.div>
+
+                <motion.div variants={inputVariants}>
+                    <InputLabel
                         htmlFor="business_type"
                         value="Jenis Usaha *"
                         className={
@@ -553,6 +576,29 @@ const Step2PenyelenggaraProfile = ({
 
                 <motion.div variants={inputVariants}>
                     <InputLabel
+                        htmlFor="description"
+                        value="Deskripsi Instansi/Organisasi *"
+                        className={
+                            isFieldInvalid("description") ? "text-red-600" : ""
+                        }
+                    />
+                    <textarea
+                        id="description"
+                        value={data.description}
+                        onChange={(e) => setData("description", e.target.value)}
+                        rows="3"
+                        className={`mt-1 block w-full rounded-md shadow-sm transition-all duration-200 ${
+                            isFieldInvalid("description") || errors.description
+                                ? inputErrorClass
+                                : inputDefaultClass
+                        }`}
+                        required
+                    />
+                    <InputError message={errors.description} className="mt-2" />
+                </motion.div>
+
+                <motion.div variants={inputVariants}>
+                    <InputLabel
                         htmlFor="address"
                         value="Alamat Instansi *"
                         className={
@@ -636,6 +682,7 @@ export default function RegisterWizard({ role, initialStep }) {
             if (role === "umkm") {
                 setRequiredFields([
                     "business_name",
+                    "description",
                     "business_type",
                     "address",
                     "ktp",
@@ -643,6 +690,7 @@ export default function RegisterWizard({ role, initialStep }) {
             } else {
                 setRequiredFields([
                     "organizer_name",
+                    "description",
                     "address",
                     "verification_document",
                 ]);
@@ -667,10 +715,21 @@ export default function RegisterWizard({ role, initialStep }) {
 
     const handleFormSubmit = (e) => {
         e.preventDefault();
+
         if (initialStep === 1) {
             post(route("register.wizard.step1"));
         } else {
-            post(route("register.wizard.finish"), { forceFormData: true });
+            post(route("register.wizard.finish"), {
+                forceFormData: true,
+                onSuccess: () => {
+                    console.log(
+                        "Form submitted successfully, Inertia will now redirect."
+                    );
+                },
+                onError: (errors) => {
+                    console.error("Validation errors:", errors);
+                },
+            });
         }
     };
 
@@ -687,6 +746,7 @@ export default function RegisterWizard({ role, initialStep }) {
             if (role === "umkm") {
                 return (
                     data.business_name &&
+                    data.description &&
                     data.business_type &&
                     data.address &&
                     data.ktp
@@ -694,6 +754,7 @@ export default function RegisterWizard({ role, initialStep }) {
             } else {
                 return (
                     data.organizer_name &&
+                    data.description &&
                     data.address &&
                     data.verification_document
                 );

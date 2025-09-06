@@ -38,14 +38,14 @@ class StoreProfileStatusNotification
                 $notificationData = [
                     'title'   => 'Profil Sedang Ditinjau',
                     'message' => 'Terima kasih telah mendaftar. Profil Anda sedang dalam proses verifikasi oleh admin.',
-                    'url'     => $role === 'umkm' ? route('dashboard') : route('penyelenggara.dashboard'),
+                    'url'     => $role === 'umkm' ? route('umkm.dashboard') : route('penyelenggara.dashboard'),
                 ];
                 break;
             case 'verified':
                 $notificationData = [
                     'title'   => 'Verifikasi Berhasil!',
                     'message' => 'Selamat! Profil Anda telah disetujui. Anda sekarang dapat menggunakan semua fitur.',
-                    'url'     => $role === 'umkm' ? route('dashboard') : route('penyelenggara.dashboard'),
+                    'url'     => $role === 'umkm' ? route('umkm.dashboard') : route('penyelenggara.dashboard'),
                 ];
                 break;
             case 'rejected':

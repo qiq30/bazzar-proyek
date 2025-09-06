@@ -49,12 +49,12 @@ class RegistrationWizardController extends Controller
 
     public function storeFinal(Request $request)
     {
+        // --- Bagian Validasi dan Pembuatan User (Tidak perlu diubah) ---
         $step1Data = $request->session()->get('wizard_data.step1');
         if (!$step1Data) {
             return redirect()->route('register.wizard');
         }
         $role = $step1Data['role'];
-
         if ($role === 'umkm') {
             $request->validate([
                 'business_name' => 'required|string|max:255',
@@ -73,19 +73,17 @@ class RegistrationWizardController extends Controller
                 'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             ]);
         }
-
         $user = User::create([
             'name' => $step1Data['name'],
             'email' => $step1Data['email'],
             'password' => Hash::make($step1Data['password']),
             'is_penyelenggara' => $role === 'penyelenggara',
         ]);
-
-        $profile = null; // Inisialisasi variabel profile
+        $profile = null;
         if ($role === 'umkm') {
             $logoPath = $request->hasFile('logo') ? $request->file('logo')->store('umkm/logos', 'public') : null;
             $ktpPath = $request->file('ktp')->store('umkm/ktp', 'public');
-            $profile = UmkmProfile::create([ // Simpan hasil create ke $profile
+            $profile = UmkmProfile::create([
                 'user_id' => $user->id,
                 'business_name' => $request->business_name,
                 'description' => $request->description,
@@ -98,7 +96,7 @@ class RegistrationWizardController extends Controller
         } else {
             $logoPath = $request->hasFile('logo') ? $request->file('logo')->store('penyelenggara/logos', 'public') : null;
             $docPath = $request->file('verification_document')->store('penyelenggara/documents', 'public');
-            $profile = PenyelenggaraProfile::create([ // Simpan hasil create ke $profile
+            $profile = PenyelenggaraProfile::create([
                 'user_id' => $user->id,
                 'organizer_name' => $request->organizer_name,
                 'description' => $request->description,
@@ -108,17 +106,15 @@ class RegistrationWizardController extends Controller
                 'status' => 'pending'
             ]);
         }
-
         event(new Registered($user));
-        NewUserRegisteredForVerification::dispatch($user); // Notif untuk admin
-        ProfileStatusUpdated::dispatch($profile); // <-- 2. TAMBAHKAN BARIS INI (Notif untuk user)
+
+        NewUserRegisteredForVerification::dispatch($user);
+        ProfileStatusUpdated::dispatch($profile);
         Auth::login($user);
 
         $request->session()->forget('wizard_data');
+        $redirectRoute = $user->is_penyelenggara ? 'penyelenggara.dashboard' : 'umkm.dashboard';
 
-        $redirectRoute = $user->is_penyelenggara ? 'penyelenggara.dashboard' : 'dashboard';
-
-        // Toast ini sudah berada di tempat yang benar
-        return redirect()->route($redirectRoute);
+        return redirect()->route($redirectRoute)->with('success', 'Registrasi berhasil!');
     }
 }

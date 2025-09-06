@@ -26,8 +26,24 @@ $app = Application::configure(basePath: dirname(__DIR__))
             'umkm' => \App\Http\Middleware\UmkmMiddleware::class,
             'super_admin' => \App\Http\Middleware\SuperAdminMiddleware::class,
             'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
-
         ]);
+
+        $middleware->redirectUsersTo(function () {
+            $user = auth()->user();
+            if ($user) {
+                if ($user->is_super_admin) {
+                    return route('superadmin.dashboard');
+                }
+                if ($user->is_admin) {
+                    return route('admin.dashboard');
+                }
+                if ($user->is_penyelenggara) {
+                    return route('penyelenggara.dashboard');
+                }
+            }
+            // Jika tidak ada peran di atas yang cocok, arahkan ke dasbor UMKM
+            return route('umkm.dashboard');
+        });
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

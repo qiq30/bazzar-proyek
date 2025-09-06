@@ -9,7 +9,54 @@ import {
     FiPlusCircle,
     FiCheckSquare,
     FiHome,
+    FiAlertTriangle, // Ditambahkan dari file kedua
 } from "react-icons/fi";
+
+// Komponen Notifikasi Status Profil (dari file kedua)
+// Memberikan feedback yang lebih jelas kepada pengguna di atas halaman.
+const ProfileStatusNotification = ({ status, rejectionReason }) => {
+    if (status === "pending") {
+        return (
+            <div
+                className="p-4 mb-6 text-sm text-yellow-800 rounded-lg bg-yellow-50"
+                role="alert"
+            >
+                <span className="font-bold">Menunggu Verifikasi:</span> Profil
+                Anda sedang dalam peninjauan oleh admin. Anda dapat mengajukan
+                proposal setelah profil disetujui.
+            </div>
+        );
+    }
+
+    if (status === "rejected") {
+        return (
+            <div
+                className="p-4 mb-6 text-sm text-red-800 rounded-lg bg-red-50"
+                role="alert"
+            >
+                <p className="font-bold mb-2 flex items-center gap-2">
+                    <FiAlertTriangle /> Profil Anda Ditolak.
+                </p>
+                <p className="font-medium">Alasan Penolakan:</p>
+                <p className="italic ml-4 mt-1">
+                    {rejectionReason || "Tidak ada alasan spesifik."}
+                </p>
+                <p className="mt-3">
+                    Silakan perbarui profil Anda melalui halaman{" "}
+                    <Link
+                        href={route("penyelenggara.profile.setup")}
+                        className="font-bold underline hover:text-red-900"
+                    >
+                        pengaturan profil
+                    </Link>
+                    .
+                </p>
+            </div>
+        );
+    }
+
+    return null; // Tidak menampilkan apa-apa jika 'verified' atau status lain
+};
 
 const StatCard = ({
     title,
@@ -103,16 +150,36 @@ const HubCard = ({
     );
 };
 
-const StatusBadge = ({ proposalStatus, eventStatus }) => {
+// StatusBadge diganti dengan versi dari file kedua yang lebih lengkap
+const StatusBadge = ({ proposalStatus, eventStatus, docStatus }) => {
     let config = { text: "Unknown", className: "bg-gray-100 text-gray-800" };
-    if (proposalStatus === "menunggu_persetujuan")
+
+    if (docStatus === "pending_document_verification") {
         config = {
-            text: "Menunggu Persetujuan",
+            text: "Verifikasi Dokumen",
             className: "bg-yellow-100 text-yellow-800",
         };
-    else if (proposalStatus === "ditolak")
+    } else if (docStatus === "document_rejected") {
+        config = {
+            text: "Dokumen Ditolak",
+            className: "bg-red-100 text-red-800",
+        };
+    } else if (
+        docStatus === "document_approved" &&
+        proposalStatus === "draft"
+    ) {
+        config = {
+            text: "Lengkapi Detail Event",
+            className: "bg-blue-100 text-blue-800",
+        };
+    } else if (proposalStatus === "menunggu_persetujuan") {
+        config = {
+            text: "Menunggu Persetujuan Akhir",
+            className: "bg-yellow-100 text-yellow-800",
+        };
+    } else if (proposalStatus === "ditolak") {
         config = { text: "Ditolak", className: "bg-red-100 text-red-800" };
-    else if (proposalStatus === "disetujui") {
+    } else if (proposalStatus === "disetujui") {
         config = eventStatus
             ? {
                   text: "Sudah Diterbitkan",
@@ -123,6 +190,7 @@ const StatusBadge = ({ proposalStatus, eventStatus }) => {
                   className: "bg-blue-100 text-blue-800",
               };
     }
+
     return (
         <span
             className={`px-3 py-1 rounded-full text-xs font-medium ${config.className}`}
@@ -195,18 +263,30 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
             <Head title="Dashboard Penyelenggara" />
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
-                    <div className="bg-green-300 overflow-hidden shadow-sm sm:rounded-lg">
-                        <div className="p-6 text-gray-900">
-                            <h3 className="text-2xl font-bold mb-2">
-                                Selamat Datang,{" "}
-                                {profile?.organizer_name || auth.user.name}!
-                            </h3>
-                            <p className="text-gray-600">
-                                Kelola profil dan ajukan proposal event Anda di
-                                sini.
+                    {/* Notifikasi Status Profil Ditempatkan di sini */}
+                    {!hasProfile ? (
+                        <div
+                            className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4"
+                            role="alert"
+                        >
+                            <p className="font-bold">Profil Belum Lengkap!</p>
+                            <p>
+                                Anda harus melengkapi profil sebelum dapat
+                                mengajukan proposal event.
                             </p>
+                            <Link
+                                href={route("penyelenggara.profile.setup")}
+                                className="mt-3 inline-block bg-yellow-500 text-white font-bold py-2 px-4 rounded hover:bg-yellow-600"
+                            >
+                                Lengkapi Profil Sekarang
+                            </Link>
                         </div>
-                    </div>
+                    ) : (
+                        <ProfileStatusNotification
+                            status={profile?.status}
+                            rejectionReason={profile?.rejection_reason}
+                        />
+                    )}
 
                     <div className="grid md:grid-cols-3 gap-6">
                         <StatCard
@@ -268,7 +348,7 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
                         </h4>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                             <HubCard
-                                href={route("penyelenggara.proposal.create")}
+                                href={route("penyelenggara.proposal.wizard")}
                                 icon={<FiPlusCircle className="w-8 h-8" />}
                                 title="Ajukan Proposal"
                                 description="Buat pengajuan event baru"
@@ -325,7 +405,10 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-200">
                                         {events.map((event) => (
-                                            <tr key={event.id}>
+                                            <tr
+                                                key={event.id}
+                                                className="hover:bg-gray-50"
+                                            >
                                                 <td className="py-4 px-6 whitespace-nowrap font-medium text-gray-900">
                                                     {event.nama_event}
                                                 </td>
@@ -344,21 +427,40 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
                                                         eventStatus={
                                                             event.status
                                                         }
+                                                        docStatus={
+                                                            event.document_verification_status
+                                                        }
                                                     />
                                                 </td>
                                                 <td className="py-4 px-6 whitespace-nowrap font-mono text-lg text-gray-700">
                                                     {event.panitia_pin || "-"}
                                                 </td>
                                                 <td className="py-4 px-6">
-                                                    <Link
-                                                        href={route(
-                                                            "penyelenggara.proposals.show",
-                                                            event.id
-                                                        )}
-                                                        className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-md hover:bg-blue-700"
-                                                    >
-                                                        Lihat Detail
-                                                    </Link>
+                                                    {/* Logika Tombol Aksi Kontekstual */}
+                                                    {event.document_verification_status ===
+                                                        "document_approved" &&
+                                                    event.status_proposal ===
+                                                        "draft" ? (
+                                                        <Link
+                                                            href={route(
+                                                                "penyelenggara.proposal.wizard",
+                                                                event.id
+                                                            )}
+                                                            className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-md hover:bg-blue-700"
+                                                        >
+                                                            Lanjutkan
+                                                        </Link>
+                                                    ) : (
+                                                        <Link
+                                                            href={route(
+                                                                "penyelenggara.proposals.show",
+                                                                event.id
+                                                            )}
+                                                            className="px-4 py-2 bg-gray-600 text-white text-xs font-semibold rounded-md hover:bg-gray-700"
+                                                        >
+                                                            Lihat Detail
+                                                        </Link>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))}

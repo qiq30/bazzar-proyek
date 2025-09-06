@@ -27,7 +27,7 @@ class RedirectIfAuthenticated
                     $user->is_super_admin => route('superadmin.dashboard'),
                     $user->is_admin => route('admin.dashboard'),
                     $user->is_penyelenggara => route('penyelenggara.dashboard'),
-                    default => route('dashboard'), // Default untuk UMKM
+                    default => route('umkm.dashboard'),
                 };
 
                 return redirect($home);

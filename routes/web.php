@@ -120,6 +120,12 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/events', [AdminController::class, 'events'])->name('events');
+
+    Route::get('/proposals/document-review/{event}', [AdminController::class, 'showDocumentReview'])->name('proposals.document.review');
+    Route::post('/proposals/document-review/{event}/approve', [AdminController::class, 'approveDocument'])->name('proposals.document.approve');
+    Route::post('/proposals/document-review/{event}/reject', [AdminController::class, 'rejectDocument'])->name('proposals.document.reject');
+
+
     Route::put('/events/{event}', [AdminController::class, 'updateEvent'])->name('events.update');
     Route::delete('/events/{event}', [AdminController::class, 'destroyEvent'])->name('events.destroy');
     Route::get('/events/{event}/participants', [AdminController::class, 'eventParticipants'])->name('events.participants');
@@ -145,11 +151,17 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 // Penyelenggara Routes
 Route::middleware(['auth', 'verified', 'penyelenggara'])->prefix('penyelenggara')->name('penyelenggara.')->group(function () {
     Route::get('/dashboard', [PenyelenggaraController::class, 'dashboard'])->name('dashboard');
-    // ... rute Penyelenggara lainnya
     Route::get('/profile/setup', [PenyelenggaraController::class, 'createProfile'])->name('profile.setup');
     Route::post('/profile/setup', [PenyelenggaraController::class, 'storeProfile'])->name('profile.store');
-    Route::get('/proposal/create', [PenyelenggaraController::class, 'createProposal'])->name('proposal.create');
-    Route::post('/proposal', [PenyelenggaraController::class, 'storeProposal'])->name('proposal.store');
+
+    // Rute untuk menampilkan wizard (bisa untuk step 1 atau step 2)
+    Route::get('/proposal/wizard/{event?}', [PenyelenggaraController::class, 'proposalWizard'])->name('proposal.wizard');
+    // Rute untuk menyimpan data dari step 1 (upload dokumen)
+    Route::post('/proposal/wizard/step1', [PenyelenggaraController::class, 'storeProposalStep1'])->name('proposal.wizard.step1');
+    // Rute untuk menyimpan data dari step 2 (detail event) - nama diubah agar jelas
+    Route::post('/proposal/wizard/step2/{event}', [PenyelenggaraController::class, 'storeProposalStep2'])->name('proposal.wizard.step2');
+    Route::get('/proposal/download-template', [PenyelenggaraController::class, 'downloadTemplate'])->name('proposal.template.download');
+
     Route::get('/verifikasi-pendaftar', [PenyelenggaraController::class, 'listVerifikasi'])->name('pendaftar.verifikasi.list');
     Route::get('/verifikasi-pendaftar/{registration}', [PenyelenggaraController::class, 'showVerifikasi'])->name('pendaftar.verifikasi.show');
     Route::post('/verifikasi-pendaftar/{registration}/confirm', [PenyelenggaraController::class, 'confirmPayment'])->name('pendaftar.verifikasi.confirm');
