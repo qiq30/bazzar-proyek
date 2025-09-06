@@ -13,13 +13,12 @@ import { Toaster, toast } from "react-hot-toast";
 import { FiGrid, FiUser, FiLogOut } from "react-icons/fi";
 
 export default function AuthenticatedLayout({ user, header, children }) {
-    // Ambil semua props yang dibutuhkan dari usePage() untuk menjaga layout tetap bersih
     const { flash, adminContact } = usePage().props;
-
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
 
-    // useEffect hook untuk menampilkan notifikasi real-time
+    // useEffect hook untuk menampilkan notifikasi
+    // Hook 1: Khusus untuk menampilkan notifikasi flash (sukses/error)
     useEffect(() => {
         if (flash && flash.success) {
             toast.success(flash.success);
@@ -27,11 +26,20 @@ export default function AuthenticatedLayout({ user, header, children }) {
         if (flash && flash.error) {
             toast.error(flash.error);
         }
+    }, [flash]); // Hanya bergantung pada `flash`, sehingga tidak memengaruhi listener lain.
 
-        // --- PERBAIKAN DI SINI ---
+    // Hook 2: Khusus untuk listener notifikasi realtime dari Echo
+    useEffect(() => {
+        // Pastikan user sudah ada sebelum mendaftarkan channel
+        if (!user || !user.id) {
+            return;
+        }
+
         const channel = Echo.private(`user.${user.id}`);
 
-        const handleNotification = (notificationData) => {
+        const handleNotification = (eventData) => {
+            const notificationPayload = eventData.notification.data;
+
             toast.custom(
                 (t) => (
                     <div
@@ -43,10 +51,10 @@ export default function AuthenticatedLayout({ user, header, children }) {
                             <div className="flex items-start">
                                 <div className="ml-3 flex-1">
                                     <p className="text-sm font-medium text-gray-900">
-                                        {notificationData.title}
+                                        {notificationPayload.title}
                                     </p>
                                     <p className="mt-1 text-sm text-gray-500">
-                                        {notificationData.message}
+                                        {notificationPayload.message}
                                     </p>
                                 </div>
                             </div>
@@ -55,8 +63,8 @@ export default function AuthenticatedLayout({ user, header, children }) {
                             <button
                                 onClick={() => {
                                     toast.dismiss(t.id);
-                                    if (notificationData.link) {
-                                        router.visit(notificationData.link);
+                                    if (notificationPayload.url) {
+                                        router.visit(notificationPayload.url);
                                     }
                                 }}
                                 className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -70,17 +78,18 @@ export default function AuthenticatedLayout({ user, header, children }) {
                     duration: 10000,
                 }
             );
-            router.reload({ only: ["auth"] });
+            router.reload();
         };
 
         channel.listen("NotificationReceived", handleNotification);
 
+        // Fungsi cleanup: Dijalankan saat komponen di-unmount untuk membersihkan listener
         return () => {
             channel.stopListening("NotificationReceived", handleNotification);
+            Echo.leave(`user.${user.id}`); // Praktik terbaik: keluar dari channel saat tidak diperlukan
         };
-    }, [flash, user.id, router]);
+    }, [user.id]); // Hanya bergantung pada `user.id`, sehingga hanya berjalan sekali saat user berubah.
 
-    // Fungsi untuk menentukan rute dasbor berdasarkan peran pengguna
     const getDashboardRoute = () => {
         if (user.is_super_admin) return route("superadmin.dashboard");
         if (user.is_admin) return route("admin.dashboard");
@@ -88,7 +97,6 @@ export default function AuthenticatedLayout({ user, header, children }) {
         return route("umkm.dashboard");
     };
 
-    // Fungsi untuk menandai link dasbor sebagai aktif
     const isDashboardActive = () => {
         return (
             route().current("umkm.dashboard") ||
@@ -100,6 +108,7 @@ export default function AuthenticatedLayout({ user, header, children }) {
 
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col">
+            <Toaster position="top-right" reverseOrder={false} />
             <ImpersonateBanner />
             <nav className="bg-white border-b border-gray-100 sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
