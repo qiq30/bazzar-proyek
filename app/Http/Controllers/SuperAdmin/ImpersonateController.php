@@ -58,18 +58,28 @@ class ImpersonateController extends Controller
             abort(403, 'Akses Ditolak.');
         }
 
-        // Hapus permintaan setelah berhasil digunakan
+        // --- ▼▼▼ PERBAIKAN UTAMA DI SINI ▼▼▼ ---
+
+        // 1. Simpan ID super admin sebelum sesi berubah.
+        $superAdminId = Auth::id();
         $targetUser = $impersonationRequest->targetUser;
+
+        // 2. Hapus permintaan setelah data penting disimpan.
         $impersonationRequest->delete();
 
-        // Lanjutkan proses login
-        session(['impersonate_by' => Auth::id()]);
+        // 3. Login sebagai pengguna target. Ini akan me-regenerasi sesi.
         Auth::login($targetUser);
 
+        // 4. Setelah sesi baru dibuat, simpan ID super admin ke dalamnya.
+        session(['impersonate_by' => $superAdminId]);
+
+        // --- ▲▲▲ AKHIR DARI PERBAIKAN ▲▲▲ ---
+
+        // Logika redirect setelah berhasil login
         $home = match (true) {
             $targetUser->is_admin => route('admin.dashboard'),
             $targetUser->is_penyelenggara => route('penyelenggara.dashboard'),
-            default => route('dashboard'),
+            default => route('umkm.dashboard'),
         };
 
         return redirect($home)->with('success', 'Anda sekarang masuk sebagai ' . $targetUser->name);

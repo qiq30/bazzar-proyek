@@ -23,7 +23,7 @@ class ImpersonationApprovalController extends Controller
             ->first();
 
         // Tentukan dashboard route berdasarkan peran pengguna
-        $dashboardRoute = 'dashboard'; // Default untuk UMKM
+        $dashboardRoute = 'umkm.dashboard'; // Default untuk UMKM
         if ($user->is_penyelenggara) {
             $dashboardRoute = 'penyelenggara.dashboard';
         }

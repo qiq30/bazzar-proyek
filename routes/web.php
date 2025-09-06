@@ -54,6 +54,9 @@ Route::middleware(['auth', 'super_admin'])->prefix('superadmin')->name('superadm
     // Rute untuk MEMINTA akses impersonate
     Route::post('/impersonate/request/{user}', [ImpersonateController::class, 'request'])->name('impersonate.request');
     // Rute untuk MEMULAI impersonate SETELAH disetujui
+    Route::post('/impersonate/stop', [ImpersonateController::class, 'stop'])
+        ->middleware('auth') // Pastikan hanya user yang login yang bisa stop
+        ->name('impersonate.stop');
     Route::get('/impersonate/start/{impersonationRequest}', [ImpersonateController::class, 'start'])->name('impersonate.start');
 
     Route::get('/users', [SuperAdminController::class, 'manageUsers'])->name('users.manage');
@@ -64,9 +67,7 @@ Route::middleware(['auth', 'super_admin'])->prefix('superadmin')->name('superadm
     Route::get('/system-report', [SystemReportController::class, 'index'])->name('system.report');
 });
 
-Route::get('/impersonate/stop', [ImpersonateController::class, 'stop'])
-    ->middleware('auth') // Pastikan hanya user yang login yang bisa stop
-    ->name('impersonate.stop');
+
 
 
 // ADMIN LOGIN ROUTE
