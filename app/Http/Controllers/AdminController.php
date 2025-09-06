@@ -3,6 +3,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ProposalDocumentStatusUpdated;
 use App\Events\UmkmProfileUpdated;
 use App\Events\ProposalStatusUpdated;
 use App\Models\Event;
@@ -381,8 +382,9 @@ class AdminController extends Controller
             'document_rejection_reason' => null,
         ]);
 
-        // Kirim notifikasi ke Penyelenggara (akan dibuat nanti)
-        // ProposalDocumentApproved::dispatch($event);
+        $event->load('user');
+        // Picu event notifikasi untuk penyelenggara
+        ProposalDocumentStatusUpdated::dispatch($event);
 
         return redirect()->route('admin.proposals.list')->with('success', 'Dokumen proposal telah disetujui. Penyelenggara dapat melanjutkan pengisian detail event.');
     }
@@ -398,8 +400,9 @@ class AdminController extends Controller
             'document_rejection_reason' => $request->document_rejection_reason,
         ]);
 
-        // Kirim notifikasi ke Penyelenggara (akan dibuat nanti)
-        // ProposalDocumentRejected::dispatch($event);
+        $event->load('user');
+        // Picu event notifikasi untuk penyelenggara
+        ProposalDocumentStatusUpdated::dispatch($event);
 
         return redirect()->route('admin.proposals.list')->with('success', 'Dokumen proposal telah ditolak.');
     }

@@ -16,6 +16,9 @@ use Illuminate\Http\Request;
 use App\Events\NewUserRegisteredForVerification;
 use App\Events\ProfileStatusUpdated;
 use Carbon\Carbon;
+use App\Events\ProposalStep1Submitted; // Ditambahkan
+use App\Models\Notification;           // Ditambahkan
+use App\Events\NotificationReceived;  // Ditambahkan
 
 class PenyelenggaraController extends Controller
 {
@@ -73,7 +76,23 @@ class PenyelenggaraController extends Controller
             'status_proposal' => 'draft', // Status awal sebagai draft
         ]);
 
-        // Kirim notifikasi ke Admin (akan dibuat di tahap selanjutnya)
+        $event->load('user');
+
+        // 1. Kirim notifikasi ke semua Admin
+        ProposalStep1Submitted::dispatch($event);
+
+        // 2. Buat dan kirim notifikasi untuk Penyelenggara yang mengajukan
+        $organizer = Auth::user();
+        $notificationForOrganizer = Notification::create([
+            'user_id' => $organizer->id,
+            'type'    => 'App\Notifications\ProposalSubmittedInfo', // Tipe deskriptif
+            'data'    => [
+                'title'   => 'Proposal Anda Telah Diajukan',
+                'message' => "Proposal untuk '{$event->nama_event}' sedang menunggu verifikasi dokumen oleh admin.",
+                'url'     => route('penyelenggara.dashboard'),
+            ]
+        ]);
+        NotificationReceived::dispatch($organizer, $notificationForOrganizer);
 
         return redirect()->route('penyelenggara.dashboard')->with('success', 'Proposal awal berhasil diajukan. Mohon tunggu verifikasi dokumen dari Admin.');
     }
