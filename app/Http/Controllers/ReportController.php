@@ -77,7 +77,7 @@ class ReportController extends Controller
 
         // === STATISTIK KEUANGAN & KONTEN ===
         $financialAndContentStats = [
-            'total_revenue' => ['value' => EventRegistration::where('status', 'pembayaran_terkonfirmasi')->with('event')->get()->sum(function ($reg) {
+            'total_revenue' => ['value' => EventRegistration::whereIn('status', ['pembayaran_terkonfirmasi', 'approved', 'sudah_check_in'])->with('event')->get()->sum(function ($reg) {
                 return $reg->event->biaya_pendaftaran_umkm ?? 0;
             }), 'description' => 'Dari pendaftaran yang terkonfirmasi.'],
             'total_products' => ['value' => Product::count(), 'description' => 'Total produk yang diunggah oleh UMKM.'],

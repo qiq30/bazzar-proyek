@@ -66,7 +66,7 @@ class SystemReportController extends Controller
 
         $registrationAndContentStats = [
             'total_products' => ['value' => Product::count(), 'description' => 'Produk yang diunggah oleh semua UMKM.'],
-            'total_revenue' => ['value' => EventRegistration::where('status', 'pembayaran_terkonfirmasi')->with('event')->get()->sum(fn($reg) => $reg->event->biaya_pendaftaran_umkm ?? 0), 'description' => 'Estimasi pendapatan dari pendaftaran.'],
+            'total_revenue' => ['value' => EventRegistration::whereIn('status', ['pembayaran_terkonfirmasi', 'approved', 'sudah_check_in'])->with('event')->get()->sum(fn($reg) => $reg->event->biaya_pendaftaran_umkm ?? 0), 'description' => 'Estimasi pendapatan dari pendaftaran.'],
         ];
 
         return Inertia::render('SuperAdmin/SystemReport/Index', [
