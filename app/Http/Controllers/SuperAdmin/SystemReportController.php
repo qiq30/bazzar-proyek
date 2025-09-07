@@ -13,13 +13,12 @@ use App\Models\PenyelenggaraProfile;
 use App\Models\EventRegistration;
 use App\Models\Product;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB; // <-- Pastikan ini ada
+use Illuminate\Support\Facades\DB;
 
 class SystemReportController extends Controller
 {
     public function index()
     {
-        // --- ▼▼▼ TAMBAHAN QUERY BARU ▼▼▼ ---
         $monthlyGrowth = User::select(
             DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
             DB::raw('count(*) as count')
@@ -36,16 +35,14 @@ class SystemReportController extends Controller
             $month = Carbon::now()->subMonths($i)->format('Y-m');
             $userMonthlyGrowth[$month] = $monthlyGrowth->get($month, 0);
         }
-        // --- ▲▲▲ AKHIR DARI TAMBAHAN QUERY ---
 
         $userStats = [
-            'total' => User::count(),
+            'total' => ['value' => User::count(), 'description' => 'Semua akun yang terdaftar di sistem.'],
             'umkm' => User::where('is_admin', false)->where('is_penyelenggara', false)->where('is_super_admin', false)->count(),
             'penyelenggara' => User::where('is_penyelenggara', true)->count(),
             'admin' => User::where('is_admin', true)->count(),
             'super_admin' => User::where('is_super_admin', true)->count(),
-            'new_last_30_days' => User::where('created_at', '>=', Carbon::now()->subDays(30))->count(),
-            'monthly_growth' => $userMonthlyGrowth, // <-- Kirim data baru
+            'monthly_growth' => $userMonthlyGrowth,
         ];
 
         $profileStats = [
@@ -58,24 +55,18 @@ class SystemReportController extends Controller
         ];
 
         $eventStats = [
-            'total_published' => Event::whereNotNull('status')->count(),
-            'active' => Event::where('status', 'active')->count(),
-            'upcoming' => Event::where('status', 'upcoming')->count(),
-            'finished' => Event::where('status', 'finished')->count(),
-            'total_proposals' => Event::withTrashed()->count(),
-            'proposals_approved' => Event::where('status_proposal', 'disetujui')->count(),
+            'total_published' => ['value' => Event::whereNotNull('status')->count(), 'description' => 'Event yang telah disetujui dan dipublikasikan.'],
+            'active' => ['value' => Event::where('status', 'active')->count(), 'description' => 'Event yang sedang berlangsung saat ini.'],
+            'finished' => ['value' => Event::where('status', 'finished')->count(), 'description' => 'Event yang telah selesai.'],
+            'total_proposals' => ['value' => Event::withTrashed()->count(), 'description' => 'Semua proposal yang pernah diajukan.'],
+            'proposals_approved' => ['value' => Event::where('status_proposal', 'disetujui')->count(), 'description' => 'Proposal yang lolos dan siap terbit.'],
             'proposals_pending' => Event::where('status_proposal', 'menunggu_persetujuan')->count(),
             'proposals_rejected' => Event::onlyTrashed()->where('status_proposal', 'ditolak')->count(),
         ];
 
         $registrationAndContentStats = [
-            'total_registrations' => EventRegistration::count(),
-            'approved_registrations' => EventRegistration::whereIn('status', ['approved', 'sudah_check_in'])->count(),
-            'total_products' => Product::count(),
-            'total_revenue' => EventRegistration::where('status', 'pembayaran_terkonfirmasi')
-                ->with('event')
-                ->get()
-                ->sum(fn($reg) => $reg->event->biaya_pendaftaran_umkm ?? 0),
+            'total_products' => ['value' => Product::count(), 'description' => 'Produk yang diunggah oleh semua UMKM.'],
+            'total_revenue' => ['value' => EventRegistration::where('status', 'pembayaran_terkonfirmasi')->with('event')->get()->sum(fn($reg) => $reg->event->biaya_pendaftaran_umkm ?? 0), 'description' => 'Estimasi pendapatan dari pendaftaran.'],
         ];
 
         return Inertia::render('SuperAdmin/SystemReport/Index', [

@@ -2,6 +2,7 @@
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, usePage } from "@inertiajs/react";
+import { useState, useEffect } from "react";
 import {
     FiUser,
     FiFileText,
@@ -9,11 +10,49 @@ import {
     FiPlusCircle,
     FiCheckSquare,
     FiHome,
-    FiAlertTriangle, // Ditambahkan dari file kedua
+    FiAlertTriangle,
 } from "react-icons/fi";
 
+// Hook untuk animasi angka
+const useCountAnimation = (end, duration = 1000, start = 0) => {
+    const [count, setCount] = useState(start);
+
+    useEffect(() => {
+        if (end === start) return;
+
+        const startTime = Date.now();
+        const endTime = startTime + duration;
+
+        const updateCount = () => {
+            const now = Date.now();
+            const progress = Math.min((now - startTime) / duration, 1);
+
+            // Easing function (easeOutCubic)
+            const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+
+            const currentCount = Math.round(
+                start + (end - start) * easeOutCubic
+            );
+            setCount(currentCount);
+
+            if (now < endTime) {
+                requestAnimationFrame(updateCount);
+            }
+        };
+
+        requestAnimationFrame(updateCount);
+    }, [end, duration, start]);
+
+    return count;
+};
+
+// Komponen AnimatedNumber
+const AnimatedNumber = ({ value, duration = 1500, className = "" }) => {
+    const animatedValue = useCountAnimation(value, duration);
+    return <span className={className}>{animatedValue}</span>;
+};
+
 // Komponen Notifikasi Status Profil (dari file kedua)
-// Memberikan feedback yang lebih jelas kepada pengguna di atas halaman.
 const ProfileStatusNotification = ({ status, rejectionReason }) => {
     if (status === "pending") {
         return (
@@ -55,7 +94,7 @@ const ProfileStatusNotification = ({ status, rejectionReason }) => {
         );
     }
 
-    return null; // Tidak menampilkan apa-apa jika 'verified' atau status lain
+    return null;
 };
 
 const StatCard = ({
@@ -66,37 +105,66 @@ const StatCard = ({
     link,
     linkText,
     description,
-}) => (
-    <div
-        className={`bg-white p-6 rounded-lg shadow-sm border-l-4 ${color.border} flex flex-col justify-between`}
-    >
-        <div>
-            <div className="flex items-center justify-between">
-                <div>
-                    <p className="text-sm font-medium text-gray-600">{title}</p>
-                    <div className="text-2xl font-bold text-gray-900 mt-1">
-                        {content}
+    isAnimatedNumber = false,
+}) => {
+    const [isVisible, setIsVisible] = useState(false);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsVisible(true);
+        }, 100);
+
+        return () => clearTimeout(timer);
+    }, []);
+
+    return (
+        <div
+            className={`bg-white p-6 rounded-lg shadow-sm border-l-4 ${color.border} flex flex-col justify-between`}
+        >
+            <div>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-sm font-medium text-gray-600">
+                            {title}
+                        </p>
+                        <div className="text-2xl font-bold text-gray-900 mt-1">
+                            {isAnimatedNumber && typeof content === "number" ? (
+                                isVisible ? (
+                                    <AnimatedNumber
+                                        value={content}
+                                        duration={1500}
+                                        className="tabular-nums"
+                                    />
+                                ) : (
+                                    <span className="tabular-nums">0</span>
+                                )
+                            ) : (
+                                content
+                            )}
+                        </div>
+                    </div>
+                    <div
+                        className={`p-3 rounded-full ${color.bg} ${color.text}`}
+                    >
+                        {icon}
                     </div>
                 </div>
-                <div className={`p-3 rounded-full ${color.bg} ${color.text}`}>
-                    {icon}
-                </div>
+            </div>
+            <div className="mt-4 text-sm">
+                {link && linkText ? (
+                    <Link
+                        href={link}
+                        className="font-medium text-blue-600 hover:text-blue-800"
+                    >
+                        {linkText} →
+                    </Link>
+                ) : description ? (
+                    <p className="text-gray-500">{description}</p>
+                ) : null}
             </div>
         </div>
-        <div className="mt-4 text-sm">
-            {link && linkText ? (
-                <Link
-                    href={link}
-                    className="font-medium text-blue-600 hover:text-blue-800"
-                >
-                    {linkText} →
-                </Link>
-            ) : description ? (
-                <p className="text-gray-500">{description}</p>
-            ) : null}
-        </div>
-    </div>
-);
+    );
+};
 
 const HubCard = ({
     href,
@@ -150,7 +218,6 @@ const HubCard = ({
     );
 };
 
-// StatusBadge diganti dengan versi dari file kedua yang lebih lengkap
 const StatusBadge = ({ proposalStatus, eventStatus, docStatus }) => {
     let config = { text: "Unknown", className: "bg-gray-100 text-gray-800" };
 
@@ -263,7 +330,20 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
             <Head title="Dashboard Penyelenggara" />
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
-                    {/* Notifikasi Status Profil Ditempatkan di sini */}
+                    {/* Welcome Card */}
+                    <div className="bg-green-400 overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                        <div className="p-6 text-gray-900">
+                            <h3 className="text-2xl font-bold mb-2">
+                                Selamat Datang, {auth.user.name}!
+                            </h3>
+                            <p className="text-gray-700">
+                                Kelola proposal event Anda dan pantau status
+                                pengajuan dari sini.
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Notifikasi Status Profil */}
                     {!hasProfile ? (
                         <div
                             className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4"
@@ -326,6 +406,7 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
                             }}
                             content={events.length}
                             description="Total proposal yang telah Anda buat."
+                            isAnimatedNumber={true}
                         />
                         <StatCard
                             title="Event Diterbitkan"
@@ -339,6 +420,7 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
                                 events.filter((e) => e.status !== null).length
                             }
                             description="Total event yang telah disetujui & terbit."
+                            isAnimatedNumber={true}
                         />
                     </div>
 
@@ -436,7 +518,6 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
                                                     {event.panitia_pin || "-"}
                                                 </td>
                                                 <td className="py-4 px-6">
-                                                    {/* Logika Tombol Aksi Kontekstual */}
                                                     {event.document_verification_status ===
                                                         "document_approved" &&
                                                     event.status_proposal ===

@@ -6,7 +6,6 @@ import BarChart from "@/Components/BarChart";
 import PieChart from "@/Components/PieChart";
 import LineChart from "@/Components/LineChart";
 import { useSpring, animated } from "@react-spring/web";
-// --- Impor Ikon ---
 import {
     FiUsers,
     FiCheckSquare,
@@ -20,14 +19,14 @@ import {
     FiBarChart2,
 } from "react-icons/fi";
 
-// Komponen Card Statistik dengan Ikon
+// Komponen Kartu Statistik dengan Ikon
 const AnimatedStatCard = ({
     title,
     value,
     description,
     color = "blue",
-    icon, // <-- Prop baru untuk ikon
-    isPercentage = false,
+    icon,
+    allowDecimal = false, // Prop untuk mengizinkan desimal
 }) => {
     const { number } = useSpring({
         from: { number: 0 },
@@ -92,8 +91,8 @@ const AnimatedStatCard = ({
                     </p>
                     <animated.p className="text-3xl font-bold text-gray-900">
                         {number.to((n) =>
-                            isPercentage
-                                ? `${n.toFixed(1)}%`
+                            allowDecimal
+                                ? n.toFixed(1).replace(".", ",")
                                 : Math.floor(n).toLocaleString("id-ID")
                         )}
                     </animated.p>
@@ -115,7 +114,7 @@ const AnimatedStatCard = ({
     );
 };
 
-// Komponen Header Section (Tidak ada perubahan)
+// Komponen Header Section
 const SectionHeader = ({ title, subtitle }) => (
     <div className="p-6 border-b border-gray-200">
         <h3 className="text-xl font-bold text-gray-900">{title}</h3>
@@ -131,13 +130,10 @@ export default function Reports({
     eventStats,
     financialAndContentStats,
 }) {
-    const calculatePercentage = (current, total) =>
-        total > 0 ? (current / total) * 100 : 0;
-
     const eventStatusData = {
-        Aktif: eventStats.active,
-        "Akan Datang": eventStats.upcoming,
-        Selesai: eventStats.finished,
+        Aktif: eventStats.active.value,
+        "Akan Datang": eventStats.upcoming.value,
+        Selesai: eventStats.finished.value,
     };
 
     return (
@@ -177,32 +173,33 @@ export default function Reports({
                         <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <AnimatedStatCard
                                 title="Total UMKM Terdaftar"
-                                value={umkmStats.total}
+                                value={umkmStats.total.value}
+                                description={umkmStats.total.description}
                                 color="blue"
                                 icon={<FiUsers className="h-6 w-6" />}
                             />
                             <AnimatedStatCard
                                 title="UMKM Terverifikasi"
-                                value={umkmStats.verified}
+                                value={umkmStats.verified.value}
+                                description={umkmStats.verified.description}
                                 color="green"
                                 icon={<FiCheckSquare className="h-6 w-6" />}
-                                description={`${calculatePercentage(
-                                    umkmStats.verified,
-                                    umkmStats.total
-                                ).toFixed(1)}% dari total`}
                             />
                             <AnimatedStatCard
                                 title="Menunggu Verifikasi"
-                                value={umkmStats.pending}
+                                value={umkmStats.pending.value}
+                                description={umkmStats.pending.description}
                                 color="yellow"
                                 icon={<FiClock className="h-6 w-6" />}
                             />
                             <AnimatedStatCard
                                 title="UMKM Baru (30 Hari)"
-                                value={umkmStats.new_last_30_days}
+                                value={umkmStats.new_last_30_days.value}
+                                description={
+                                    umkmStats.new_last_30_days.description
+                                }
                                 color="orange"
                                 icon={<FiTrendingUp className="h-6 w-6" />}
-                                description="Pendaftar baru bulan ini"
                             />
                         </div>
                         <div className="p-6 border-t border-gray-200">
@@ -224,29 +221,37 @@ export default function Reports({
                         <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <AnimatedStatCard
                                 title="Total Penyelenggara"
-                                value={penyelenggaraStats.total}
+                                value={penyelenggaraStats.total.value}
+                                description={
+                                    penyelenggaraStats.total.description
+                                }
                                 color="purple"
                                 icon={<FiBriefcase className="h-6 w-6" />}
                             />
                             <AnimatedStatCard
                                 title="Terverifikasi"
-                                value={penyelenggaraStats.verified}
+                                value={penyelenggaraStats.verified.value}
+                                description={
+                                    penyelenggaraStats.verified.description
+                                }
                                 color="green"
                                 icon={<FiCheckSquare className="h-6 w-6" />}
-                                description={`${calculatePercentage(
-                                    penyelenggaraStats.verified,
-                                    penyelenggaraStats.total
-                                ).toFixed(1)}% dari total`}
                             />
                             <AnimatedStatCard
                                 title="Menunggu Verifikasi"
-                                value={penyelenggaraStats.pending}
+                                value={penyelenggaraStats.pending.value}
+                                description={
+                                    penyelenggaraStats.pending.description
+                                }
                                 color="yellow"
                                 icon={<FiClock className="h-6 w-6" />}
                             />
                             <AnimatedStatCard
                                 title="Ditolak"
-                                value={penyelenggaraStats.rejected}
+                                value={penyelenggaraStats.rejected.value}
+                                description={
+                                    penyelenggaraStats.rejected.description
+                                }
                                 color="red"
                                 icon={<FiXCircle className="h-6 w-6" />}
                             />
@@ -262,29 +267,49 @@ export default function Reports({
                         <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <AnimatedStatCard
                                 title="Total Event"
-                                value={eventStats.total}
+                                value={eventStats.total.value}
+                                description={eventStats.total.description}
                                 color="indigo"
                                 icon={<FiArchive className="h-6 w-6" />}
                             />
                             <AnimatedStatCard
                                 title="Pendapatan Registrasi"
-                                value={financialAndContentStats.total_revenue}
+                                value={
+                                    financialAndContentStats.total_revenue.value
+                                }
+                                description={
+                                    financialAndContentStats.total_revenue
+                                        .description
+                                }
                                 color="teal"
                                 icon={<FiDollarSign className="h-6 w-6" />}
-                                description="Dari pendaftaran terkonfirmasi"
                             />
                             <AnimatedStatCard
                                 title="Total Produk UMKM"
-                                value={financialAndContentStats.total_products}
+                                value={
+                                    financialAndContentStats.total_products
+                                        .value
+                                }
+                                description={
+                                    financialAndContentStats.total_products
+                                        .description
+                                }
                                 color="blue"
                                 icon={<FiBox className="h-6 w-6" />}
                             />
                             <AnimatedStatCard
                                 title="Rata-rata Pendaftar"
-                                value={eventStats.average_registrants_per_event}
+                                value={
+                                    eventStats.average_registrants_per_event
+                                        .value
+                                }
+                                description={
+                                    eventStats.average_registrants_per_event
+                                        .description
+                                }
                                 color="orange"
                                 icon={<FiBarChart2 className="h-6 w-6" />}
-                                description="Partisipasi per event"
+                                allowDecimal={true}
                             />
                         </div>
                         <div className="p-6 border-t grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">

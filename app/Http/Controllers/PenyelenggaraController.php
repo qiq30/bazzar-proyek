@@ -163,13 +163,16 @@ class PenyelenggaraController extends Controller
         $user = Auth::user();
         $profile = $user->penyelenggaraProfile;
 
-        $request->validate([
-            'organizer_name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'address' => 'required|string',
-            'verification_document' => [$profile ? 'nullable' : 'required', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-        ]);
+        $request->validate(
+            [
+                'organizer_name' => 'required|string|max:255',
+                'description' => 'required|string',
+                'address' => 'required|string',
+                'verification_document' => [$profile ? 'nullable' : 'required', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
+                'logo' => 'nullable|image|mimes:jpeg,png,jpg',
+                'max:2048'
+            ],
+        );
 
         $documentPath = $profile->verification_document_path ?? null;
         if ($request->hasFile('verification_document')) {

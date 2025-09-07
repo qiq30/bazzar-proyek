@@ -15,13 +15,10 @@ import {
     FiFileText,
 } from "react-icons/fi";
 
-// --- Komponen Kartu Statistik dengan Animasi Angka dan Strip Warna Vertikal ---
-const StatCard = ({ title, value, icon, color }) => {
-    const valueStr = String(value);
-    const isCurrency = valueStr.startsWith("Rp");
-
-    // Ekstrak hanya angka dari string untuk dianimasikan
-    const numericValue = Number(valueStr.replace(/[^0-9.-]+/g, "")) || 0;
+// --- Komponen Kartu Statistik yang sudah diperbaiki ---
+const StatCard = ({ title, value, description, icon, color }) => {
+    const isCurrency = String(value).startsWith("Rp");
+    const numericValue = Number(String(value).replace(/[^0-9.-]+/g, "")) || 0;
 
     const { number } = useSpring({
         from: { number: 0 },
@@ -30,7 +27,6 @@ const StatCard = ({ title, value, icon, color }) => {
         config: { mass: 1, tension: 20, friction: 14 },
     });
 
-    // Mapping warna untuk strip vertikal yang lebih bold
     const getStripColor = (colorConfig) => {
         const colorMap = {
             "bg-blue-100": "bg-blue-500",
@@ -47,13 +43,11 @@ const StatCard = ({ title, value, icon, color }) => {
 
     return (
         <div className="relative bg-white rounded-xl shadow-md border border-gray-100 flex items-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 overflow-hidden">
-            {/* Strip Warna Vertikal di Sisi Kiri */}
             <div
                 className={`absolute left-0 top-0 bottom-0 w-1.5 ${getStripColor(
                     color
                 )}`}
             ></div>
-
             <div className="flex items-center space-x-4 p-5 pl-7 w-full">
                 <div
                     className={`text-2xl p-4 rounded-lg ${color.bg} ${color.text}`}
@@ -64,16 +58,17 @@ const StatCard = ({ title, value, icon, color }) => {
                     <p className="text-sm font-medium text-gray-500 mb-1">
                         {title}
                     </p>
-                    {isCurrency ? (
-                        <p className="text-2xl font-bold text-gray-900">
-                            {valueStr}
+                    <animated.p className="text-2xl font-bold text-gray-900">
+                        {number.to((n) =>
+                            isCurrency
+                                ? `Rp ${Math.floor(n).toLocaleString("id-ID")}`
+                                : Math.floor(n).toLocaleString("id-ID")
+                        )}
+                    </animated.p>
+                    {description && (
+                        <p className="text-xs text-gray-500 mt-2 leading-relaxed">
+                            {description}
                         </p>
-                    ) : (
-                        <animated.p className="text-2xl font-bold text-gray-900">
-                            {number.to((n) =>
-                                Math.floor(n).toLocaleString("id-ID")
-                            )}
-                        </animated.p>
                     )}
                 </div>
             </div>
@@ -108,7 +103,7 @@ export default function SystemReport({
         Admin: userStats.admin,
     };
     const proposalStatusData = {
-        Disetujui: eventStats.proposals_approved,
+        Disetujui: eventStats.proposals_approved.value,
         Menunggu: eventStats.proposals_pending,
         Ditolak: eventStats.proposals_rejected,
     };
@@ -158,7 +153,8 @@ export default function SystemReport({
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <StatCard
                                 title="Total Pengguna"
-                                value={userStats.total}
+                                value={userStats.total.value}
+                                description={userStats.total.description}
                                 icon={<FiUsers />}
                                 color={{
                                     bg: "bg-blue-100",
@@ -167,7 +163,10 @@ export default function SystemReport({
                             />
                             <StatCard
                                 title="Total Event"
-                                value={eventStats.total_published}
+                                value={eventStats.total_published.value}
+                                description={
+                                    eventStats.total_published.description
+                                }
                                 icon={<FiArchive />}
                                 color={{
                                     bg: "bg-indigo-100",
@@ -178,6 +177,11 @@ export default function SystemReport({
                                 title="Total Produk"
                                 value={
                                     registrationAndContentStats.total_products
+                                        .value
+                                }
+                                description={
+                                    registrationAndContentStats.total_products
+                                        .description
                                 }
                                 icon={<FiBox />}
                                 color={{
@@ -187,9 +191,11 @@ export default function SystemReport({
                             />
                             <StatCard
                                 title="Perkiraan Pendapatan"
-                                value={`Rp ${registrationAndContentStats.total_revenue.toLocaleString(
-                                    "id-ID"
-                                )}`}
+                                value={`Rp ${registrationAndContentStats.total_revenue.value}`}
+                                description={
+                                    registrationAndContentStats.total_revenue
+                                        .description
+                                }
                                 icon={<FiDollarSign />}
                                 color={{
                                     bg: "bg-emerald-100",
@@ -244,7 +250,10 @@ export default function SystemReport({
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                             <StatCard
                                 title="Total Proposal"
-                                value={eventStats.total_proposals}
+                                value={eventStats.total_proposals.value}
+                                description={
+                                    eventStats.total_proposals.description
+                                }
                                 icon={<FiFileText />}
                                 color={{
                                     bg: "bg-yellow-100",
@@ -253,7 +262,10 @@ export default function SystemReport({
                             />
                             <StatCard
                                 title="Proposal Disetujui"
-                                value={eventStats.proposals_approved}
+                                value={eventStats.proposals_approved.value}
+                                description={
+                                    eventStats.proposals_approved.description
+                                }
                                 icon={<FiCheckSquare />}
                                 color={{
                                     bg: "bg-cyan-100",
@@ -262,7 +274,8 @@ export default function SystemReport({
                             />
                             <StatCard
                                 title="Event Aktif"
-                                value={eventStats.active}
+                                value={eventStats.active.value}
+                                description={eventStats.active.description}
                                 icon={<FiArchive />}
                                 color={{
                                     bg: "bg-rose-100",
@@ -271,7 +284,8 @@ export default function SystemReport({
                             />
                             <StatCard
                                 title="Event Selesai"
-                                value={eventStats.finished}
+                                value={eventStats.finished.value}
+                                description={eventStats.finished.description}
                                 icon={<FiCheckSquare />}
                                 color={{
                                     bg: "bg-slate-100",

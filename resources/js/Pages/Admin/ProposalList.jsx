@@ -57,10 +57,10 @@ export default function ProposalList({
                                             <th className="py-3 px-6 text-left">
                                                 Nama Event
                                             </th>
-                                            <th className="py-3 px-6 text-left">
+                                            <th className="py-3 px-6 text-left hidden sm:table-cell">
                                                 Penyelenggara
                                             </th>
-                                            <th className="py-3 px-6 text-left">
+                                            <th className="py-3 px-6 text-left hidden md:table-cell">
                                                 Tanggal Pengajuan
                                             </th>
                                             <th className="py-3 px-6 text-left">
@@ -75,12 +75,24 @@ export default function ProposalList({
                                                 className="hover:bg-gray-50"
                                             >
                                                 <td className="py-4 px-6 font-medium">
-                                                    {p.nama_event}
+                                                    <div className="text-sm font-medium text-gray-900">
+                                                        {p.nama_event}
+                                                    </div>
+                                                    <div className="text-sm text-gray-500 sm:hidden">
+                                                        {p.user.name}
+                                                    </div>
+                                                    <div className="text-xs text-gray-400 md:hidden">
+                                                        {new Date(
+                                                            p.created_at
+                                                        ).toLocaleDateString(
+                                                            "id-ID"
+                                                        )}
+                                                    </div>
                                                 </td>
-                                                <td className="py-4 px-6 text-gray-500">
+                                                <td className="py-4 px-6 text-gray-500 hidden sm:table-cell">
                                                     {p.user.name}
                                                 </td>
-                                                <td className="py-4 px-6 text-sm text-gray-500">
+                                                <td className="py-4 px-6 text-sm text-gray-500 hidden md:table-cell">
                                                     {new Date(
                                                         p.created_at
                                                     ).toLocaleDateString(
@@ -88,15 +100,22 @@ export default function ProposalList({
                                                     )}
                                                 </td>
                                                 <td className="py-4 px-6">
-                                                    <Link
-                                                        href={route(
-                                                            "admin.proposals.document.review",
-                                                            p.id
-                                                        )}
-                                                        className="px-4 py-2 bg-yellow-500 text-white text-xs font-semibold rounded-md hover:bg-yellow-600"
-                                                    >
-                                                        Tinjau Dokumen
-                                                    </Link>
+                                                    <div className="flex flex-col sm:flex-row gap-2">
+                                                        <Link
+                                                            href={route(
+                                                                "admin.proposals.document.review",
+                                                                p.id
+                                                            )}
+                                                            className="w-full sm:w-auto px-3 py-2 bg-yellow-500 text-white text-xs font-semibold rounded-md hover:bg-yellow-600 text-center inline-block"
+                                                        >
+                                                            <span className="hidden sm:inline">
+                                                                Tinjau Dokumen
+                                                            </span>
+                                                            <span className="sm:hidden">
+                                                                Tinjau
+                                                            </span>
+                                                        </Link>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
@@ -126,7 +145,6 @@ export default function ProposalList({
                                 yang detailnya perlu Anda setujui.
                             </p>
                         </div>
-                        {/* ... (isi tabel proposal masuk yang sudah ada tidak berubah) ... */}
                         <div className="overflow-x-auto">
                             {pendingProposals.length > 0 ? (
                                 <table className="min-w-full">
@@ -135,10 +153,10 @@ export default function ProposalList({
                                             <th className="py-3 px-6 text-left">
                                                 Nama Event
                                             </th>
-                                            <th className="py-3 px-6 text-left">
+                                            <th className="py-3 px-6 text-left hidden sm:table-cell">
                                                 Nama Penyelenggara
                                             </th>
-                                            <th className="py-3 px-6 text-left">
+                                            <th className="py-3 px-6 text-left hidden md:table-cell">
                                                 Tanggal Pengajuan
                                             </th>
                                             <th className="py-3 px-6 text-left">
@@ -153,12 +171,24 @@ export default function ProposalList({
                                                 className="hover:bg-gray-50"
                                             >
                                                 <td className="py-4 px-6 font-medium">
-                                                    {p.nama_event}
+                                                    <div className="text-sm font-medium text-gray-900">
+                                                        {p.nama_event}
+                                                    </div>
+                                                    <div className="text-sm text-gray-500 sm:hidden">
+                                                        {p.user.name}
+                                                    </div>
+                                                    <div className="text-xs text-gray-400 md:hidden">
+                                                        {new Date(
+                                                            p.created_at
+                                                        ).toLocaleDateString(
+                                                            "id-ID"
+                                                        )}
+                                                    </div>
                                                 </td>
-                                                <td className="py-4 px-6 text-gray-500">
+                                                <td className="py-4 px-6 text-gray-500 hidden sm:table-cell">
                                                     {p.user.name}
                                                 </td>
-                                                <td className="py-4 px-6 text-sm text-gray-500">
+                                                <td className="py-4 px-6 text-sm text-gray-500 hidden md:table-cell">
                                                     {new Date(
                                                         p.created_at
                                                     ).toLocaleDateString(
@@ -166,15 +196,22 @@ export default function ProposalList({
                                                     )}
                                                 </td>
                                                 <td className="py-4 px-6">
-                                                    <Link
-                                                        href={route(
-                                                            "admin.proposals.show",
-                                                            p.id
-                                                        )}
-                                                        className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-md hover:bg-blue-700"
-                                                    >
-                                                        Lihat Detail
-                                                    </Link>
+                                                    <div className="flex flex-col sm:flex-row gap-2">
+                                                        <Link
+                                                            href={route(
+                                                                "admin.proposals.show",
+                                                                p.id
+                                                            )}
+                                                            className="w-full sm:w-auto px-3 py-2 bg-blue-600 text-white text-xs font-semibold rounded-md hover:bg-blue-700 text-center inline-block"
+                                                        >
+                                                            <span className="hidden sm:inline">
+                                                                Lihat Detail
+                                                            </span>
+                                                            <span className="sm:hidden">
+                                                                Detail
+                                                            </span>
+                                                        </Link>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
@@ -208,13 +245,13 @@ export default function ProposalList({
                                             <th className="py-3 px-6 text-left">
                                                 Nama Event
                                             </th>
-                                            <th className="py-3 px-6 text-left">
+                                            <th className="py-3 px-6 text-left hidden sm:table-cell">
                                                 Penyelenggara
                                             </th>
-                                            <th className="py-3 px-6 text-left">
+                                            <th className="py-3 px-6 text-left hidden md:table-cell">
                                                 Tanggal Disetujui
                                             </th>
-                                            <th className="py-3 px-6 text-left">
+                                            <th className="py-3 px-6 text-left hidden lg:table-cell">
                                                 Status Event
                                             </th>
                                             <th className="py-3 px-6 text-left">
@@ -229,19 +266,44 @@ export default function ProposalList({
                                                 className="hover:bg-gray-50"
                                             >
                                                 <td className="py-4 px-6 font-medium">
-                                                    {p.nama_event}
+                                                    <div className="text-sm font-medium text-gray-900">
+                                                        {p.nama_event}
+                                                    </div>
+                                                    <div className="text-sm text-gray-500 sm:hidden">
+                                                        {p.user.name}
+                                                    </div>
+                                                    <div className="text-xs text-gray-400 md:hidden">
+                                                        {new Date(
+                                                            p.updated_at
+                                                        ).toLocaleDateString(
+                                                            "id-ID"
+                                                        )}
+                                                    </div>
+                                                    <div className="mt-1 lg:hidden">
+                                                        <span
+                                                            className={`px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full ${
+                                                                p.status
+                                                                    ? "bg-green-100 text-green-800"
+                                                                    : "bg-gray-100 text-gray-800"
+                                                            }`}
+                                                        >
+                                                            {p.status
+                                                                ? "Diterbitkan"
+                                                                : "Belum Diterbitkan"}
+                                                        </span>
+                                                    </div>
                                                 </td>
-                                                <td className="py-4 px-6 text-gray-500">
+                                                <td className="py-4 px-6 text-gray-500 hidden sm:table-cell">
                                                     {p.user.name}
                                                 </td>
-                                                <td className="py-4 px-6 text-sm text-gray-500">
+                                                <td className="py-4 px-6 text-sm text-gray-500 hidden md:table-cell">
                                                     {new Date(
                                                         p.updated_at
                                                     ).toLocaleDateString(
                                                         "id-ID"
                                                     )}
                                                 </td>
-                                                <td className="py-4 px-6">
+                                                <td className="py-4 px-6 hidden lg:table-cell">
                                                     <span
                                                         className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
                                                             p.status
@@ -255,15 +317,22 @@ export default function ProposalList({
                                                     </span>
                                                 </td>
                                                 <td className="py-4 px-6">
-                                                    <Link
-                                                        href={route(
-                                                            "admin.proposals.show",
-                                                            p.id
-                                                        )}
-                                                        className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-md hover:bg-blue-700"
-                                                    >
-                                                        Lihat Detail
-                                                    </Link>
+                                                    <div className="flex flex-col sm:flex-row gap-2">
+                                                        <Link
+                                                            href={route(
+                                                                "admin.proposals.show",
+                                                                p.id
+                                                            )}
+                                                            className="w-full sm:w-auto px-3 py-2 bg-blue-600 text-white text-xs font-semibold rounded-md hover:bg-blue-700 text-center inline-block"
+                                                        >
+                                                            <span className="hidden sm:inline">
+                                                                Lihat Detail
+                                                            </span>
+                                                            <span className="sm:hidden">
+                                                                Detail
+                                                            </span>
+                                                        </Link>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
@@ -297,10 +366,10 @@ export default function ProposalList({
                                             <th className="py-3 px-6 text-left">
                                                 Nama Event
                                             </th>
-                                            <th className="py-3 px-6 text-left">
+                                            <th className="py-3 px-6 text-left hidden sm:table-cell">
                                                 Penyelenggara
                                             </th>
-                                            <th className="py-3 px-6 text-left">
+                                            <th className="py-3 px-6 text-left hidden md:table-cell">
                                                 Alasan Penolakan
                                             </th>
                                             <th className="py-3 px-6 text-left">
@@ -315,27 +384,48 @@ export default function ProposalList({
                                                 className="hover:bg-gray-50"
                                             >
                                                 <td className="py-4 px-6 font-medium">
-                                                    {p.nama_event}
+                                                    <div className="text-sm font-medium text-gray-900">
+                                                        {p.nama_event}
+                                                    </div>
+                                                    <div className="text-sm text-gray-500 sm:hidden">
+                                                        {p.user.name}
+                                                    </div>
+                                                    <div className="text-xs text-gray-600 md:hidden mt-1">
+                                                        <span className="font-medium">
+                                                            Alasan:
+                                                        </span>{" "}
+                                                        {p.rejection_reason ||
+                                                            p.document_rejection_reason}
+                                                    </div>
                                                 </td>
-                                                <td className="py-4 px-6 text-gray-500">
+                                                <td className="py-4 px-6 text-gray-500 hidden sm:table-cell">
                                                     {p.user.name}
                                                 </td>
-                                                <td className="py-4 px-6 text-sm text-gray-600">
+                                                <td className="py-4 px-6 text-sm text-gray-600 hidden md:table-cell">
                                                     {p.rejection_reason ||
                                                         p.document_rejection_reason}
                                                 </td>
                                                 <td className="py-4 px-6">
-                                                    <button
-                                                        onClick={() =>
-                                                            handleForceDelete(
-                                                                p.id
-                                                            )
-                                                        }
-                                                        disabled={processing}
-                                                        className="px-4 py-2 bg-red-600 text-white text-xs font-semibold rounded-md hover:bg-red-800 disabled:opacity-50"
-                                                    >
-                                                        Hapus Permanen
-                                                    </button>
+                                                    <div className="flex flex-col sm:flex-row gap-2">
+                                                        <button
+                                                            onClick={() =>
+                                                                handleForceDelete(
+                                                                    p.id
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                processing
+                                                            }
+                                                            className="w-full sm:w-auto px-3 py-2 bg-red-600 text-white text-xs font-semibold rounded-md hover:bg-red-800 disabled:opacity-50 text-center"
+                                                        >
+                                                            <span className="hidden sm:inline">
+                                                                Hapus Permanen
+                                                            </span>
+                                                            <span className="sm:hidden">
+                                                                Hapus
+                                                            </span>
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}

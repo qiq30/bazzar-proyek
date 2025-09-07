@@ -8,7 +8,7 @@ use App\Models\UmkmProfile;
 use App\Models\PenyelenggaraProfile;
 use App\Models\Product;
 use App\Models\EventRegistration;
-use Illuminate\Support\Facades\DB; // <-- TAMBAHKAN INI
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -21,7 +21,6 @@ class ReportController extends Controller
         $totalUmkm = UmkmProfile::count();
         $verifiedUmkm = UmkmProfile::where('status', 'verified')->count();
 
-        // --- ▼▼▼ TAMBAHAN QUERY BARU ▼▼▼ ---
         $monthlyGrowth = UmkmProfile::select(
             DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
             DB::raw('count(*) as count')
@@ -30,63 +29,58 @@ class ReportController extends Controller
             ->groupBy('month')
             ->orderBy('month', 'asc')
             ->get()
-            ->keyBy('month') // Menggunakan bulan sebagai key
+            ->keyBy('month')
             ->map(function ($item) {
-                return $item->count; // Hanya mengambil count
+                return $item->count;
             });
 
-        // Memastikan semua 6 bulan terakhir ada datanya (meskipun 0)
         $umkmMonthlyGrowth = [];
         for ($i = 5; $i >= 0; $i--) {
             $month = Carbon::now()->subMonths($i)->format('Y-m');
             $umkmMonthlyGrowth[$month] = $monthlyGrowth->get($month, 0);
         }
-        // --- ▲▲▲ AKHIR DARI TAMBAHAN QUERY ---
 
         $umkmStats = [
-            'total' => $totalUmkm,
-            'verified' => $verifiedUmkm,
-            'pending' => UmkmProfile::where('status', 'pending')->count(),
-            'rejected' => UmkmProfile::where('status', 'rejected')->count(),
+            'total' => ['value' => $totalUmkm, 'description' => 'Semua profil UMKM yang pernah dibuat.'],
+            'verified' => ['value' => $verifiedUmkm, 'description' => 'Profil yang telah disetujui dan aktif.'],
+            'pending' => ['value' => UmkmProfile::where('status', 'pending')->count(), 'description' => 'Profil baru yang menunggu peninjauan.'],
+            'rejected' => ['value' => UmkmProfile::where('status', 'rejected')->count(), 'description' => 'Profil yang ditolak saat verifikasi.'],
+            'new_last_30_days' => ['value' => UmkmProfile::where('created_at', '>=', Carbon::now()->subDays(30))->count(), 'description' => 'Pendaftar baru dalam sebulan terakhir.'],
             'by_type' => UmkmProfile::where('status', 'verified')
                 ->groupBy('business_type')
                 ->selectRaw('business_type, count(*) as total')
                 ->pluck('total', 'business_type'),
-            'new_last_30_days' => UmkmProfile::where('created_at', '>=', Carbon::now()->subDays(30))->count(),
-            'monthly_growth' => $umkmMonthlyGrowth, // <-- DATA BARU UNTUK GRAFIK
+            'monthly_growth' => $umkmMonthlyGrowth,
         ];
 
         // === STATISTIK PENYELENGGARA ===
         $penyelenggaraStats = [
-            'total' => PenyelenggaraProfile::count(),
-            'verified' => PenyelenggaraProfile::where('status', 'verified')->count(),
-            'pending' => PenyelenggaraProfile::where('status', 'pending')->count(),
-            'rejected' => PenyelenggaraProfile::where('status', 'rejected')->count(),
+            'total' => ['value' => PenyelenggaraProfile::count(), 'description' => 'Total akun penyelenggara event.'],
+            'verified' => ['value' => PenyelenggaraProfile::where('status', 'verified')->count(), 'description' => 'Akun yang sudah dapat membuat event.'],
+            'pending' => ['value' => PenyelenggaraProfile::where('status', 'pending')->count(), 'description' => 'Akun yang menunggu persetujuan.'],
+            'rejected' => ['value' => PenyelenggaraProfile::where('status', 'rejected')->count(), 'description' => 'Akun yang ditolak saat verifikasi.'],
         ];
 
         // === STATISTIK EVENT & PARTISIPASI ===
         $totalEvents = Event::whereNotNull('status')->count();
         $totalApprovedRegistrations = EventRegistration::whereIn('status', ['approved', 'sudah_check_in'])->count();
         $eventStats = [
-            'total' => $totalEvents,
-            'active' => Event::where('status', 'active')->count(),
-            'upcoming' => Event::where('status', 'upcoming')->count(),
-            'finished' => Event::where('status', 'finished')->count(),
+            'total' => ['value' => $totalEvents, 'description' => 'Jumlah event yang sudah diterbitkan.'],
+            'active' => ['value' => Event::where('status', 'active')->count(), 'description' => 'Event yang sedang berlangsung saat ini.'],
+            'upcoming' => ['value' => Event::where('status', 'upcoming')->count(), 'description' => 'Event yang akan segera dimulai.'],
+            'finished' => ['value' => Event::where('status', 'finished')->count(), 'description' => 'Event yang telah selesai dilaksanakan.'],
+            'average_registrants_per_event' => ['value' => $totalEvents > 0 ? round($totalApprovedRegistrations / $totalEvents, 1) : 0, 'description' => 'Rata-rata partisipasi UMKM di setiap event.'],
             'participants_per_event' => Event::withCount(['eventRegistrations' => function ($query) {
                 $query->whereIn('status', ['approved', 'sudah_check_in']);
             }])->whereNotNull('status')->orderBy('event_registrations_count', 'desc')->limit(10)->get(['nama_event', 'event_registrations_count']),
-            'average_registrants_per_event' => $totalEvents > 0 ? round($totalApprovedRegistrations / $totalEvents, 1) : 0,
         ];
 
         // === STATISTIK KEUANGAN & KONTEN ===
         $financialAndContentStats = [
-            'total_revenue' => EventRegistration::where('status', 'pembayaran_terkonfirmasi')
-                ->with('event')
-                ->get()
-                ->sum(function ($reg) {
-                    return $reg->event->biaya_pendaftaran_umkm ?? 0;
-                }),
-            'total_products' => Product::count(),
+            'total_revenue' => ['value' => EventRegistration::where('status', 'pembayaran_terkonfirmasi')->with('event')->get()->sum(function ($reg) {
+                return $reg->event->biaya_pendaftaran_umkm ?? 0;
+            }), 'description' => 'Dari pendaftaran yang terkonfirmasi.'],
+            'total_products' => ['value' => Product::count(), 'description' => 'Total produk yang diunggah oleh UMKM.'],
         ];
 
         return Inertia::render('Admin/Reports/Index', [

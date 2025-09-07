@@ -23,7 +23,12 @@ class AdminController extends Controller
 {
     public function dashboard()
     {
-        // --- DATA STATISTIK KARTU (TIDAK BERUBAH) ---
+        // --- ▼▼▼ PERBAIKAN FINAL DI SINI ▼▼▼ ---
+        $pendingProposalsCount = Event::where(function ($query) {
+            $query->where('status_proposal', 'menunggu_persetujuan')
+                ->orWhere('document_verification_status', 'pending_document_verification');
+        })->count();
+
         $stats = [
             'totalEvents' => Event::whereNotNull('status')->count(),
             'activeEvents' => Event::where('status', 'active')->count(),
@@ -33,18 +38,16 @@ class AdminController extends Controller
             'totalPenyelenggara' => PenyelenggaraProfile::count(),
             'verifiedPenyelenggara' => PenyelenggaraProfile::where('status', 'verified')->count(),
             'pendingPenyelenggara' => PenyelenggaraProfile::where('status', 'pending')->count(),
-            'pendingProposals' => Event::where('status_proposal', 'menunggu_persetujuan')->count(),
+            'pendingProposals' => $pendingProposalsCount, // Menggunakan hasil query yang sudah digabung
         ];
+        // --- ▲▲▲ AKHIR DARI PERBAIKAN ▲▲▲ ---
 
-        // --- ▼▼▼ DATA BARU UNTUK GRAFIK ▼▼▼ ---
+        // ... (sisa kode tidak berubah)
         $chartData = [
-            // Grafik 1: Komposisi Pengguna (UMKM vs Penyelenggara)
             'userComposition' => [
                 'UMKM' => UmkmProfile::count(),
                 'Penyelenggara' => PenyelenggaraProfile::count(),
             ],
-
-            // Grafik 2: Event Terpopuler berdasarkan pendaftar
             'popularEvents' => Event::withCount(['eventRegistrations' => function ($query) {
                 $query->whereIn('status', ['approved', 'sudah_check_in', 'pembayaran_terkonfirmasi']);
             }])
@@ -53,15 +56,13 @@ class AdminController extends Controller
                 ->limit(5)
                 ->get(['nama_event', 'event_registrations_count'])
                 ->mapWithKeys(function ($event) {
-                    // Mengubah format agar mudah dibaca oleh komponen chart
                     return [$event->nama_event => $event->event_registrations_count];
                 }),
         ];
-        // --- ▲▲▲ AKHIR DARI DATA GRAFIK ---
 
         return Inertia::render('Admin/AdminDashboard', [
             'stats' => $stats,
-            'chartData' => $chartData, // <-- Kirim data baru ke frontend
+            'chartData' => $chartData,
         ]);
     }
 

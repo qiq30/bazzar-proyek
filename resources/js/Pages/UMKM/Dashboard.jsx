@@ -3,6 +3,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, usePage } from "@inertiajs/react";
 import { Toaster } from "react-hot-toast";
+import { useState, useEffect } from "react";
 import {
     FiUser,
     FiCalendar,
@@ -13,21 +14,88 @@ import {
     FiTag,
 } from "react-icons/fi";
 
-const StatCardContent = ({ title, content, icon, color }) => (
-    <>
+// Hook untuk animasi angka
+const useCountAnimation = (end, duration = 1000, start = 0) => {
+    const [count, setCount] = useState(start);
+
+    useEffect(() => {
+        if (end === start) return;
+
+        const startTime = Date.now();
+        const endTime = startTime + duration;
+
+        const updateCount = () => {
+            const now = Date.now();
+            const progress = Math.min((now - startTime) / duration, 1);
+
+            // Easing function (easeOutCubic)
+            const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+
+            const currentCount = Math.round(
+                start + (end - start) * easeOutCubic
+            );
+            setCount(currentCount);
+
+            if (now < endTime) {
+                requestAnimationFrame(updateCount);
+            }
+        };
+
+        requestAnimationFrame(updateCount);
+    }, [end, duration, start]);
+
+    return count;
+};
+
+// Komponen AnimatedNumber
+const AnimatedNumber = ({ value, duration = 1500, className = "" }) => {
+    const animatedValue = useCountAnimation(value, duration);
+    return <span className={className}>{animatedValue}</span>;
+};
+
+const StatCardContent = ({
+    title,
+    content,
+    icon,
+    color,
+    isAnimatedNumber = false,
+}) => {
+    const [isVisible, setIsVisible] = useState(false);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsVisible(true);
+        }, 100);
+
+        return () => clearTimeout(timer);
+    }, []);
+
+    return (
         <div className="flex items-center justify-between">
             <div>
                 <p className="text-sm font-medium text-gray-600">{title}</p>
                 <div className="text-2xl font-bold text-gray-900 mt-1">
-                    {content}
+                    {isAnimatedNumber && typeof content === "number" ? (
+                        isVisible ? (
+                            <AnimatedNumber
+                                value={content}
+                                duration={1500}
+                                className="tabular-nums"
+                            />
+                        ) : (
+                            <span className="tabular-nums">0</span>
+                        )
+                    ) : (
+                        content
+                    )}
                 </div>
             </div>
             <div className={`p-3 rounded-full ${color.bg} ${color.text}`}>
                 {icon}
             </div>
         </div>
-    </>
-);
+    );
+};
 
 const HubCard = ({
     href,
@@ -252,6 +320,7 @@ export default function Dashboard({
                                     text: "text-green-500",
                                 }}
                                 content={registeredEvents.length}
+                                isAnimatedNumber={true}
                             />
                             <Link
                                 href="/events"
