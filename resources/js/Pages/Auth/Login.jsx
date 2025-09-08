@@ -30,13 +30,10 @@ export default function Login({ status, canResetPassword }) {
     return (
         <>
             <Head title="Log in" />
-            {/* Fixed container with proper centering */}
             <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-6 sm:px-6 lg:px-8">
-                {/* Main card container with improved responsive layout */}
                 <div className="w-full max-w-4xl bg-white shadow-2xl rounded-2xl overflow-hidden">
-                    {/* Responsive flex container */}
                     <div className="flex flex-col md:flex-row">
-                        {/* Form Section - Full width on mobile, half on desktop */}
+                        {/* Form Section */}
                         <div className="w-full md:w-1/2 order-2 md:order-1">
                             <div className="px-6 py-8 sm:px-8 md:px-12 lg:px-16">
                                 <motion.div
@@ -68,45 +65,51 @@ export default function Login({ status, canResetPassword }) {
                                         onSubmit={submit}
                                         className="space-y-6"
                                     >
-                                        <div className="relative">
-                                            <EnvelopeIcon className="absolute w-5 h-5 text-gray-400 left-4 top-1/2 -translate-y-1/2" />
-                                            <TextInput
-                                                id="email"
-                                                type="email"
-                                                value={data.email}
-                                                className="block w-full py-3 pl-12 pr-4 border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                                autoComplete="username"
-                                                isFocused={true}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        "email",
-                                                        e.target.value
-                                                    )
-                                                }
-                                                placeholder="Email Anda"
-                                            />
+                                        {/* PEMBENAHAN: FIELD EMAIL */}
+                                        <div>
+                                            <div className="relative">
+                                                <EnvelopeIcon className="absolute w-5 h-5 text-gray-400 left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                                <TextInput
+                                                    id="email"
+                                                    type="email"
+                                                    value={data.email}
+                                                    className="block w-full py-3 pl-12 pr-4 border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                                    autoComplete="username"
+                                                    isFocused={true}
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            "email",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    placeholder="Email Anda"
+                                                />
+                                            </div>
                                             <InputError
                                                 message={errors.email}
                                                 className="mt-2"
                                             />
                                         </div>
 
-                                        <div className="relative">
-                                            <LockClosedIcon className="absolute w-5 h-5 text-gray-400 left-4 top-1/2 -translate-y-1/2" />
-                                            <TextInput
-                                                id="password"
-                                                type="password"
-                                                value={data.password}
-                                                className="block w-full py-3 pl-12 pr-4 border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                                autoComplete="current-password"
-                                                onChange={(e) =>
-                                                    setData(
-                                                        "password",
-                                                        e.target.value
-                                                    )
-                                                }
-                                                placeholder="Password"
-                                            />
+                                        {/* PEMBENAHAN: FIELD PASSWORD */}
+                                        <div>
+                                            <div className="relative">
+                                                <LockClosedIcon className="absolute w-5 h-5 text-gray-400 left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                                <TextInput
+                                                    id="password"
+                                                    type="password"
+                                                    value={data.password}
+                                                    className="block w-full py-3 pl-12 pr-4 border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                                    autoComplete="current-password"
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            "password",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    placeholder="Password"
+                                                />
+                                            </div>
                                             <InputError
                                                 message={errors.password}
                                                 className="mt-2"
@@ -152,6 +155,7 @@ export default function Login({ status, canResetPassword }) {
                                             <AnimatePresence>
                                                 {processing && (
                                                     <motion.div
+                                                        key="processing-spinner"
                                                         initial={{
                                                             opacity: 0,
                                                             scale: 0.5,
@@ -196,7 +200,7 @@ export default function Login({ status, canResetPassword }) {
                             </div>
                         </div>
 
-                        {/* Image Section - Full width on mobile, half on desktop */}
+                        {/* Image Section */}
                         <div className="w-full md:w-1/2 order-1 md:order-2">
                             <div className="relative h-48 sm:h-64 md:h-full min-h-[300px]">
                                 <motion.div

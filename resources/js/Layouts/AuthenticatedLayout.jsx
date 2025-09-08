@@ -10,7 +10,51 @@ import ImpersonateBanner from "@/Components/ImpersonateBanner";
 import { Link, usePage, router } from "@inertiajs/react";
 import React, { useState, useEffect } from "react";
 import { Toaster, toast } from "react-hot-toast";
-import { FiGrid, FiUser, FiLogOut } from "react-icons/fi";
+import {
+    FiGrid,
+    FiUser,
+    FiLogOut,
+    FiInfo,
+    FiCheckCircle,
+    FiXCircle,
+    FiBell,
+} from "react-icons/fi";
+
+const CustomToast = ({ t, notification, icon, bgColor }) => (
+    <div
+        className={`${
+            t.visible ? "animate-enter" : "animate-leave"
+        } max-w-md w-full bg-white shadow-lg rounded-xl pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+    >
+        <div className={`w-2 rounded-l-xl ${bgColor || "bg-gray-500"}`}></div>
+        <div className="flex-1 w-0 p-4">
+            <div className="flex items-start">
+                <div className="flex-shrink-0 pt-0.5 text-2xl">{icon}</div>
+                <div className="ml-3 flex-1">
+                    <p className="text-sm font-bold text-gray-900">
+                        {notification.title}
+                    </p>
+                    <p className="mt-1 text-sm text-gray-600">
+                        {notification.message}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div className="flex border-l border-gray-200">
+            <button
+                onClick={() => {
+                    toast.dismiss(t.id);
+                    if (notification.url) {
+                        router.visit(notification.url);
+                    }
+                }}
+                className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-blue-600 hover:text-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+                Lihat
+            </button>
+        </div>
+    </div>
+);
 
 export default function AuthenticatedLayout({ user, header, children }) {
     const { flash, adminContact } = usePage().props;
@@ -20,15 +64,34 @@ export default function AuthenticatedLayout({ user, header, children }) {
     // useEffect hook untuk menampilkan notifikasi
     // Hook 1: Khusus untuk menampilkan notifikasi flash (sukses/error)
     useEffect(() => {
-        if (flash && flash.success) {
-            toast.success(flash.success);
+        if (flash) {
+            if (flash.success) {
+                toast.custom((t) => (
+                    <CustomToast
+                        t={t}
+                        notification={{
+                            title: "Berhasil!",
+                            message: flash.success,
+                        }}
+                        icon={<FiCheckCircle className="text-green-500" />}
+                        bgColor="bg-green-500"
+                    />
+                ));
+            }
+            if (flash.error) {
+                toast.custom((t) => (
+                    <CustomToast
+                        t={t}
+                        notification={{ title: "Gagal!", message: flash.error }}
+                        icon={<FiXCircle className="text-red-500" />}
+                        bgColor="bg-red-500"
+                    />
+                ));
+            }
         }
-        if (flash && flash.error) {
-            toast.error(flash.error);
-        }
-    }, [flash]); // Hanya bergantung pada `flash`, sehingga tidak memengaruhi listener lain.
+    }, [flash]);
 
-    // Hook 2: Khusus untuk listener notifikasi realtime dari Echo
+    // Hook 2: Khusus untuk listener notifikasi realtime dari Echo (Tampilan Ditingkatkan)
     useEffect(() => {
         // Pastikan user sudah ada sebelum mendaftarkan channel
         if (!user || !user.id) {
@@ -38,52 +101,31 @@ export default function AuthenticatedLayout({ user, header, children }) {
         const channel = Echo.private(`user.${user.id}`);
 
         const handleNotification = (eventData) => {
-            const notificationPayload = eventData.notification.data;
+            const notificationPayload = eventData.notification.data; // Menggunakan CustomToast untuk tampilan yang konsisten dan lebih baik
 
             toast.custom(
                 (t) => (
-                    <div
-                        className={`${
-                            t.visible ? "animate-enter" : "animate-leave"
-                        } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
-                    >
-                        <div className="flex-1 w-0 p-4">
-                            <div className="flex items-start">
-                                <div className="ml-3 flex-1">
-                                    <p className="text-sm font-medium text-gray-900">
-                                        {notificationPayload.title}
-                                    </p>
-                                    <p className="mt-1 text-sm text-gray-500">
-                                        {notificationPayload.message}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex border-l border-gray-200">
-                            <button
-                                onClick={() => {
-                                    toast.dismiss(t.id);
-                                    if (notificationPayload.url) {
-                                        router.visit(notificationPayload.url);
-                                    }
-                                }}
-                                className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            >
-                                Lihat
-                            </button>
-                        </div>
-                    </div>
+                    <CustomToast
+                        t={t}
+                        notification={{
+                            title:
+                                notificationPayload.title || "Notifikasi Baru",
+                            message: notificationPayload.message,
+                            url: notificationPayload.url,
+                        }}
+                        icon={<FiBell className="text-blue-500" />}
+                        bgColor="bg-blue-500"
+                    />
                 ),
                 {
-                    duration: 10000,
+                    duration: 10000, // Durasi notifikasi
                 }
             );
             router.reload();
         };
 
-        channel.listen("NotificationReceived", handleNotification);
+        channel.listen("NotificationReceived", handleNotification); // Fungsi cleanup: Dijalankan saat komponen di-unmount untuk membersihkan listener
 
-        // Fungsi cleanup: Dijalankan saat komponen di-unmount untuk membersihkan listener
         return () => {
             channel.stopListening("NotificationReceived", handleNotification);
             Echo.leave(`user.${user.id}`); // Praktik terbaik: keluar dari channel saat tidak diperlukan

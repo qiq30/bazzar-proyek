@@ -20,7 +20,6 @@ export default function AdminLogin({ status }) {
 
     const submit = (e) => {
         e.preventDefault();
-        // Pastikan route ini sesuai dengan route login admin Anda
         post(route("admin.login.store"));
     };
 
@@ -28,12 +27,6 @@ export default function AdminLogin({ status }) {
         <>
             <Head title="Admin Login" />
             <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4 sm:p-6">
-                {/*
-                  Container utama yang responsif:
-                  - flex-col-reverse: Gambar di atas form pada mobile.
-                  - md:flex-row: Gambar di samping form pada desktop.
-                  - overflow-hidden: Menjaga sudut tumpul (rounded corners) tetap sempurna.
-                */}
                 <div className="relative flex flex-col-reverse w-full max-w-4xl bg-white shadow-2xl rounded-2xl md:flex-row overflow-hidden">
                     {/* Kolom Kiri (Form Login) */}
                     <div className="flex flex-col justify-center w-full md:w-1/2 p-8 md:p-14">
@@ -44,7 +37,7 @@ export default function AdminLogin({ status }) {
                                 duration: 0.6,
                                 ease: "easeOut",
                                 delay: 0.4,
-                            }} // Animasi form muncul setelah gambar
+                            }}
                         >
                             <div className="text-center">
                                 <h2 className="mb-3 text-4xl font-bold text-gray-800">
@@ -62,39 +55,48 @@ export default function AdminLogin({ status }) {
                             )}
 
                             <form onSubmit={submit} className="space-y-6">
-                                <div className="relative">
-                                    <EnvelopeIcon className="absolute w-5 h-5 text-gray-400 left-4 top-1/2 -translate-y-1/2" />
-                                    <TextInput
-                                        id="email"
-                                        type="email"
-                                        value={data.email}
-                                        className="block w-full py-3 pl-12 pr-4 border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                        autoComplete="username"
-                                        isFocused={true}
-                                        onChange={(e) =>
-                                            setData("email", e.target.value)
-                                        }
-                                        placeholder="Email Admin"
-                                    />
+                                {/* PEMBENAHAN: FIELD EMAIL */}
+                                <div>
+                                    <div className="relative">
+                                        <EnvelopeIcon className="absolute w-5 h-5 text-gray-400 left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                        <TextInput
+                                            id="email"
+                                            type="email"
+                                            value={data.email}
+                                            className="block w-full py-3 pl-12 pr-4 border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                            autoComplete="username"
+                                            isFocused={true}
+                                            onChange={(e) =>
+                                                setData("email", e.target.value)
+                                            }
+                                            placeholder="Email Admin"
+                                        />
+                                    </div>
                                     <InputError
                                         message={errors.email}
                                         className="mt-2"
                                     />
                                 </div>
 
-                                <div className="relative">
-                                    <LockClosedIcon className="absolute w-5 h-5 text-gray-400 left-4 top-1/2 -translate-y-1/2" />
-                                    <TextInput
-                                        id="password"
-                                        type="password"
-                                        value={data.password}
-                                        className="block w-full py-3 pl-12 pr-4 border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                        autoComplete="current-password"
-                                        onChange={(e) =>
-                                            setData("password", e.target.value)
-                                        }
-                                        placeholder="Password"
-                                    />
+                                {/* PEMBENAHAN: FIELD PASSWORD */}
+                                <div>
+                                    <div className="relative">
+                                        <LockClosedIcon className="absolute w-5 h-5 text-gray-400 left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                        <TextInput
+                                            id="password"
+                                            type="password"
+                                            value={data.password}
+                                            className="block w-full py-3 pl-12 pr-4 border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                            autoComplete="current-password"
+                                            onChange={(e) =>
+                                                setData(
+                                                    "password",
+                                                    e.target.value
+                                                )
+                                            }
+                                            placeholder="Password"
+                                        />
+                                    </div>
                                     <InputError
                                         message={errors.password}
                                         className="mt-2"
@@ -117,6 +119,7 @@ export default function AdminLogin({ status }) {
                                     <AnimatePresence>
                                         {processing && (
                                             <motion.div
+                                                key="processing-spinner"
                                                 initial={{
                                                     opacity: 0,
                                                     scale: 0.5,
@@ -135,7 +138,7 @@ export default function AdminLogin({ status }) {
                                                     className="w-5 h-5 text-white animate-spin"
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     fill="none"
-                                                    viewBox="0 0 24 24"
+                                                    viewBox="0 0 24"
                                                 >
                                                     <circle
                                                         className="opacity-25"
