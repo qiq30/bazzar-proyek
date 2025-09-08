@@ -210,17 +210,19 @@ export default function AuthenticatedLayout({ user, header, children }) {
                                     <Dropdown.Content>
                                         <Dropdown.Link
                                             href={route("profile.edit")}
+                                            className="flex items-center"
                                         >
-                                            <FiUser className="mr-2" />
-                                            Profile
+                                            <FiUser className="mr-3 h-4 w-4" />
+                                            <span>Profile</span>
                                         </Dropdown.Link>
                                         <Dropdown.Link
                                             href={route("logout")}
                                             method="post"
                                             as="button"
+                                            className="flex items-center w-full text-left"
                                         >
-                                            <FiLogOut className="mr-2" />
-                                            Log Out
+                                            <FiLogOut className="mr-3 h-4 w-4" />
+                                            <span>Log Out</span>
                                         </Dropdown.Link>
                                     </Dropdown.Content>
                                 </Dropdown>

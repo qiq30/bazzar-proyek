@@ -174,42 +174,7 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
 }
 
 Edit.layout = (page) => (
-    <AuthenticatedLayout
-        user={page.props.auth.user}
-        header={
-            // DIUBAH: Header utama menggunakan warna khas proyek (teal)
-            <div className="bg-teal-700 shadow-lg">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                    <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                            <svg
-                                className="w-6 h-6 text-white"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                />
-                            </svg>
-                        </div>
-                        <div>
-                            <h2 className="text-2xl font-bold text-white">
-                                Profil
-                            </h2>
-                            {/* DIUBAH: Disesuaikan dengan warna header baru */}
-                            <p className="text-teal-100 text-sm">
-                                Kelola pengaturan akun Anda
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        }
-    >
+    <AuthenticatedLayout user={page.props.auth.user}>
         {page}
     </AuthenticatedLayout>
 );
