@@ -4,14 +4,12 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, router } from "@inertiajs/react"; // Import router
 
 export default function UserManagement({ auth, users }) {
-    // UBAH FUNGSI INI
     const handleRequestImpersonate = (userId, userName) => {
         if (
             confirm(
                 `Kirim permintaan untuk masuk sebagai ${userName}? Pengguna akan menerima notifikasi.`
             )
         ) {
-            // Gunakan router.post untuk mengirim request ke rute baru
             router.post(
                 route("superadmin.impersonate.request", userId),
                 {},
@@ -59,7 +57,6 @@ export default function UserManagement({ auth, users }) {
                             </h3>
                             <div className="overflow-x-auto">
                                 <table className="min-w-full">
-                                    {/* ... thead tidak berubah ... */}
                                     <thead className="bg-gray-50">
                                         <tr>
                                             <th className="py-3 px-6 text-left">
@@ -88,33 +85,35 @@ export default function UserManagement({ auth, users }) {
                                                 <td className="py-4 px-6">
                                                     {getRoleBadge(user.role)}
                                                 </td>
-                                                <td className="py-4 px-6 space-x-4">
-                                                    {/* UBAH LINK MENJADI BUTTON */}
-                                                    <button
-                                                        onClick={() =>
-                                                            handleRequestImpersonate(
-                                                                user.id,
-                                                                user.name
-                                                            )
-                                                        }
-                                                        className="text-indigo-600 hover:text-indigo-900 text-sm font-semibold"
-                                                    >
-                                                        Masuk sebagai
-                                                    </button>
-                                                    {/* ... sisa link tidak berubah ... */}
-                                                    {(user.role === "UMKM" ||
-                                                        user.role ===
-                                                            "Penyelenggara") && (
-                                                        <Link
-                                                            href={route(
-                                                                "superadmin.users.edit",
-                                                                user.id
-                                                            )}
-                                                            className="text-green-600 hover:text-green-900 text-sm font-semibold"
+                                                <td className="py-4 px-6">
+                                                    <div className="flex flex-col sm:flex-row gap-2">
+                                                        <button
+                                                            onClick={() =>
+                                                                handleRequestImpersonate(
+                                                                    user.id,
+                                                                    user.name
+                                                                )
+                                                            }
+                                                            className="px-3 py-1 w-full sm:w-auto text-center bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition duration-150"
                                                         >
-                                                            Edit Profil
-                                                        </Link>
-                                                    )}
+                                                            Masuk sebagai
+                                                        </button>
+
+                                                        {(user.role ===
+                                                            "UMKM" ||
+                                                            user.role ===
+                                                                "Penyelenggara") && (
+                                                            <Link
+                                                                href={route(
+                                                                    "superadmin.users.edit",
+                                                                    user.id
+                                                                )}
+                                                                className="px-3 py-1 w-full sm:w-auto text-center bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 transition duration-150"
+                                                            >
+                                                                Edit Profil
+                                                            </Link>
+                                                        )}
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}

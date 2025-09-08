@@ -23,11 +23,8 @@ class AdminController extends Controller
 {
     public function dashboard()
     {
-        // --- ▼▼▼ PERBAIKAN FINAL DI SINI ▼▼▼ ---
-        $pendingProposalsCount = Event::where(function ($query) {
-            $query->where('status_proposal', 'menunggu_persetujuan')
-                ->orWhere('document_verification_status', 'pending_document_verification');
-        })->count();
+        $pendingProposalsStep1Count = Event::where('document_verification_status', 'pending_document_verification')->count();
+        $pendingProposalsStep2Count = Event::where('status_proposal', 'menunggu_persetujuan')->count();
 
         $stats = [
             'totalEvents' => Event::whereNotNull('status')->count(),
@@ -38,11 +35,10 @@ class AdminController extends Controller
             'totalPenyelenggara' => PenyelenggaraProfile::count(),
             'verifiedPenyelenggara' => PenyelenggaraProfile::where('status', 'verified')->count(),
             'pendingPenyelenggara' => PenyelenggaraProfile::where('status', 'pending')->count(),
-            'pendingProposals' => $pendingProposalsCount, // Menggunakan hasil query yang sudah digabung
+            'pendingProposalsStep1' => $pendingProposalsStep1Count, // Proposal Tahap 1
+            'pendingProposalsStep2' => $pendingProposalsStep2Count, // Proposal Tahap 2
         ];
-        // --- ▲▲▲ AKHIR DARI PERBAIKAN ▲▲▲ ---
 
-        // ... (sisa kode tidak berubah)
         $chartData = [
             'userComposition' => [
                 'UMKM' => UmkmProfile::count(),
@@ -66,7 +62,6 @@ class AdminController extends Controller
         ]);
     }
 
-    // ... (sisa method lainnya tidak perlu diubah) ...
 
     public function events()
     {

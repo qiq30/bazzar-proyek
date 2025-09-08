@@ -14,6 +14,7 @@ import {
     FiBarChart2,
     FiHome,
     FiCheckSquare,
+    FiFilePlus,
 } from "react-icons/fi";
 
 // --- Komponen Kartu Statistik ---
@@ -106,7 +107,8 @@ export default function AdminDashboard({ auth, stats, chartData }) {
                         <h3 className="text-lg font-semibold text-gray-700 mb-4">
                             Statistik Event & Proposal
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* --- ▼▼▼ PERBAIKAN GRID DI SINI ▼▼▼ --- */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <AnimatedStatCard
                                 title="Total Event Diterbitkan"
                                 value={stats.totalEvents}
@@ -120,17 +122,30 @@ export default function AdminDashboard({ auth, stats, chartData }) {
                                 subText="sedang aktif"
                             />
                             <AnimatedStatCard
-                                title="Proposal Masuk"
-                                value={stats.pendingProposals}
+                                title="Proposal Masuk (Tahap 1)"
+                                value={stats.pendingProposalsStep1}
                                 icon={<FiFileText className="h-8 w-8" />}
                                 color={{
                                     border: "border-yellow-500",
                                     bg: "bg-yellow-100",
                                     text: "text-yellow-600",
                                 }}
-                                subText="menunggu persetujuan"
+                                subText="verifikasi dokumen"
+                            />
+                            {}
+                            <AnimatedStatCard
+                                title="Proposal Masuk (Tahap 2)"
+                                value={stats.pendingProposalsStep2}
+                                icon={<FiFilePlus className="h-8 w-8" />}
+                                color={{
+                                    border: "border-red-500",
+                                    bg: "bg-red-100",
+                                    text: "text-red-600",
+                                }}
+                                subText="persetujuan detail"
                             />
                         </div>
+                        {}
                     </div>
                     <div className="mb-8">
                         <h3 className="text-lg font-semibold text-gray-700 mb-4">

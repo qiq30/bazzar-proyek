@@ -93,7 +93,6 @@ export default function AuthenticatedLayout({ user, header, children }) {
 
     // Hook 2: Khusus untuk listener notifikasi realtime dari Echo (Tampilan Ditingkatkan)
     useEffect(() => {
-        // Pastikan user sudah ada sebelum mendaftarkan channel
         if (!user || !user.id) {
             return;
         }
@@ -101,7 +100,7 @@ export default function AuthenticatedLayout({ user, header, children }) {
         const channel = Echo.private(`user.${user.id}`);
 
         const handleNotification = (eventData) => {
-            const notificationPayload = eventData.notification.data; // Menggunakan CustomToast untuk tampilan yang konsisten dan lebih baik
+            const notificationPayload = eventData.notification.data;
 
             toast.custom(
                 (t) => (
@@ -118,19 +117,25 @@ export default function AuthenticatedLayout({ user, header, children }) {
                     />
                 ),
                 {
-                    duration: 10000, // Durasi notifikasi
+                    duration: 10000,
                 }
             );
             router.reload();
         };
 
-        channel.listen("NotificationReceived", handleNotification); // Fungsi cleanup: Dijalankan saat komponen di-unmount untuk membersihkan listener
+        channel.listen("NotificationReceived", handleNotification);
 
         return () => {
             channel.stopListening("NotificationReceived", handleNotification);
-            Echo.leave(`user.${user.id}`); // Praktik terbaik: keluar dari channel saat tidak diperlukan
+            Echo.leave(`user.${user.id}`);
         };
-    }, [user.id]); // Hanya bergantung pada `user.id`, sehingga hanya berjalan sekali saat user berubah.
+    }, [user?.id]);
+
+    // PERBAIKAN: Jika data user belum siap, jangan render apapun untuk sementara.
+    // Ini akan mencegah semua error 'Cannot read properties of undefined'.
+    if (!user) {
+        return null;
+    }
 
     const getDashboardRoute = () => {
         if (user.is_super_admin) return route("superadmin.dashboard");
@@ -173,9 +178,11 @@ export default function AuthenticatedLayout({ user, header, children }) {
                             </div>
                         </div>
 
-                        <div className="hidden sm:flex sm:items-center sm:ml-6">
-                            <NotificationDropdown />
-                            <div className="ml-3 relative">
+                        <div className="hidden sm:flex sm:items-center sm:ms-6">
+                            <div className="relative">
+                                <NotificationDropdown />
+                            </div>
+                            <div className="ms-3 relative">
                                 <Dropdown>
                                     <Dropdown.Trigger>
                                         <span className="inline-flex rounded-md">
@@ -221,6 +228,10 @@ export default function AuthenticatedLayout({ user, header, children }) {
                         </div>
 
                         <div className="-mr-2 flex items-center sm:hidden">
+                            <div className="mr-2">
+                                <NotificationDropdown />
+                            </div>
+
                             <button
                                 onClick={() =>
                                     setShowingNavigationDropdown(
@@ -274,12 +285,13 @@ export default function AuthenticatedLayout({ user, header, children }) {
                             href={getDashboardRoute()}
                             active={isDashboardActive()}
                         >
+                            <FiGrid className="mr-3 h-5 w-5" />
                             Dashboard
                         </ResponsiveNavLink>
                     </div>
 
                     <div className="pt-4 pb-1 border-t border-gray-200">
-                        <div className="px-4">
+                        <div className="px-4 mb-3">
                             <div className="font-medium text-base text-gray-800">
                                 {user.name}
                             </div>
@@ -288,8 +300,9 @@ export default function AuthenticatedLayout({ user, header, children }) {
                             </div>
                         </div>
 
-                        <div className="mt-3 space-y-1">
+                        <div className="space-y-1">
                             <ResponsiveNavLink href={route("profile.edit")}>
+                                <FiUser className="mr-3 h-5 w-5" />
                                 Profile
                             </ResponsiveNavLink>
                             <ResponsiveNavLink
@@ -297,6 +310,7 @@ export default function AuthenticatedLayout({ user, header, children }) {
                                 href={route("logout")}
                                 as="button"
                             >
+                                <FiLogOut className="mr-3 h-5 w-5" />
                                 Log Out
                             </ResponsiveNavLink>
                         </div>
@@ -316,7 +330,6 @@ export default function AuthenticatedLayout({ user, header, children }) {
                 <main>{children}</main>
             </div>
 
-            {/* Tombol WhatsApp Melayang untuk UMKM dan Penyelenggara */}
             {user &&
                 (user.is_penyelenggara ||
                     (!user.is_admin && !user.is_super_admin)) && (
