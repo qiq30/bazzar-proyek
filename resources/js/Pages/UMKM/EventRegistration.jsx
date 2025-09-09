@@ -41,7 +41,7 @@ const TimeMismatchWarning = ({ onDismiss }) => (
     </div>
 );
 
-// --- Komponen ProfileActionNotice (Tidak berubah) ---
+// Komponen ProfileActionNotice
 const ProfileActionNotice = ({ hasProfile }) => (
     <div className="bg-white rounded-lg shadow-sm text-center p-8">
         <div className="text-yellow-500 text-6xl mb-4">⚠️</div>
@@ -74,7 +74,6 @@ export default function EventRegistration({
     isVerified,
     serverTime,
 }) {
-    // --- ▼▼▼ PERBAIKAN FINAL LOGIKA WAKTU DI SINI ▼▼▼ ---
     const [isTimeMismatched, setIsTimeMismatched] = useState(false);
     const [showWarning, setShowWarning] = useState(false);
 
@@ -103,7 +102,6 @@ export default function EventRegistration({
         // Hentikan interval saat komponen dilepas untuk mencegah kebocoran memori
         return () => clearInterval(intervalId);
     }, [serverTime]);
-    // --- ▲▲▲ AKHIR DARI PERBAIKAN FINAL ---
 
     useEffect(() => {
         if (auth.user) {
@@ -146,7 +144,6 @@ export default function EventRegistration({
     };
 
     const RegistrationStatusDisplay = ({ status, registrationId }) => {
-        // ... (Fungsi ini tidak berubah)
         const statusConfig = {
             menunggu_pembayaran: {
                 component: (
