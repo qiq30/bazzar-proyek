@@ -2,7 +2,7 @@
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, usePage, router } from "@inertiajs/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 
 // --- Komponen Peringatan Waktu ---
 const TimeMismatchWarning = ({ onDismiss }) => (
@@ -76,6 +76,7 @@ export default function EventRegistration({
 }) {
     const [isTimeMismatched, setIsTimeMismatched] = useState(false);
     const [showWarning, setShowWarning] = useState(false);
+    const [processingEvents, setProcessingEvents] = useState(new Set());
 
     useEffect(() => {
         // Fungsi untuk memeriksa perbedaan waktu
@@ -115,15 +116,58 @@ export default function EventRegistration({
         }
     }, [auth.user]);
 
-    const handleRegisterClick = (eventId) => {
-        if (isTimeMismatched) {
-            alert(
-                "Waktu pada perangkat Anda tidak sesuai. Mohon perbaiki sebelum mendaftar."
-            );
-            return;
-        }
-        router.post(route("umkm.events.register", eventId));
-    };
+    // Safe register handler dengan multiple protections
+    const handleSafeRegisterClick = useCallback(
+        async (eventId) => {
+            // Multiple safety checks sebelum execute
+            if (!eventId || isTimeMismatched || processingEvents.has(eventId)) {
+                if (isTimeMismatched) {
+                    alert(
+                        "Waktu pada perangkat Anda tidak sesuai. Mohon perbaiki sebelum mendaftar."
+                    );
+                }
+                return; // Langsung return jika ada kondisi yang tidak memenuhi
+            }
+
+            try {
+                // Set processing state untuk event specific
+                setProcessingEvents((prev) => new Set([...prev, eventId]));
+
+                // Execute registration
+                router.post(
+                    route("umkm.events.register", eventId),
+                    {},
+                    {
+                        onFinish: () => {
+                            // Remove dari processing state setelah selesai
+                            setProcessingEvents((prev) => {
+                                const newSet = new Set(prev);
+                                newSet.delete(eventId);
+                                return newSet;
+                            });
+                        },
+                        onError: () => {
+                            // Remove dari processing state jika error
+                            setProcessingEvents((prev) => {
+                                const newSet = new Set(prev);
+                                newSet.delete(eventId);
+                                return newSet;
+                            });
+                        },
+                    }
+                );
+            } catch (error) {
+                console.error("Registration error:", error);
+                // Remove dari processing state jika exception
+                setProcessingEvents((prev) => {
+                    const newSet = new Set(prev);
+                    newSet.delete(eventId);
+                    return newSet;
+                });
+            }
+        },
+        [isTimeMismatched, processingEvents]
+    );
 
     const formatRupiah = (number) => {
         if (number === null || number === undefined || number == 0)
@@ -212,6 +256,33 @@ export default function EventRegistration({
         );
     };
 
+    // Loading Spinner Component
+    const LoadingSpinner = () => (
+        <span className="flex items-center justify-center">
+            <svg
+                className="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+            >
+                <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                ></circle>
+                <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+            </svg>
+            Memproses...
+        </span>
+    );
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -263,6 +334,28 @@ export default function EventRegistration({
                                         now >= startDate && now <= endDate;
                                     const isRegistrationUpcoming =
                                         now < startDate;
+
+                                    // Calculate if this specific event button should be disabled
+                                    const isEventProcessing =
+                                        processingEvents.has(event.id);
+                                    const isButtonDisabled = useMemo(() => {
+                                        return (
+                                            isTimeMismatched ||
+                                            isEventProcessing ||
+                                            !event?.id ||
+                                            !event?.biaya_pendaftaran_umkm ===
+                                                undefined ||
+                                            isQuotaFull ||
+                                            !isRegistrationOpen
+                                        );
+                                    }, [
+                                        isTimeMismatched,
+                                        isEventProcessing,
+                                        event?.id,
+                                        event?.biaya_pendaftaran_umkm,
+                                        isQuotaFull,
+                                        isRegistrationOpen,
+                                    ]);
 
                                     return (
                                         <div
@@ -367,24 +460,40 @@ export default function EventRegistration({
                                                         ) : isRegistrationOpen ? (
                                                             <button
                                                                 onClick={() =>
-                                                                    handleRegisterClick(
+                                                                    handleSafeRegisterClick(
                                                                         event.id
                                                                     )
                                                                 }
                                                                 className={`w-full block px-4 py-2 text-white text-center rounded-lg transition ${
-                                                                    isTimeMismatched
-                                                                        ? "bg-red-600 cursor-not-allowed"
-                                                                        : "bg-blue-600 hover:bg-blue-700"
+                                                                    isButtonDisabled
+                                                                        ? "bg-gray-400 cursor-not-allowed opacity-50"
+                                                                        : "bg-blue-600 hover:bg-blue-700 active:bg-blue-800"
                                                                 }`}
                                                                 disabled={
-                                                                    isTimeMismatched
+                                                                    isButtonDisabled
                                                                 }
+                                                                aria-disabled={
+                                                                    isButtonDisabled
+                                                                }
+                                                                style={{
+                                                                    pointerEvents:
+                                                                        isButtonDisabled
+                                                                            ? "none"
+                                                                            : "auto",
+                                                                    userSelect:
+                                                                        "none",
+                                                                }}
+                                                                type="button"
                                                             >
-                                                                {isTimeMismatched
-                                                                    ? "Perbaiki Waktu Perangkat Anda"
-                                                                    : `Daftar Sekarang (${formatRupiah(
-                                                                          event.biaya_pendaftaran_umkm
-                                                                      )})`}
+                                                                {isEventProcessing ? (
+                                                                    <LoadingSpinner />
+                                                                ) : isTimeMismatched ? (
+                                                                    "Perbaiki Waktu Perangkat Anda"
+                                                                ) : (
+                                                                    `Daftar Sekarang (${formatRupiah(
+                                                                        event.biaya_pendaftaran_umkm
+                                                                    )})`
+                                                                )}
                                                             </button>
                                                         ) : isRegistrationUpcoming ? (
                                                             <div className="w-full block px-4 py-2 bg-gray-100 text-gray-700 text-center rounded-lg">

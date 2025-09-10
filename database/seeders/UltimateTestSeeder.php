@@ -15,9 +15,6 @@ use Carbon\Carbon;
 
 class UltimateTestSeeder extends Seeder
 {
-    // Konfigurasi jumlah data yang akan di-generate (sudah diperkecil)
-    private const JUMLAH_UMKM_BARU = 25; // Dari 250 menjadi 25
-
     /**
      * Run the database seeds.
      *
@@ -28,9 +25,9 @@ class UltimateTestSeeder extends Seeder
         $this->command->info('Menyiapkan data seeder skala kecil...');
 
         // =================================================================
-        // == 1. DATA PENYELENGGARA (EVENT ORGANIZER) - DIPERDIKIT
+        // == 1. DATA PENYELENGGARA (EVENT ORGANIZER) - KONSISTEN
         // =================================================================
-        $this->command->info('1. Membuat data Penyelenggara (diperkecil)...');
+        $this->command->info('1. Membuat data Penyelenggara (konsisten)...');
         $eoList = [
             ['Banjarmasin Kreatif', 'eo.kreatif@example.com', 'verified', 'logo_eo_1.png', 'Jl. Pahlawan No. 12', 'Penyelenggara event terkemuka.'],
             ['Dinas Koperasi & UMKM', 'dinas.kop@example.com', 'pending', null, 'Jl. Gatot Subroto No. 8', 'Lembaga pemerintah.'],
@@ -46,45 +43,47 @@ class UltimateTestSeeder extends Seeder
         $allVerifiedEOs = $penyelenggaraProfiles->where('status', 'verified')->values();
 
         // =================================================================
-        // == 2. DATA UMKM (SKALA KECIL & PROSEDURAL)
+        // == 2. DATA UMKM (KONSISTEN)
         // =================================================================
-        $this->command->info('2. Membuat data UMKM (' . self::JUMLAH_UMKM_BARU . ' UMKM secara prosedural)...');
-        $namaDepan = ['Warung', 'Kedai', 'Toko', 'Lapak', 'Dapur'];
-        $namaTengah = ['Mama', 'Abah', 'Berkah', 'Jaya', 'Banua', 'Kreatif'];
-        $namaBelakang = ['99', 'BJM', 'Sentosa', 'Food', 'Craft'];
-        $kategoriList = ['Kuliner', 'Fashion', 'Kerajinan', 'Jasa', 'Agribisnis'];
+        $this->command->info('2. Membuat data UMKM (konsisten)...');
+        $umkmList = [
+            ['Warung Mama Berkah BJM', 'warung.berkah@example.com', 'verified', 'Kuliner', 'Jl. Belitung No. 101', 'seeders/logo_umkm_1.png', 'seeders/qris_placeholder.png'],
+            ['Toko Jaya Craft Sentosa', 'toko.jaya.craft@example.com', 'verified', 'Kerajinan', 'Jl. A. Yani No. 25', null, null],
+            ['Dapur Banua Food 99', 'dapur.banua@example.com', 'verified', 'Kuliner', 'Jl. Veteran No. 88', 'seeders/logo_umkm_2.png', null],
+            ['Lapak Kreatif Fashion', 'lapak.kreatif@example.com', 'pending', 'Fashion', 'Jl. Pramuka No. 12', null, 'seeders/qris_placeholder.png'],
+            ['Kedai Abah Sentosa', 'kedai.abah@example.com', 'rejected', 'Kuliner', 'Jl. Sutoyo S. No. 34', 'seeders/logo_umkm_3.png', null],
+            ['Sasirangan Banua Style', 'sasirangan.banua@example.com', 'verified', 'Fashion', 'Jl. Kampung Melayu No. 5', 'seeders/logo_umkm_1.png', 'seeders/qris_placeholder.png'],
+            ['Agribisnis Meratus Hijau', 'agri.meratus@example.com', 'verified', 'Agribisnis', 'Jl. HKSN No. 77', null, 'seeders/qris_placeholder.png'],
+            ['Jasa Bersih Kinclong', 'jasa.kinclong@example.com', 'pending', 'Jasa', 'Jl. Adhyaksa No. 19', null, null],
+        ];
 
-        $umkmProfiles = collect();
-        for ($i = 0; $i < self::JUMLAH_UMKM_BARU; $i++) {
-            $namaBisnis = collect($namaDepan)->random() . ' ' . collect($namaTengah)->random() . ' ' . collect($namaBelakang)->random();
-            $kategori = collect($kategoriList)->random();
-            $status = ['verified', 'verified', 'verified', 'pending', 'rejected'][rand(0, 4)];
-
+        $umkmProfiles = collect($umkmList)->map(function ($umkm) {
             $user = User::create([
-                'name' => 'Pemilik ' . $namaBisnis,
-                'email' => Str::slug($namaBisnis) . '-' . $i . '@example.com',
+                'name' => 'Pemilik ' . $umkm[0],
+                'email' => $umkm[1],
                 'password' => Hash::make('password'),
                 'is_penyelenggara' => false,
                 'email_verified_at' => now(),
                 'created_at' => Carbon::now()->subMonths(rand(0, 24)),
             ]);
 
-            $umkmProfiles->push(UmkmProfile::create([
+            return UmkmProfile::create([
                 'user_id' => $user->id,
-                'business_name' => $namaBisnis,
-                'description' => "UMKM {$namaBisnis} menyediakan produk dan layanan berkualitas di bidang {$kategori}.",
-                'address' => 'Jl. ' . collect(['Belitung', 'Veteran', 'A. Yani'])->random() . ' No. ' . rand(1, 300),
-                'business_type' => $kategori,
+                'business_name' => $umkm[0],
+                'description' => "UMKM {$umkm[0]} menyediakan produk dan layanan berkualitas di bidang {$umkm[3]}.",
+                'address' => $umkm[4],
+                'business_type' => $umkm[3],
                 'ktp_path' => 'seeders/ktp_placeholder.jpg',
-                'logo_path' => (rand(0, 2) == 1) ? 'seeders/logo_umkm_' . rand(1, 3) . '.png' : null,
-                'qris_path' => (rand(0, 1) == 1) ? 'seeders/qris_placeholder.png' : null,
-                'status' => $status,
-            ]));
-        }
+                'logo_path' => $umkm[5],
+                'qris_path' => $umkm[6],
+                'status' => $umkm[2],
+            ]);
+        });
         $umkmVerified = $umkmProfiles->where('status', 'verified')->values();
 
+
         // =================================================================
-        // == 3. DATA PRODUK (SKALA KECIL) - DIPERDIKIT
+        // == 3. DATA PRODUK (SKALA KECIL)
         // =================================================================
         $this->command->info('3. Membuat data Produk (diperkecil)...');
         $productPools = [
@@ -108,9 +107,9 @@ class UltimateTestSeeder extends Seeder
         Product::insert($products);
 
         // =================================================================
-        // == 4. DATA EVENT - DIPERDIKIT
+        // == 4. DATA EVENT - DIPERBANYAK
         // =================================================================
-        $this->command->info('4. Membuat data Event (diperkecil)...');
+        $this->command->info('4. Membuat data Event (diperbanyak)...');
         $eventNames = [
             'Festival Kuliner Baiman Vol. 4',
             'Banjarmasin Craft Week 2025',
@@ -121,7 +120,12 @@ class UltimateTestSeeder extends Seeder
             'Pameran Ekonomi Kreatif Kalsel',
             'Night Market Kayutangi',
             'Job Fair Terbesar Banjarmasin 2025',
-            'Semarak Tahun Baru di Siring 0 KM'
+            'Semarak Tahun Baru di Siring 0 KM',
+            // -- 4 EVENT BARU DITAMBAHKAN --
+            'Pekan Raya Banjarmasin 2025',
+            'Festival Kopi & Senja di Tepi Sungai',
+            'Bazar Buku dan Literasi Banua',
+            'Kompetisi E-Sports & UMKM Gaming',
         ];
 
         foreach ($eventNames as $index => $eventName) {

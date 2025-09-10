@@ -134,16 +134,16 @@ const Step1Upload = ({ onStepComplete }) => {
 
             <form onSubmit={submit} className="p-8">
                 {/* Template Download Section */}
-                <div className="mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
-                    <div className="flex items-start gap-4">
-                        <div className="p-3 bg-blue-100 rounded-lg">
+                <div className="mb-8 rounded-xl border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 sm:p-6">
+                    <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:text-left">
+                        <div className="flex-shrink-0 rounded-lg bg-blue-100 p-3">
                             <FiDownload className="h-6 w-6 text-blue-600" />
                         </div>
-                        <div className="flex-1">
-                            <h4 className="font-semibold text-blue-900 mb-2">
+                        <div className="w-full sm:w-auto sm:flex-1">
+                            <h4 className="mb-2 font-semibold text-blue-900">
                                 Butuh template proposal?
                             </h4>
-                            <p className="text-sm text-blue-700 mb-4">
+                            <p className="mb-4 text-sm text-blue-700">
                                 Unduh template standar kami untuk memastikan
                                 semua informasi yang diperlukan telah tercakup.
                             </p>
@@ -151,9 +151,9 @@ const Step1Upload = ({ onStepComplete }) => {
                                 href={route(
                                     "penyelenggara.proposal.template.download"
                                 )}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-white text-blue-600 border border-blue-300 text-sm font-semibold rounded-lg hover:bg-blue-50 transition-all duration-200 shadow-sm hover:shadow-md"
+                                className="inline-flex items-center gap-2 rounded-lg border border-blue-300 bg-white px-4 py-2 text-sm font-semibold text-blue-600 shadow-sm transition-all duration-200 hover:bg-blue-50 hover:shadow-md"
                             >
-                                <FiDownload className="w-4 h-4" />
+                                <FiDownload className="h-4 h-4" />
                                 Unduh Template PDF
                             </a>
                         </div>
@@ -196,49 +196,75 @@ const Step1Upload = ({ onStepComplete }) => {
                         >
                             Unggah Dokumen Proposal (PDF) *
                         </label>
-                        <div className="border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-400 transition-all duration-200">
-                            <div className="p-8 text-center">
-                                <div className="flex flex-col items-center">
-                                    <div className="p-4 bg-gray-50 rounded-full mb-4">
-                                        <FiFileText className="h-10 w-10 text-gray-400" />
+                        {!data.proposal_document ? (
+                            // STATE 1: No file selected. Show the upload box.
+                            <div className="border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-400 transition-all duration-200">
+                                <div className="p-8 text-center">
+                                    <div className="flex flex-col items-center">
+                                        <div className="p-4 bg-gray-50 rounded-full mb-4">
+                                            <FiFileText className="h-10 w-10 text-gray-400" />
+                                        </div>
+                                        <label
+                                            htmlFor="proposal_document_input"
+                                            className="cursor-pointer"
+                                        >
+                                            <span className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+                                                <FiUploadCloud className="w-4 h-4" />
+                                                Pilih file untuk diunggah
+                                            </span>
+                                            <input
+                                                id="proposal_document_input"
+                                                name="proposal_document"
+                                                type="file"
+                                                className="sr-only"
+                                                onChange={(e) =>
+                                                    setData(
+                                                        "proposal_document",
+                                                        e.target.files[0]
+                                                    )
+                                                }
+                                                accept=".pdf"
+                                                required
+                                            />
+                                        </label>
+                                        <p className="text-xs text-gray-500 mt-3">
+                                            Ukuran maksimal: 5MB • Format: PDF
+                                        </p>
                                     </div>
-                                    <label
-                                        htmlFor="proposal_document_input"
-                                        className="cursor-pointer"
-                                    >
-                                        <span className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
-                                            <FiUploadCloud className="w-4 h-4" />
-                                            Pilih file untuk diunggah
-                                        </span>
-                                        <input
-                                            id="proposal_document_input"
-                                            name="proposal_document"
-                                            type="file"
-                                            className="sr-only"
-                                            onChange={(e) =>
-                                                setData(
-                                                    "proposal_document",
-                                                    e.target.files[0]
-                                                )
-                                            }
-                                            accept=".pdf"
-                                            required
-                                        />
-                                    </label>
-                                    <p className="text-xs text-gray-500 mt-3">
-                                        Ukuran maksimal: 5MB • Format: PDF
-                                    </p>
                                 </div>
                             </div>
-                        </div>
-                        {data.proposal_document && (
-                            <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                                <p className="text-sm text-green-700 flex items-center gap-2">
-                                    <FiCheckCircle className="w-4 h-4" />
-                                    File terpilih: {data.proposal_document.name}
-                                </p>
+                        ) : (
+                            // STATE 2: File has been selected. Show file info and a remove button.
+                            <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white p-2 shadow-sm sm:gap-4 sm:p-3">
+                                <div className="flex-shrink-0">
+                                    {/* Ikon file generik dengan warna brand/aksi */}
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 sm:h-12 sm:w-12">
+                                        <FiFileText className="h-5 w-5 text-blue-600 sm:h-6 sm:w-6" />
+                                    </div>
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <p className="truncate text-sm font-semibold text-gray-800">
+                                        {data.proposal_document.name}
+                                    </p>
+                                    <p className="flex items-center gap-1 text-xs text-gray-500">
+                                        <FiCheckCircle className="h-3 w-3 text-green-500" />
+                                        PDF siap diunggah
+                                    </p>
+                                </div>
+                                <div className="flex-shrink-0">
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setData("proposal_document", null)
+                                        }
+                                        className="rounded-md border border-gray-300 bg-white px-2.5 py-1 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:px-3 sm:py-1.5"
+                                    >
+                                        Ganti
+                                    </button>
+                                </div>
                             </div>
                         )}
+                        {/* Error message remains unchanged */}
                         {errors.proposal_document && (
                             <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
                                 <FiAlertCircle className="w-4 h-4" />
