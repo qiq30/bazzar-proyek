@@ -29,6 +29,10 @@ Route::middleware('guest')->group(function () {
         ->middleware('throttle:5,1')
         ->name('register.wizard.step1');
 
+    Route::post('/register/resend-otp', [RegistrationWizardController::class, 'resendOtp'])
+        ->middleware('throttle:1,1') // Batasi 1 request per menit
+        ->name('register.resend.otp');
+
     Route::get('/register/verify-otp', [RegistrationWizardController::class, 'showOtpForm'])
         ->name('register.show.otp');
     Route::post('/register/verify-otp', [RegistrationWizardController::class, 'verifyOtpAndRegister'])

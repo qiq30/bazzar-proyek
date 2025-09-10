@@ -32,10 +32,19 @@ class RegistrationWizardController extends Controller
             $role = 'umkm';
         }
 
+        $step = (int)$request->query('step', 1);
+        $wizardData = $request->session()->get('wizard_data', []);
+
+        // Jika pengguna mencoba mengakses step 2 tanpa menyelesaikan step 1 (dan verifikasi OTP),
+        // paksa kembali ke step 1.
+        if ($step === 2 && (empty($wizardData['step1']) || empty($wizardData['step1_verified']))) {
+            return redirect()->route('register.wizard', ['role' => $role, 'step' => 1]);
+        }
+
         return Inertia::render('Auth/RegisterWizard', [
             'role' => $role,
-            'initialStep' => (int)$request->query('step', 1),
-            'wizardData' => $request->session()->get('wizard_data', []),
+            'initialStep' => $step,
+            'wizardData' => $wizardData,
         ]);
     }
 
@@ -195,5 +204,34 @@ class RegistrationWizardController extends Controller
         $redirectRoute = $user->is_penyelenggara ? 'penyelenggara.dashboard' : 'umkm.dashboard';
 
         return redirect()->route($redirectRoute)->with('success', 'Registrasi berhasil!');
+    }
+
+    public function resendOtp(Request $request)
+    {
+        // Pastikan data step 1 ada di session
+        $step1Data = $request->session()->get('wizard_data.step1');
+        if (!$step1Data) {
+            // Jika tidak ada sesi, tidak bisa lanjut
+            return back()->withErrors(['otp' => 'Sesi Anda telah berakhir, silakan mulai lagi.']);
+        }
+
+        // Generate OTP baru
+        $otp = rand(100000, 999999);
+
+        // Update session dengan OTP dan waktu kedaluwarsa yang baru
+        $request->session()->put('otp_details', [
+            'otp' => $otp,
+            'expires_at' => Carbon::now()->addMinutes(10)
+        ]);
+
+        // Kirim ulang email OTP
+        try {
+            Mail::to($step1Data['email'])->send(new SendOtpMail($otp));
+        } catch (\Exception $e) {
+            return back()->withErrors(['otp' => 'Gagal mengirim ulang email verifikasi.']);
+        }
+
+        // Kembali ke halaman sebelumnya (halaman OTP)
+        return back();
     }
 }
