@@ -13,11 +13,18 @@ use Illuminate\Auth\Events\Registered;
 use Inertia\Inertia;
 use Illuminate\Validation\Rules;
 use App\Events\NewUserRegisteredForVerification;
-use App\Events\ProfileStatusUpdated; // <-- 1. TAMBAHKAN IMPORT INI
+use App\Events\ProfileStatusUpdated;
+
+// Import tambahan untuk OTP
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SendOtpMail;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
+
 
 class RegistrationWizardController extends Controller
 {
-    // ... method showSteps dan storeStep1 tidak berubah ...
     public function showSteps(Request $request)
     {
         $role = $request->query('role', 'umkm');
@@ -32,6 +39,9 @@ class RegistrationWizardController extends Controller
         ]);
     }
 
+    /**
+     * Store step 1 data, generate OTP, send email, and redirect to OTP form.
+     */
     public function storeStep1(Request $request)
     {
         $request->validate([
@@ -41,9 +51,74 @@ class RegistrationWizardController extends Controller
             'role' => 'required|in:umkm,penyelenggara',
         ]);
 
-        $request->session()->put('wizard_data.step1', $request->only('name', 'email', 'password', 'role'));
+        // Generate 6-digit OTP
+        $otp = rand(100000, 999999);
 
-        return redirect()->route('register.wizard', ['role' => $request->role, 'step' => 2]);
+        // Store registration data and OTP in session
+        $request->session()->put('wizard_data.step1', $request->only('name', 'email', 'password', 'role'));
+        $request->session()->put('otp_details', [
+            'otp' => $otp,
+            'expires_at' => Carbon::now()->addMinutes(10) // OTP valid for 10 minutes
+        ]);
+
+        // Send OTP email
+        try {
+            Mail::to($request->email)->send(new SendOtpMail($otp));
+        } catch (\Exception $e) {
+            // If email fails, redirect back with an error
+            return back()->withErrors(['email' => 'Gagal mengirim email verifikasi. Pastikan konfigurasi SMTP Anda benar.']);
+        }
+
+        // Redirect to OTP verification form
+        return redirect()->route('register.show.otp')->with('email', $request->email);
+    }
+
+    /**
+     * Show the OTP verification form.
+     */
+    public function showOtpForm(Request $request)
+    {
+        // Make sure user comes from step 1
+        if (!$request->session()->has('wizard_data.step1')) {
+            return redirect()->route('register.wizard');
+        }
+
+        return Inertia::render('Auth/VerifyOtp', [
+            'email' => $request->session()->get('wizard_data.step1.email')
+        ]);
+    }
+
+    /**
+     * Verify OTP and create the user if valid.
+     */
+    public function verifyOtpAndRegister(Request $request)
+    {
+        $request->validate(['otp' => 'required|numeric|digits:6']);
+
+        $wizardData = $request->session()->get('wizard_data.step1');
+        $otpDetails = $request->session()->get('otp_details');
+
+        // Check if session data exists
+        if (!$wizardData || !$otpDetails) {
+            return redirect()->route('register.wizard')->withErrors(['otp' => 'Sesi registrasi tidak ditemukan atau telah kedaluwarsa.']);
+        }
+
+        // Check if OTP has expired
+        if (Carbon::now()->isAfter($otpDetails['expires_at'])) {
+            return redirect()->route('register.show.otp')->withErrors(['otp' => 'Kode OTP telah kedaluwarsa.']);
+        }
+
+        // Check if OTP is correct
+        if ($otpDetails['otp'] != $request->otp) {
+            return redirect()->route('register.show.otp')->withErrors(['otp' => 'Kode OTP tidak valid.']);
+        }
+
+        // --- OTP is valid, now proceed to the next step ---
+        $request->session()->forget('otp_details'); // Clear OTP from session
+        $request->session()->put('wizard_data.step1_verified', true); // Mark step 1 as verified
+
+        // Redirect to Step 2
+        return redirect()->route('register.wizard', ['role' => $wizardData['role'], 'step' => 2]);
     }
 
 
@@ -51,9 +126,12 @@ class RegistrationWizardController extends Controller
     {
         // --- Bagian Validasi dan Pembuatan User (Tidak perlu diubah) ---
         $step1Data = $request->session()->get('wizard_data.step1');
-        if (!$step1Data) {
+
+        // Ensure user has verified OTP for step 1
+        if (!$step1Data || !$request->session()->get('wizard_data.step1_verified')) {
             return redirect()->route('register.wizard');
         }
+
         $role = $step1Data['role'];
         if ($role === 'umkm') {
             $request->validate([
@@ -78,6 +156,7 @@ class RegistrationWizardController extends Controller
             'email' => $step1Data['email'],
             'password' => Hash::make($step1Data['password']),
             'is_penyelenggara' => $role === 'penyelenggara',
+            'email_verified_at' => now(), // Mark email as verified
         ]);
         $profile = null;
         if ($role === 'umkm') {

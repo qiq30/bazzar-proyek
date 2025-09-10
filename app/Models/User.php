@@ -49,6 +49,8 @@ class User extends Authenticatable
             'is_admin' => 'boolean',
             'is_penyelenggara' => 'boolean',
             'is_super_admin' => 'boolean',
+            'otp' => 'string',
+            'otp_expires_at' => 'datetime',
         ];
     }
 

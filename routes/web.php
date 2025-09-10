@@ -21,11 +21,20 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SuperAdmin\SystemReportController;
 
 // RUTE WIZARD REGISTRASI DITEMPATKAN DI SINI
+// RUTE WIZARD REGISTRASI DITEMPATKAN DI SINI
 Route::middleware('guest')->group(function () {
     Route::get('/register', [RegistrationWizardController::class, 'showSteps'])->name('register.wizard');
+
     Route::post('/register-step-1', [RegistrationWizardController::class, 'storeStep1'])
         ->middleware('throttle:5,1')
         ->name('register.wizard.step1');
+
+    Route::get('/register/verify-otp', [RegistrationWizardController::class, 'showOtpForm'])
+        ->name('register.show.otp');
+    Route::post('/register/verify-otp', [RegistrationWizardController::class, 'verifyOtpAndRegister'])
+        ->middleware('throttle:5,1')
+        ->name('register.verify.otp');
+
     Route::post('/register-finish', [RegistrationWizardController::class, 'storeFinal'])
         ->middleware('throttle:5,1')
         ->name('register.wizard.finish');
