@@ -64,7 +64,7 @@ export default function Login({ status, canResetPassword }) {
                                         onSubmit={submit}
                                         className="space-y-6"
                                     >
-                                        {/* PEMBENAHAN: FIELD EMAIL */}
+                                        {/* FIELD EMAIL */}
                                         <div>
                                             <div className="relative">
                                                 <EnvelopeIcon className="absolute w-5 h-5 text-gray-400 left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -90,7 +90,7 @@ export default function Login({ status, canResetPassword }) {
                                             />
                                         </div>
 
-                                        {/* PEMBENAHAN: FIELD PASSWORD */}
+                                        {/* FIELD PASSWORD */}
                                         <div>
                                             <div className="relative">
                                                 <LockClosedIcon className="absolute w-5 h-5 text-gray-400 left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -195,6 +195,17 @@ export default function Login({ status, canResetPassword }) {
                                             <span>Masuk</span>
                                         </PrimaryButton>
                                     </form>
+
+                                    {/*  TAUTAN REGISTRASI */}
+                                    <div className="mt-6 text-center text-sm text-gray-600">
+                                        Belum punya akun?{""}
+                                        <Link
+                                            href={route("register.wizard")}
+                                            className="font-medium text-blue-600 hover:underline"
+                                        >
+                                            Daftar di sini
+                                        </Link>
+                                    </div>
                                 </motion.div>
                             </div>
                         </div>

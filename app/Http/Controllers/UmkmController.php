@@ -48,7 +48,7 @@ class UmkmController extends Controller
     {
         $umkmProfile = Auth::user()->umkmProfile;
         if ($umkmProfile && $umkmProfile->status === 'verified') {
-            return redirect()->route('dashboard')->with('info', 'Profil yang sudah terverifikasi tidak dapat diubah.');
+            return redirect()->route('umkm.dashboard')->with('info', 'Profil yang sudah terverifikasi tidak dapat diubah.');
         }
         return Inertia::render('UMKM/ProfileSetup', [
             'umkmProfile' => $umkmProfile
@@ -102,7 +102,7 @@ class UmkmController extends Controller
         NewUserRegisteredForVerification::dispatch($user);
         ProfileStatusUpdated::dispatch($updatedProfile);
 
-        return redirect()->route('dashboard')->with('success', 'Profile UMKM berhasil disimpan dan diajukan ulang untuk verifikasi!');
+        return redirect()->route('umkm.dashboard')->with('success', 'Profile UMKM berhasil disimpan dan diajukan ulang untuk verifikasi!');
     }
 
     public function events()
@@ -164,7 +164,7 @@ class UmkmController extends Controller
 
         UmkmQrisUpdated::dispatch($umkmProfile);
 
-        return redirect()->route('dashboard')->with('success', 'QRIS berhasil diupload!');
+        return redirect()->route('umkm.dashboard')->with('success', 'QRIS berhasil diupload!');
     }
 
     public function products()
@@ -299,14 +299,14 @@ class UmkmController extends Controller
 
         PendaftarBaruMenungguKonfirmasi::dispatch($registration);
 
-        return redirect()->route('dashboard')->with('success', 'Bukti pembayaran berhasil diunggah. Mohon tunggu konfirmasi dari penyelenggara.');
+        return redirect()->route('umkm.dashboard')->with('success', 'Bukti pembayaran berhasil diunggah. Mohon tunggu konfirmasi dari penyelenggara.');
     }
 
     public function myTickets()
     {
         $umkmProfile = Auth::user()->umkmProfile;
         if (!$umkmProfile) {
-            return redirect()->route('dashboard')->with('error', 'Anda harus melengkapi profil UMKM terlebih dahulu.');
+            return redirect()->route('umkm.dashboard')->with('error', 'Anda harus melengkapi profil UMKM terlebih dahulu.');
         }
         $tickets = EventRegistration::with(['event', 'umkmProfile'])
             ->where('umkm_profile_id', $umkmProfile->id)

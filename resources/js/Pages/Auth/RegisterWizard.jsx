@@ -12,7 +12,6 @@ import {
 } from "react-icons/fi";
 
 // Asumsi komponen ini sudah ada dari proyek Laravel Breeze/Jetstream Anda
-import GuestLayout from "@/Layouts/GuestLayout";
 import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
 import InputLabel from "@/Components/InputLabel";
@@ -83,7 +82,7 @@ const FileUpload = ({
             value={`${label}${required ? " *" : ""}`}
             className={isInvalid ? "text-red-600" : ""}
         />
-        <motion.div
+        <div
             className={`group mt-2 relative border-2 border-dashed rounded-lg p-4 text-center h-40 flex flex-col items-center justify-center transition-all duration-300 ${
                 isInvalid
                     ? "border-red-500 bg-red-50"
@@ -91,8 +90,6 @@ const FileUpload = ({
                     ? "border-red-500"
                     : "border-gray-300 hover:border-blue-500 hover:bg-blue-50"
             }`}
-            whileHover={{ scale: 1.01 }}
-            transition={{ type: "spring", stiffness: 300 }}
         >
             <AnimatePresence mode="wait">
                 {preview ? (
@@ -101,10 +98,10 @@ const FileUpload = ({
                         src={preview}
                         alt="Preview"
                         className="max-h-full w-auto object-contain rounded"
-                        initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
-                        animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                        exit={{ opacity: 0, scale: 0.8, rotate: 5 }}
-                        transition={{ type: "spring", stiffness: 300 }}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        transition={{ duration: 0.3, ease: "easeOut" }}
                     />
                 ) : (
                     <motion.div
@@ -115,19 +112,7 @@ const FileUpload = ({
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2 }}
                     >
-                        <motion.div
-                            animate={{
-                                y: [0, -5, 0],
-                                color: isInvalid ? "#ef4444" : undefined,
-                            }}
-                            transition={{
-                                duration: 2,
-                                repeat: Infinity,
-                                ease: "easeInOut",
-                            }}
-                        >
-                            <FiUploadCloud className="mx-auto h-10 w-10 text-gray-400 group-hover:text-blue-500 transition-colors" />
-                        </motion.div>
+                        <FiUploadCloud className="mx-auto h-10 w-10 text-gray-400 group-hover:text-blue-500 transition-colors" />
                         <span
                             className={`mt-2 block text-sm transition-colors ${
                                 isInvalid ? "text-red-500" : "text-gray-500"
@@ -145,45 +130,32 @@ const FileUpload = ({
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 {...props}
             />
-        </motion.div>
+        </div>
         <InputError message={error} className="mt-2" />
     </div>
 );
 
 // --- Komponen Langkah (Steps) ---
 const formVariants = {
-    hidden: {
-        opacity: 0,
-        x: 50,
-        scale: 0.95,
-    },
-    visible: {
-        opacity: 1,
-        x: 0,
-        scale: 1,
-        transition: {
-            duration: 0.6,
-            ease: [0.25, 0.46, 0.45, 0.94],
-            staggerChildren: 0.1,
-        },
-    },
-    exit: {
-        opacity: 0,
-        x: -50,
-        scale: 0.95,
-        transition: {
-            duration: 0.4,
-            ease: [0.25, 0.46, 0.45, 0.94],
-        },
-    },
-};
-
-const inputVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
         opacity: 1,
         y: 0,
-        transition: { duration: 0.3 },
+        transition: { duration: 0.4, ease: "easeOut" },
+    },
+    exit: {
+        opacity: 0,
+        y: -20,
+        transition: { duration: 0.3, ease: "easeIn" },
+    },
+};
+
+const inputVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.3, ease: "easeOut" },
     },
 };
 
@@ -203,12 +175,7 @@ const Step1Account = ({ data, setData, errors, requiredFields }) => {
             exit="exit"
             className="space-y-4"
         >
-            <motion.div
-                className="text-center"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-            >
+            <motion.div className="text-center" variants={inputVariants}>
                 <h2 className="text-3xl font-bold text-gray-800">
                     Buat Akun Anda
                 </h2>
@@ -346,12 +313,7 @@ const Step2UmkmProfile = ({
             animate="visible"
             exit="exit"
         >
-            <motion.div
-                className="text-center mb-6"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-            >
+            <motion.div className="text-center mb-6" variants={inputVariants}>
                 <h2 className="text-3xl font-bold text-gray-800">
                     Profil UMKM
                 </h2>
@@ -529,12 +491,7 @@ const Step2PenyelenggaraProfile = ({
             animate="visible"
             exit="exit"
         >
-            <motion.div
-                className="text-center mb-6"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-            >
+            <motion.div className="text-center mb-6" variants={inputVariants}>
                 <h2 className="text-3xl font-bold text-gray-800">
                     Profil Penyelenggara
                 </h2>
@@ -733,7 +690,6 @@ export default function RegisterWizard({ role, initialStep }) {
         }
     };
 
-    // Check if step is complete
     const isStepComplete = (step) => {
         if (step === 1) {
             return (
@@ -774,44 +730,37 @@ export default function RegisterWizard({ role, initialStep }) {
             <div className="flex flex-col items-center">
                 <motion.div
                     className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-300 relative
-                        ${
-                            isComplete
-                                ? "bg-green-600 text-white shadow-lg"
-                                : isActive
-                                ? hasErrors
-                                    ? "bg-red-500 text-white shadow-lg"
-                                    : "bg-blue-600 text-white shadow-lg"
-                                : "bg-gray-200 text-gray-500"
-                        }`}
-                    animate={{
-                        scale: currentStep === step ? 1.1 : 1,
-                        rotate: isComplete ? [0, 360] : 0,
-                    }}
-                    transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        duration: isComplete ? 0.6 : 0.3,
-                    }}
+                            ${
+                                isComplete
+                                    ? "bg-green-600 text-white shadow-lg"
+                                    : isActive
+                                    ? hasErrors
+                                        ? "bg-red-500 text-white shadow-lg"
+                                        : "bg-blue-600 text-white shadow-lg"
+                                    : "bg-gray-200 text-gray-500"
+                            }`}
+                    animate={{ scale: currentStep === step ? 1.1 : 1 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 15 }}
                     whileHover={{ scale: 1.15 }}
                 >
                     <AnimatePresence mode="wait">
                         {isComplete ? (
                             <motion.div
                                 key="check"
-                                initial={{ scale: 0, rotate: -180 }}
-                                animate={{ scale: 1, rotate: 0 }}
-                                exit={{ scale: 0, rotate: 180 }}
-                                transition={{ duration: 0.3 }}
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                exit={{ scale: 0 }}
+                                transition={{ duration: 0.2 }}
                             >
                                 <FiCheck size={24} />
                             </motion.div>
                         ) : hasErrors ? (
                             <motion.div
                                 key="error"
-                                initial={{ scale: 0, rotate: -180 }}
-                                animate={{ scale: 1, rotate: 0 }}
-                                exit={{ scale: 0, rotate: 180 }}
-                                transition={{ duration: 0.3 }}
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                exit={{ scale: 0 }}
+                                transition={{ duration: 0.2 }}
                             >
                                 <FiAlertCircle size={24} />
                             </motion.div>
@@ -821,7 +770,7 @@ export default function RegisterWizard({ role, initialStep }) {
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
                                 exit={{ scale: 0 }}
-                                transition={{ duration: 0.3 }}
+                                transition={{ duration: 0.2 }}
                             >
                                 {icon}
                             </motion.div>
@@ -863,9 +812,8 @@ export default function RegisterWizard({ role, initialStep }) {
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
-                {/* Kolom Kiri - Gambar & Branding */}
+                {/* Kolom Kiri - Gambar & Branding (DIKEMBALIKAN KE VERSI ASLI) */}
                 <div className="hidden md:block relative overflow-hidden">
-                    {/* Background Gambar */}
                     <motion.div
                         className="absolute inset-0 bg-cover bg-center"
                         style={{
@@ -876,10 +824,8 @@ export default function RegisterWizard({ role, initialStep }) {
                         transition={{ duration: 1.2 }}
                     ></motion.div>
 
-                    {/* Overlay Warna */}
                     <div className="absolute inset-0 bg-blue-800 bg-opacity-60"></div>
 
-                    {/* Konten Teks */}
                     <motion.div
                         className="relative h-full flex flex-col justify-start p-12 text-white z-10"
                         initial={{ x: -50, opacity: 0 }}
@@ -898,7 +844,6 @@ export default function RegisterWizard({ role, initialStep }) {
                         </p>
                     </motion.div>
 
-                    {/* Logo / Foto tambahan di tengah */}
                     <motion.div
                         className="absolute inset-0 flex items-center justify-center z-20"
                         initial={{ opacity: 0, scale: 0.8 }}
@@ -916,7 +861,6 @@ export default function RegisterWizard({ role, initialStep }) {
 
                 {/* Kolom Kanan - Form Wizard */}
                 <div className="bg-white p-8 md:p-12 flex flex-col justify-center">
-                    {/* Progress Bar */}
                     <motion.div
                         className="flex justify-center items-center mb-10"
                         initial={{ y: -30, opacity: 0 }}
