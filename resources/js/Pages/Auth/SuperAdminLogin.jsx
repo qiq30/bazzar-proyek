@@ -31,12 +31,12 @@ export default function SuperAdminLogin() {
                     {/* Kolom Kiri (Form Login) */}
                     <div className="flex flex-col justify-center w-full md:w-1/2 p-8 md:p-14">
                         <motion.div
-                            initial={{ opacity: 0, x: 50 }}
-                            animate={{ opacity: 1, x: 0 }}
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
                             transition={{
-                                duration: 0.6,
+                                duration: 0.5,
                                 ease: "easeOut",
-                                delay: 0.4,
+                                delay: 0.2,
                             }}
                         >
                             <div className="text-center">

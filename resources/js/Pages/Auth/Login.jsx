@@ -37,14 +37,13 @@ export default function Login({ status, canResetPassword }) {
                         <div className="w-full md:w-1/2 order-2 md:order-1">
                             <div className="px-6 py-8 sm:px-8 md:px-12 lg:px-16">
                                 <motion.div
-                                    initial={{ opacity: 0, x: 50 }}
-                                    animate={{ opacity: 1, x: 0 }}
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
                                     transition={{
-                                        duration: 0.6,
+                                        duration: 0.5,
                                         ease: "easeOut",
-                                        delay: 0.4,
+                                        delay: 0.2,
                                     }}
-                                    className="max-w-sm mx-auto md:max-w-none md:mx-0"
                                 >
                                     <div className="text-center md:text-left">
                                         <h2 className="mb-3 text-3xl sm:text-4xl font-bold text-gray-800">
