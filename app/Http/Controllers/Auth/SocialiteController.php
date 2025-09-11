@@ -7,7 +7,9 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log; // <-- 1. Tambahkan ini
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -18,7 +20,7 @@ class SocialiteController extends Controller
      */
     public function redirect(): RedirectResponse
     {
-        return Socialite::driver('google')->redirect();
+        return Socialite::driver('google')->with(['prompt' => 'select_account'])->redirect();
     }
 
     /**
@@ -29,46 +31,62 @@ class SocialiteController extends Controller
         try {
             $googleUser = Socialite::driver('google')->user();
 
-            $user = User::updateOrCreate(
-                ['google_id' => $googleUser->getId()],
-                [
+            $user = User::where('google_id', $googleUser->getId())->orWhere('email', $googleUser->getEmail())->first();
+
+            if ($user) {
+                // Pengguna sudah ada, update data jika perlu
+                $user->update([
+                    'name' => $googleUser->getName(),
+                    'google_id' => $googleUser->getId(), // Pastikan google_id terisi jika login via email
+                    'google_token' => $googleUser->token,
+                ]);
+            } else {
+                // Pengguna baru, buat akun
+                $user = User::create([
                     'name' => $googleUser->getName(),
                     'email' => $googleUser->getEmail(),
+                    'google_id' => $googleUser->getId(),
                     'google_token' => $googleUser->token,
+                    'password' => Hash::make(Str::random(24)), // Buat password acak
                     'email_verified_at' => now(),
-                ]
-            );
+                ]);
+            }
 
             Auth::login($user);
 
-            if ($user->wasRecentlyCreated || (!$user->umkmProfile && !$user->penyelenggaraProfile)) {
-                if (!$user->is_penyelenggara && !$user->umkmProfile && !$user->penyelenggaraProfile) {
-                    return redirect()->route('auth.google.select-role');
-                }
-                if (!$user->is_penyelenggara && !$user->umkmProfile) {
-                    return redirect()->route('umkm.profile.setup');
-                }
-                if ($user->is_penyelenggara && !$user->penyelenggaraProfile) {
-                    return redirect()->route('penyelenggara.profile.setup');
-                }
-            }
 
-            if ($user->is_penyelenggara) {
-                return redirect()->intended(route('penyelenggara.dashboard'));
+            // Prioritas 1: Tangani pengguna yang baru dibuat atau yang belum memilih peran.
+            // wasRecentlyCreated memastikan ini hanya berlaku untuk registrasi baru.
+            if ($user->wasRecentlyCreated || (!$user->is_penyelenggara && !$user->umkmProfile && !$user->penyelenggaraProfile)) {
+                return redirect()->route('auth.google.select-role');
             }
-
-            return redirect()->intended(route('umkm.dashboard'));
+            // Prioritas 2: Jika sudah memilih peran Penyelenggara tapi profil belum lengkap.
+            else if ($user->is_penyelenggara && !$user->penyelenggaraProfile) {
+                return redirect()->route('penyelenggara.profile.setup');
+            }
+            // Prioritas 3: Jika merupakan UMKM (bukan penyelenggara) tapi profil belum lengkap.
+            else if (!$user->is_penyelenggara && !$user->umkmProfile) {
+                return redirect()->route('umkm.profile.setup');
+            }
+            // Prioritas 4 (Default): Jika semua sudah lengkap, arahkan ke dashboard yang sesuai.
+            else {
+                $home = match (true) {
+                    $user->is_super_admin => route('superadmin.dashboard'),
+                    $user->is_admin => route('admin.dashboard'),
+                    $user->is_penyelenggara => route('penyelenggara.dashboard'),
+                    default => route('umkm.dashboard'),
+                };
+                return redirect()->intended($home);
+            }
         } catch (\Throwable $th) {
-            // === 2. PERUBAHAN UTAMA DI SINI ===
-            // Catat error yang detail ke file log
             Log::error('Google Login Callback Error: ' . $th->getMessage(), [
                 'trace' => $th->getTraceAsString()
             ]);
 
-            // Arahkan kembali dengan pesan error yang lebih informatif
             return redirect()->route('login')->with('error', 'Login Google gagal. Silakan coba lagi atau hubungi admin.');
         }
     }
+
 
     /**
      * Menampilkan halaman pemilihan peran.

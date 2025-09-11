@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Auth\Events\PasswordReset;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -17,53 +17,69 @@ use Inertia\Response;
 class NewPasswordController extends Controller
 {
     /**
-     * Display the password reset view.
+     * Menampilkan halaman untuk verifikasi OTP dan input password baru.
      */
-    public function create(Request $request): Response
+    public function create(Request $request): Response|RedirectResponse
     {
-        return Inertia::render('Auth/ResetPassword', [
-            'email' => $request->email,
-            'token' => $request->route('token'),
+        // Mengambil email dari session (lebih aman) atau dari request sebagai fallback.
+        $email = session('email', $request->query('email'));
+
+        // Jika email tidak ditemukan, kembalikan pengguna ke halaman permintaan reset password.
+        if (!$email) {
+            return redirect()->route('password.request')
+                ->withErrors(['email' => 'Sesi Anda telah berakhir. Silakan minta tautan reset baru.']);
+        }
+
+        return Inertia::render('Auth/VerifyPasswordOtp', [
+            'email' => $email,
         ]);
     }
 
     /**
-     * Handle an incoming new password request.
+     * Menangani permintaan untuk mengatur ulang password.
      *
      * @throws \Illuminate\Validation\ValidationException
      */
     public function store(Request $request): RedirectResponse
     {
+        // 1. Validasi input dari form
         $request->validate([
-            'token' => 'required',
-            'email' => 'required|email',
+            'email' => ['required', 'email', 'exists:users,email'],
+            'otp' => ['required', 'numeric', 'digits:6'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        // Here we will attempt to reset the user's password. If it is successful we
-        // will update the password on an actual user model and persist it to the
-        // database. Otherwise we will parse the error and return the response.
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user) use ($request) {
-                $user->forceFill([
-                    'password' => Hash::make($request->password),
-                    'remember_token' => Str::random(60),
-                ])->save();
+        // 2. Cari token OTP yang valid (belum kedaluwarsa)
+        // Ini lebih efisien karena database yang melakukan filter waktu, bukan PHP.
+        $otpRecord = DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->where('created_at', '>', Carbon::now()->subMinutes(10)) // Cari token yang dibuat dalam 10 menit terakhir
+            ->first();
 
-                event(new PasswordReset($user));
-            }
-        );
-
-        // If the password was successfully reset, we will redirect the user back to
-        // the application's home authenticated view. If there is an error we can
-        // redirect them back to where they came from with their error message.
-        if ($status == Password::PASSWORD_RESET) {
-            return redirect()->route('login')->with('status', __($status));
+        // 3. Verifikasi OTP
+        // Jika token tidak ditemukan ATAU hash OTP tidak cocok, gagalkan.
+        // Pesan error digeneralisasi untuk keamanan (mencegah user menebak-nebak).
+        if (!$otpRecord || !Hash::check($request->otp, $otpRecord->token)) {
+            throw ValidationException::withMessages([
+                'otp' => 'Kode OTP tidak valid atau telah kedaluwarsa.',
+            ]);
         }
 
-        throw ValidationException::withMessages([
-            'email' => [trans($status)],
-        ]);
+        // 4. Gunakan Database Transaction untuk memastikan semua proses berhasil
+        // Jika salah satu gagal (misal: update password berhasil tapi hapus token gagal),
+        // semua perubahan akan dibatalkan (rollback). Ini menjaga konsistensi data.
+        DB::transaction(function () use ($request) {
+            // Update password pengguna
+            $user = User::where('email', $request->email)->first();
+            $user->update([
+                'password' => Hash::make($request->password),
+            ]);
+
+            // Hapus token dari database setelah berhasil digunakan
+            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+        });
+
+        // 5. Redirect ke halaman login dengan pesan sukses
+        return redirect()->route('login')->with('status', 'Password Anda berhasil diatur ulang!');
     }
 }
