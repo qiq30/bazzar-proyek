@@ -75,7 +75,7 @@ class RegistrationWizardController extends Controller
             Mail::to($request->email)->send(new SendOtpMail($otp));
         } catch (\Exception $e) {
             // If email fails, redirect back with an error
-            return back()->withErrors(['email' => 'Gagal mengirim email verifikasi. Pastikan konfigurasi SMTP Anda benar.']);
+            return back()->withErrors(['email' => 'Gagal mengirim email verifikasi. Pastikan anda terhubung ke internet dengan benar.']);
         }
 
         // Redirect to OTP verification form

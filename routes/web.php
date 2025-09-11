@@ -19,9 +19,13 @@ use App\Http\Controllers\SuperAdmin\ImpersonateController;
 use App\Http\Controllers\ImpersonationApprovalController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SuperAdmin\SystemReportController;
+use App\Http\Controllers\Auth\SocialiteController;
 
-// RUTE WIZARD REGISTRASI DITEMPATKAN DI SINI
-// RUTE WIZARD REGISTRASI DITEMPATKAN DI SINI
+// Rute untuk Google OAuth
+Route::get('/auth/google/redirect', [SocialiteController::class, 'redirect'])->name('auth.google.redirect');
+Route::get('/auth/google/callback', [SocialiteController::class, 'callback'])->name('auth.google.callback');
+
+// RUTE WIZARD REGISTRASI
 Route::middleware('guest')->group(function () {
     Route::get('/register', [RegistrationWizardController::class, 'showSteps'])->name('register.wizard');
 
@@ -128,6 +132,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/impersonate-requests', [ImpersonationApprovalController::class, 'index'])->name('impersonate.requests.index');
     Route::post('/impersonate-requests/{impersonationRequest}/respond', [ImpersonationApprovalController::class, 'respond'])->name('impersonate.requests.respond');
+
+    Route::get('/auth/google/select-role', [SocialiteController::class, 'showRoleSelection'])->name('auth.google.select-role');
+    Route::post('/auth/google/save-role', [SocialiteController::class, 'saveRole'])->name('auth.google.save-role');
 });
 
 // Admin Routes

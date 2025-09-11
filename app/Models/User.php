@@ -51,6 +51,8 @@ class User extends Authenticatable
             'is_super_admin' => 'boolean',
             'otp' => 'string',
             'otp_expires_at' => 'datetime',
+            'google_id' => 'string',
+            'google_token' => 'string',
         ];
     }
 
