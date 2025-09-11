@@ -153,7 +153,7 @@ const Step1Upload = ({ onStepComplete }) => {
                                 )}
                                 className="inline-flex items-center gap-2 rounded-lg border border-blue-300 bg-white px-4 py-2 text-sm font-semibold text-blue-600 shadow-sm transition-all duration-200 hover:bg-blue-50 hover:shadow-md"
                             >
-                                <FiDownload className="h-4 h-4" />
+                                <FiDownload className="h-4" />
                                 Unduh Template PDF
                             </a>
                         </div>
