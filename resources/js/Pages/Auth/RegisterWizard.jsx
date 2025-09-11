@@ -1,988 +1,881 @@
-import { useState, useEffect } from "react";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm, Link } from "@inertiajs/react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
 import {
-    FiUser,
-    FiMail,
-    FiLock,
+    FiDownload,
+    FiFileText,
     FiUploadCloud,
-    FiCheck,
-    FiBriefcase,
+    FiCheckCircle,
+    FiClipboard,
+    FiCalendar,
+    FiMapPin,
+    FiDollarSign,
+    FiUsers,
+    FiCreditCard,
+    FiImage,
     FiAlertCircle,
 } from "react-icons/fi";
 
-// Asumsi komponen ini sudah ada dari proyek Laravel Breeze/Jetstream Anda
-import PrimaryButton from "@/Components/PrimaryButton";
-import TextInput from "@/Components/TextInput";
-import InputLabel from "@/Components/InputLabel";
-import InputError from "@/Components/InputError";
-
-// --- Komponen Bantuan ---
-const Spinner = () => (
-    <svg
-        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-    >
-        <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-        ></circle>
-        <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-        ></path>
-    </svg>
-);
-
-const IconTextInput = ({
-    icon,
-    className = "",
-    isInvalid = false,
-    ...props
-}) => (
-    <div className="relative">
-        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <div
-                className={`transition-colors duration-200 ${
-                    isInvalid ? "text-red-500" : "text-gray-400"
-                }`}
-            >
-                {icon}
-            </div>
-        </div>
-        <TextInput
-            {...props}
-            className={`mt-1 block w-full pl-10 transition-all duration-200 ${
-                isInvalid
-                    ? "border-red-500 focus:border-red-500 focus:ring-red-500 bg-red-50"
-                    : "focus:border-blue-500 focus:ring-blue-500"
-            } ${className}`}
-        />
-    </div>
-);
-
-const FileUpload = ({
-    label,
-    required,
-    preview,
-    error,
-    onFileChange,
-    isInvalid = false,
-    ...props
-}) => (
-    <div>
-        <InputLabel
-            value={`${label}${required ? " *" : ""}`}
-            className={isInvalid ? "text-red-600" : ""}
-        />
-        <div
-            className={`group mt-2 relative border-2 border-dashed rounded-lg p-4 text-center h-40 flex flex-col items-center justify-center transition-all duration-300 ${
-                isInvalid
-                    ? "border-red-500 bg-red-50"
-                    : error
-                    ? "border-red-500"
-                    : "border-gray-300 hover:border-blue-500 hover:bg-blue-50"
-            }`}
-        >
-            <AnimatePresence mode="wait">
-                {preview ? (
-                    <motion.img
-                        key="preview"
-                        src={preview}
-                        alt="Preview"
-                        className="max-h-full w-auto object-contain rounded"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        transition={{ duration: 0.3, ease: "easeOut" }}
-                    />
-                ) : (
-                    <motion.div
-                        key="placeholder"
-                        className="text-center"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                    >
-                        <FiUploadCloud className="mx-auto h-10 w-10 text-gray-400 group-hover:text-blue-500 transition-colors" />
-                        <span
-                            className={`mt-2 block text-sm transition-colors ${
-                                isInvalid ? "text-red-500" : "text-gray-500"
-                            }`}
-                        >
-                            Klik atau seret file untuk mengunggah
-                        </span>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-            <input
-                type="file"
-                accept="image/*"
-                onChange={onFileChange}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                {...props}
-            />
-        </div>
-        <InputError message={error} className="mt-2" />
-    </div>
-);
-
-// --- Komponen Langkah (Steps) ---
-const formVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-        opacity: 1,
-        y: 0,
-        transition: { duration: 0.4, ease: "easeOut" },
-    },
-    exit: {
-        opacity: 0,
-        y: -20,
-        transition: { duration: 0.3, ease: "easeIn" },
-    },
-};
-
-const inputVariants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: {
-        opacity: 1,
-        y: 0,
-        transition: { duration: 0.3, ease: "easeOut" },
-    },
-};
-
-const Step1Account = ({ data, setData, errors, requiredFields }) => {
-    const isFieldInvalid = (field) => {
-        return (
-            requiredFields.includes(field) &&
-            (!data[field] || data[field].trim() === "")
-        );
-    };
-
-    return (
-        <motion.div
-            variants={formVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className="space-y-4"
-        >
-            <motion.div className="text-center" variants={inputVariants}>
-                <h2 className="text-3xl font-bold text-gray-800">
-                    Buat Akun Anda
-                </h2>
-                <p className="mt-2 text-gray-600">
-                    Mulai perjalanan Anda bersama kami.
-                </p>
-            </motion.div>
-
-            <motion.div variants={inputVariants}>
-                <InputLabel
-                    htmlFor="name"
-                    value="Nama Lengkap *"
-                    className={isFieldInvalid("name") ? "text-red-600" : ""}
-                />
-                <IconTextInput
-                    id="name"
-                    value={data.name}
-                    onChange={(e) => setData("name", e.target.value)}
-                    required
-                    isFocused
-                    icon={<FiUser className="h-5 w-5" />}
-                    isInvalid={isFieldInvalid("name") || errors.name}
-                />
-                <InputError message={errors.name} className="mt-2" />
-            </motion.div>
-
-            <motion.div variants={inputVariants}>
-                <InputLabel
-                    htmlFor="email"
-                    value="Email *"
-                    className={isFieldInvalid("email") ? "text-red-600" : ""}
-                />
-                <IconTextInput
-                    id="email"
-                    type="email"
-                    value={data.email}
-                    onChange={(e) => setData("email", e.target.value)}
-                    required
-                    icon={<FiMail className="h-5 w-5" />}
-                    isInvalid={isFieldInvalid("email") || errors.email}
-                />
-                <InputError message={errors.email} className="mt-2" />
-            </motion.div>
-
-            <motion.div variants={inputVariants}>
-                <InputLabel
-                    htmlFor="password"
-                    value="Password *"
-                    className={isFieldInvalid("password") ? "text-red-600" : ""}
-                />
-                <IconTextInput
-                    id="password"
-                    type="password"
-                    value={data.password}
-                    onChange={(e) => setData("password", e.target.value)}
-                    required
-                    icon={<FiLock className="h-5 w-5" />}
-                    isInvalid={isFieldInvalid("password") || errors.password}
-                />
-                <InputError message={errors.password} className="mt-2" />
-            </motion.div>
-
-            <motion.div variants={inputVariants}>
-                <InputLabel
-                    htmlFor="password_confirmation"
-                    value="Konfirmasi Password *"
-                    className={
-                        isFieldInvalid("password_confirmation")
-                            ? "text-red-600"
-                            : ""
-                    }
-                />
-                <IconTextInput
-                    id="password_confirmation"
-                    type="password"
-                    value={data.password_confirmation}
-                    onChange={(e) =>
-                        setData("password_confirmation", e.target.value)
-                    }
-                    required
-                    icon={<FiLock className="h-5 w-5" />}
-                    isInvalid={
-                        isFieldInvalid("password_confirmation") ||
-                        errors.password_confirmation
-                    }
-                />
-                <InputError
-                    message={errors.password_confirmation}
-                    className="mt-2"
-                />
-            </motion.div>
-        </motion.div>
-    );
-};
-
-const Step2UmkmProfile = ({
-    data,
-    setData,
-    errors,
-    handleFileChange,
-    logoPreview,
-    ktpPreview,
-    requiredFields,
-}) => {
-    const businessTypes = [
-        "Kuliner",
-        "Fashion",
-        "Kerajinan",
-        "Kecantikan",
-        "Elektronik",
-        "Pertanian",
-        "Jasa",
-        "Lainnya",
+// Wizard Steps Component - Improved responsive design
+const WizardSteps = ({ currentStep, completedSteps }) => {
+    const steps = [
+        { id: 1, name: "Unggah Dokumen", icon: FiUploadCloud },
+        { id: 2, name: "Lengkapi Detail", icon: FiClipboard },
     ];
 
-    const isFieldInvalid = (field) => {
-        if (field === "ktp") {
-            return requiredFields.includes(field) && !data[field];
-        }
-        return (
-            requiredFields.includes(field) &&
-            (!data[field] || data[field].trim() === "")
-        );
-    };
-
-    const inputErrorClass =
-        "border-red-500 focus:border-red-500 focus:ring-red-500 bg-red-50";
-    const inputDefaultClass =
-        "border-gray-300 focus:border-blue-500 focus:ring-blue-500";
-
     return (
-        <motion.div
-            variants={formVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-        >
-            <motion.div className="text-center mb-6" variants={inputVariants}>
-                <h2 className="text-3xl font-bold text-gray-800">
-                    Profil UMKM
-                </h2>
-                <p className="mt-2 text-gray-600">
-                    Ceritakan lebih banyak tentang usaha Anda.
-                </p>
-            </motion.div>
-
-            <div className="space-y-4">
-                <motion.div variants={inputVariants}>
-                    <InputLabel
-                        htmlFor="business_name"
-                        value="Nama Usaha *"
-                        className={
-                            isFieldInvalid("business_name")
-                                ? "text-red-600"
-                                : ""
-                        }
-                    />
-                    <TextInput
-                        id="business_name"
-                        value={data.business_name}
-                        onChange={(e) =>
-                            setData("business_name", e.target.value)
-                        }
-                        className={`mt-1 block w-full transition-all duration-200 ${
-                            isFieldInvalid("business_name") ||
-                            errors.business_name
-                                ? inputErrorClass
-                                : inputDefaultClass
+        <nav className="mb-8 px-4 sm:px-0">
+            <ol className="flex items-center justify-center">
+                {steps.map((step, index) => (
+                    <li
+                        key={step.id}
+                        className={`flex items-center ${
+                            index < steps.length - 1 ? "flex-1" : ""
                         }`}
-                        required
-                    />
-                    <InputError
-                        message={errors.business_name}
-                        className="mt-2"
-                    />
-                </motion.div>
-
-                <motion.div variants={inputVariants}>
-                    <InputLabel
-                        htmlFor="description"
-                        value="Deskripsi Usaha *"
-                        className={
-                            isFieldInvalid("description") ? "text-red-600" : ""
-                        }
-                    />
-                    <textarea
-                        id="description"
-                        value={data.description}
-                        onChange={(e) => setData("description", e.target.value)}
-                        rows="3"
-                        className={`mt-1 block w-full rounded-md shadow-sm transition-all duration-200 ${
-                            isFieldInvalid("description") || errors.description
-                                ? inputErrorClass
-                                : inputDefaultClass
-                        }`}
-                        required
-                    />
-                    <InputError message={errors.description} className="mt-2" />
-                </motion.div>
-
-                <motion.div variants={inputVariants}>
-                    <InputLabel
-                        htmlFor="business_type"
-                        value="Jenis Usaha *"
-                        className={
-                            isFieldInvalid("business_type")
-                                ? "text-red-600"
-                                : ""
-                        }
-                    />
-                    <select
-                        id="business_type"
-                        value={data.business_type}
-                        onChange={(e) =>
-                            setData("business_type", e.target.value)
-                        }
-                        className={`mt-1 block w-full rounded-md shadow-sm transition-all duration-200 ${
-                            isFieldInvalid("business_type") ||
-                            errors.business_type
-                                ? inputErrorClass
-                                : inputDefaultClass
-                        }`}
-                        required
                     >
-                        <option value="">Pilih Jenis Usaha</option>
-                        {businessTypes.map((type) => (
-                            <option key={type} value={type}>
-                                {type}
-                            </option>
-                        ))}
-                    </select>
-                    <InputError
-                        message={errors.business_type}
-                        className="mt-2"
-                    />
-                </motion.div>
-
-                <motion.div variants={inputVariants}>
-                    <InputLabel
-                        htmlFor="address"
-                        value="Alamat Usaha *"
-                        className={
-                            isFieldInvalid("address") ? "text-red-600" : ""
-                        }
-                    />
-                    <textarea
-                        id="address"
-                        value={data.address}
-                        onChange={(e) => setData("address", e.target.value)}
-                        rows="3"
-                        className={`mt-1 block w-full rounded-md shadow-sm transition-all duration-200 ${
-                            isFieldInvalid("address") || errors.address
-                                ? inputErrorClass
-                                : inputDefaultClass
-                        }`}
-                        required
-                    />
-                    <InputError message={errors.address} className="mt-2" />
-                </motion.div>
-
-                <motion.div
-                    className="grid md:grid-cols-2 gap-6"
-                    variants={inputVariants}
-                >
-                    <FileUpload
-                        label="Logo Usaha (Opsional)"
-                        preview={logoPreview}
-                        onFileChange={(e) => handleFileChange(e, "logo")}
-                        error={errors.logo}
-                    />
-                    <FileUpload
-                        label="Foto KTP"
-                        required
-                        preview={ktpPreview}
-                        error={errors.ktp}
-                        isInvalid={isFieldInvalid("ktp")}
-                        onFileChange={(e) => handleFileChange(e, "ktp")}
-                    />
-                </motion.div>
-            </div>
-        </motion.div>
+                        <div className="flex flex-col items-center">
+                            <span
+                                className={`flex items-center justify-center w-12 h-12 rounded-full shrink-0 transition-all duration-300 shadow-lg
+                                ${
+                                    completedSteps.includes(step.id)
+                                        ? "bg-green-500 text-white shadow-green-200"
+                                        : ""
+                                }
+                                ${
+                                    currentStep === step.id &&
+                                    !completedSteps.includes(step.id)
+                                        ? "bg-blue-600 text-white shadow-blue-200"
+                                        : ""
+                                }
+                                ${
+                                    currentStep < step.id &&
+                                    !completedSteps.includes(step.id)
+                                        ? "bg-gray-200 text-gray-500"
+                                        : ""
+                                }
+                            `}
+                            >
+                                {completedSteps.includes(step.id) ? (
+                                    <FiCheckCircle className="w-6 h-6" />
+                                ) : (
+                                    <step.icon className="w-6 h-6" />
+                                )}
+                            </span>
+                            <div className="mt-2 text-center">
+                                <h3
+                                    className={`text-sm font-semibold transition-colors ${
+                                        currentStep >= step.id ||
+                                        completedSteps.includes(step.id)
+                                            ? "text-gray-900"
+                                            : "text-gray-400"
+                                    }`}
+                                >
+                                    {step.name}
+                                </h3>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Langkah {step.id}
+                                </p>
+                            </div>
+                        </div>
+                        {index < steps.length - 1 && (
+                            <div className="flex-1 mx-4 sm:mx-8">
+                                <div
+                                    className={`h-1 rounded-full transition-all duration-300 ${
+                                        completedSteps.includes(step.id)
+                                            ? "bg-green-500"
+                                            : "bg-gray-200"
+                                    }`}
+                                />
+                            </div>
+                        )}
+                    </li>
+                ))}
+            </ol>
+        </nav>
     );
 };
 
-const Step2PenyelenggaraProfile = ({
-    data,
-    setData,
-    errors,
-    handleFileChange,
-    logoPreview,
-    docPreview,
-    requiredFields,
-}) => {
-    const isFieldInvalid = (field) => {
-        if (field === "verification_document") {
-            return requiredFields.includes(field) && !data[field];
-        }
-        return (
-            requiredFields.includes(field) &&
-            (!data[field] || data[field].trim() === "")
-        );
-    };
-
-    const inputErrorClass =
-        "border-red-500 focus:border-red-500 focus:ring-red-500 bg-red-50";
-    const inputDefaultClass =
-        "border-gray-300 focus:border-blue-500 focus:ring-blue-500";
-
-    return (
-        <motion.div
-            variants={formVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-        >
-            <motion.div className="text-center mb-6" variants={inputVariants}>
-                <h2 className="text-3xl font-bold text-gray-800">
-                    Profil Penyelenggara
-                </h2>
-                <p className="mt-2 text-gray-600">
-                    Lengkapi informasi instansi Anda.
-                </p>
-            </motion.div>
-
-            <div className="space-y-4">
-                <motion.div variants={inputVariants}>
-                    <InputLabel
-                        htmlFor="organizer_name"
-                        value="Nama Instansi/Organisasi *"
-                        className={
-                            isFieldInvalid("organizer_name")
-                                ? "text-red-600"
-                                : ""
-                        }
-                    />
-                    <TextInput
-                        id="organizer_name"
-                        value={data.organizer_name}
-                        onChange={(e) =>
-                            setData("organizer_name", e.target.value)
-                        }
-                        className={`mt-1 block w-full transition-all duration-200 ${
-                            isFieldInvalid("organizer_name") ||
-                            errors.organizer_name
-                                ? inputErrorClass
-                                : inputDefaultClass
-                        }`}
-                        required
-                    />
-                    <InputError
-                        message={errors.organizer_name}
-                        className="mt-2"
-                    />
-                </motion.div>
-
-                <motion.div variants={inputVariants}>
-                    <InputLabel
-                        htmlFor="description"
-                        value="Deskripsi Instansi/Organisasi *"
-                        className={
-                            isFieldInvalid("description") ? "text-red-600" : ""
-                        }
-                    />
-                    <textarea
-                        id="description"
-                        value={data.description}
-                        onChange={(e) => setData("description", e.target.value)}
-                        rows="3"
-                        className={`mt-1 block w-full rounded-md shadow-sm transition-all duration-200 ${
-                            isFieldInvalid("description") || errors.description
-                                ? inputErrorClass
-                                : inputDefaultClass
-                        }`}
-                        required
-                    />
-                    <InputError message={errors.description} className="mt-2" />
-                </motion.div>
-
-                <motion.div variants={inputVariants}>
-                    <InputLabel
-                        htmlFor="address"
-                        value="Alamat Instansi *"
-                        className={
-                            isFieldInvalid("address") ? "text-red-600" : ""
-                        }
-                    />
-                    <textarea
-                        id="address"
-                        value={data.address}
-                        onChange={(e) => setData("address", e.target.value)}
-                        rows="3"
-                        className={`mt-1 block w-full rounded-md shadow-sm transition-all duration-200 ${
-                            isFieldInvalid("address") || errors.address
-                                ? inputErrorClass
-                                : inputDefaultClass
-                        }`}
-                        required
-                    />
-                    <InputError message={errors.address} className="mt-2" />
-                </motion.div>
-
-                <motion.div
-                    className="grid md:grid-cols-2 gap-6"
-                    variants={inputVariants}
-                >
-                    <FileUpload
-                        label="Logo Instansi (Opsional)"
-                        preview={logoPreview}
-                        onFileChange={(e) => handleFileChange(e, "logo")}
-                        error={errors.logo}
-                    />
-                    <FileUpload
-                        label="Dokumen (KTP/Surat Izin)"
-                        required
-                        preview={docPreview}
-                        error={errors.verification_document}
-                        isInvalid={isFieldInvalid("verification_document")}
-                        onFileChange={(e) =>
-                            handleFileChange(e, "verification_document")
-                        }
-                    />
-                </motion.div>
-            </div>
-        </motion.div>
-    );
-};
-
-// --- Komponen Wizard Utama ---
-export default function RegisterWizard({ role, initialStep }) {
-    const [logoPreview, setLogoPreview] = useState(null);
-    const [ktpPreview, setKtpPreview] = useState(null);
-    const [docPreview, setDocPreview] = useState(null);
-    const [requiredFields, setRequiredFields] = useState([]);
-
+// Step 1: Upload Component - Enhanced layout
+const Step1Upload = ({ onStepComplete }) => {
     const { data, setData, post, processing, errors } = useForm({
-        name: "",
-        email: "",
-        password: "",
-        password_confirmation: "",
-        role: role,
-        business_name: "",
-        description: "",
-        address: "",
-        business_type: "",
-        logo: null,
-        ktp: null,
-        organizer_name: "",
-        verification_document: null,
+        nama_event: "",
+        proposal_document: null,
     });
 
-    // Update required fields based on step and role
-    useEffect(() => {
-        if (initialStep === 1) {
-            setRequiredFields([
-                "name",
-                "email",
-                "password",
-                "password_confirmation",
-            ]);
-        } else if (initialStep === 2) {
-            if (role === "umkm") {
-                setRequiredFields([
-                    "business_name",
-                    "description",
-                    "business_type",
-                    "address",
-                    "ktp",
-                ]);
-            } else {
-                setRequiredFields([
-                    "organizer_name",
-                    "description",
-                    "address",
-                    "verification_document",
-                ]);
-            }
-        }
-    }, [initialStep, role]);
-
-    const handleFileChange = (e, field) => {
-        const file = e.target.files[0];
-        if (file) {
-            setData(field, file);
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                if (field === "logo") setLogoPreview(ev.target.result);
-                else if (field === "ktp") setKtpPreview(ev.target.result);
-                else if (field === "verification_document")
-                    setDocPreview(ev.target.result);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    const handleFormSubmit = (e) => {
+    const submit = (e) => {
         e.preventDefault();
-
-        if (initialStep === 1) {
-            post(route("register.wizard.step1"));
-        } else {
-            post(route("register.wizard.finish"), {
-                forceFormData: true,
-                onSuccess: () => {
-                    console.log(
-                        "Form submitted successfully, Inertia will now redirect."
-                    );
-                },
-                onError: (errors) => {
-                    console.error("Validation errors:", errors);
-                },
-            });
-        }
-    };
-
-    const isStepComplete = (step) => {
-        if (step === 1) {
-            return (
-                data.name &&
-                data.email &&
-                data.password &&
-                data.password_confirmation
-            );
-        } else if (step === 2) {
-            if (role === "umkm") {
-                return (
-                    data.business_name &&
-                    data.description &&
-                    data.business_type &&
-                    data.address &&
-                    data.ktp
-                );
-            } else {
-                return (
-                    data.organizer_name &&
-                    data.description &&
-                    data.address &&
-                    data.verification_document
-                );
-            }
-        }
-        return false;
-    };
-
-    const StepIcon = ({ step, currentStep, icon, label }) => {
-        const isActive = currentStep >= step;
-        const isComplete =
-            currentStep > step ||
-            (currentStep === step && isStepComplete(step));
-        const hasErrors = currentStep === step && !isStepComplete(step);
-
-        return (
-            <div className="flex flex-col items-center">
-                <motion.div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-300 relative
-                            ${
-                                isComplete
-                                    ? "bg-green-600 text-white shadow-lg"
-                                    : isActive
-                                    ? hasErrors
-                                        ? "bg-red-500 text-white shadow-lg"
-                                        : "bg-blue-600 text-white shadow-lg"
-                                    : "bg-gray-200 text-gray-500"
-                            }`}
-                    animate={{ scale: currentStep === step ? 1.1 : 1 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 15 }}
-                    whileHover={{ scale: 1.15 }}
-                >
-                    <AnimatePresence mode="wait">
-                        {isComplete ? (
-                            <motion.div
-                                key="check"
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                exit={{ scale: 0 }}
-                                transition={{ duration: 0.2 }}
-                            >
-                                <FiCheck size={24} />
-                            </motion.div>
-                        ) : hasErrors ? (
-                            <motion.div
-                                key="error"
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                exit={{ scale: 0 }}
-                                transition={{ duration: 0.2 }}
-                            >
-                                <FiAlertCircle size={24} />
-                            </motion.div>
-                        ) : (
-                            <motion.div
-                                key="icon"
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                exit={{ scale: 0 }}
-                                transition={{ duration: 0.2 }}
-                            >
-                                {icon}
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </motion.div>
-                <p
-                    className={`mt-2 text-sm font-semibold transition-colors duration-300 ${
-                        isComplete
-                            ? "text-green-600"
-                            : isActive
-                            ? hasErrors
-                                ? "text-red-500"
-                                : "text-blue-600"
-                            : "text-gray-500"
-                    }`}
-                >
-                    {label}
-                </p>
-            </div>
-        );
+        post(route("penyelenggara.proposal.wizard.step1"), {
+            onSuccess: () => {
+                onStepComplete(1);
+            },
+        });
     };
 
     return (
-        <motion.div
-            className="min-h-screen bg-gray-50 flex items-center justify-center p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6 }}
-        >
-            <Head
-                title={`Daftar sebagai ${
-                    role === "umkm" ? "UMKM" : "Penyelenggara"
-                }`}
-            />
-            <motion.div
-                className="relative w-full max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 shadow-2xl rounded-xl overflow-hidden"
-                initial={{ y: 50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-            >
-                {/* Kolom Kiri - Gambar & Branding (DIKEMBALIKAN KE VERSI ASLI) */}
-                <div className="hidden md:block relative overflow-hidden">
-                    <motion.div
-                        className="absolute inset-0 bg-cover bg-center"
-                        style={{
-                            backgroundImage: "url('images/fotobajardig.png')",
-                        }}
-                        initial={{ scale: 1.1 }}
-                        animate={{ scale: 1 }}
-                        transition={{ duration: 1.2 }}
-                    ></motion.div>
-
-                    <div className="absolute inset-0 bg-blue-800 bg-opacity-60"></div>
-
-                    <motion.div
-                        className="relative h-full flex flex-col justify-start p-12 text-white z-10"
-                        initial={{ x: -50, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        transition={{ duration: 0.8, delay: 0.3 }}
-                    >
-                        <h1 className="text-4xl font-bold leading-tight">
-                            Wadah Kreatif, Wadah Usaha
-                        </h1>
-                        <p className="mt-4 text-blue-100">
-                            Digital website bazar Banjarmasin hadir gasan UMKM
-                            supaya makin maju, gasan penyelenggara supaya bisa
-                            ngatur acara bamanfaat, lawan gasan masyarakat umum
-                            supaya bisa marasai raminya, manungkar, lawan
-                            balilihat bazar UMKM Online
+        <div className="bg-white overflow-hidden shadow-xl rounded-2xl border border-gray-100">
+            {/* Header Section */}
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-8">
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-white/20 rounded-xl">
+                        <FiUploadCloud className="h-8 w-8 text-white" />
+                    </div>
+                    <div>
+                        <h3 className="text-2xl font-bold text-white">
+                            Tahap 1: Pengajuan Awal Proposal
+                        </h3>
+                        <p className="mt-2 text-blue-100">
+                            Isi judul event dan unggah proposal lengkap dalam
+                            format PDF. Tim kami akan meninjaunya terlebih
+                            dahulu.
                         </p>
-                    </motion.div>
-
-                    <motion.div
-                        className="absolute inset-0 flex items-center justify-center z-20"
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 1, delay: 0.6 }}
-                    >
-                        <img
-                            src="images/bajardiglogo.png"
-                            alt="Logo"
-                            className="mt-20"
-                            style={{ width: "800px", height: "auto" }}
-                        />
-                    </motion.div>
+                    </div>
                 </div>
+            </div>
 
-                {/* Kolom Kanan - Form Wizard */}
-                <div className="bg-white p-8 md:p-12 flex flex-col justify-center">
-                    <motion.div
-                        className="flex justify-center items-center mb-10"
-                        initial={{ y: -30, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ duration: 0.6, delay: 0.2 }}
-                    >
-                        <StepIcon
-                            step={1}
-                            currentStep={initialStep}
-                            icon={<FiUser size={24} />}
-                            label="Akun"
-                        />
-                        <div className="flex-1 h-1 mx-4 bg-gray-200 rounded-full overflow-hidden">
-                            <motion.div
-                                className="h-1 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"
-                                initial={{ width: 0 }}
-                                animate={{
-                                    width: initialStep === 2 ? "100%" : "0%",
-                                }}
-                                transition={{
-                                    duration: 0.8,
-                                    ease: "easeInOut",
-                                    delay: 0.3,
-                                }}
-                            />
+            <form onSubmit={submit} className="p-8">
+                {/* Template Download Section */}
+                <div className="mb-8 rounded-xl border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 sm:p-6">
+                    <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:text-left">
+                        <div className="flex-shrink-0 rounded-lg bg-blue-100 p-3">
+                            <FiDownload className="h-6 w-6 text-blue-600" />
                         </div>
-                        <StepIcon
-                            step={2}
-                            currentStep={initialStep}
-                            icon={<FiBriefcase size={24} />}
-                            label="Profil"
-                        />
-                    </motion.div>
-
-                    <form onSubmit={handleFormSubmit}>
-                        <AnimatePresence mode="wait">
-                            {initialStep === 1 && (
-                                <Step1Account
-                                    key="step1"
-                                    data={data}
-                                    setData={setData}
-                                    errors={errors}
-                                    requiredFields={requiredFields}
-                                />
-                            )}
-                            {initialStep === 2 && role === "umkm" && (
-                                <Step2UmkmProfile
-                                    key="step2umkm"
-                                    data={data}
-                                    setData={setData}
-                                    errors={errors}
-                                    handleFileChange={handleFileChange}
-                                    logoPreview={logoPreview}
-                                    ktpPreview={ktpPreview}
-                                    requiredFields={requiredFields}
-                                />
-                            )}
-                            {initialStep === 2 && role === "penyelenggara" && (
-                                <Step2PenyelenggaraProfile
-                                    key="step2penyelenggara"
-                                    data={data}
-                                    setData={setData}
-                                    errors={errors}
-                                    handleFileChange={handleFileChange}
-                                    logoPreview={logoPreview}
-                                    docPreview={docPreview}
-                                    requiredFields={requiredFields}
-                                />
-                            )}
-                        </AnimatePresence>
-
-                        <motion.div
-                            className="flex items-center justify-between mt-8"
-                            initial={{ y: 30, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            transition={{ duration: 0.6, delay: 0.4 }}
-                        >
-                            {initialStep === 1 ? (
-                                <motion.div
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                >
-                                    <Link
-                                        href={route("login")}
-                                        className="text-sm text-gray-600 hover:text-blue-600 transition-colors duration-200"
-                                    >
-                                        Sudah punya akun?
-                                    </Link>
-                                </motion.div>
-                            ) : (
-                                <motion.div
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                >
-                                    <Link
-                                        href={route("register.wizard", {
-                                            role,
-                                        })}
-                                        className="text-sm text-gray-600 hover:text-blue-600 transition-colors duration-200"
-                                    >
-                                        &larr; Kembali
-                                    </Link>
-                                </motion.div>
-                            )}
-                            <motion.div
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
+                        <div className="w-full sm:w-auto sm:flex-1">
+                            <h4 className="mb-2 font-semibold text-blue-900">
+                                Butuh template proposal?
+                            </h4>
+                            <p className="mb-4 text-sm text-blue-700">
+                                Unduh template standar kami untuk memastikan
+                                semua informasi yang diperlukan telah tercakup.
+                            </p>
+                            <a
+                                href={route(
+                                    "penyelenggara.proposal.template.download"
+                                )}
+                                className="inline-flex items-center gap-2 rounded-lg border border-blue-300 bg-white px-4 py-2 text-sm font-semibold text-blue-600 shadow-sm transition-all duration-200 hover:bg-blue-50 hover:shadow-md"
                             >
-                                <PrimaryButton
-                                    className="ms-4 !px-6 !py-3 !bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 !shadow-lg !transform transition-all duration-200"
-                                    disabled={processing}
-                                >
-                                    {processing && <Spinner />}
-                                    {initialStep === 1
-                                        ? "Lanjutkan"
-                                        : "Selesaikan Pendaftaran"}
-                                </PrimaryButton>
-                            </motion.div>
-                        </motion.div>
-                    </form>
+                                <FiDownload className="h-4" />
+                                Unduh Template PDF
+                            </a>
+                        </div>
+                    </div>
                 </div>
-            </motion.div>
-        </motion.div>
+
+                <div className="space-y-8">
+                    {/* Event Name Input */}
+                    <div>
+                        <label
+                            htmlFor="nama_event"
+                            className="block text-sm font-semibold text-gray-700 mb-3"
+                        >
+                            Judul Event / Nama Proposal *
+                        </label>
+                        <input
+                            id="nama_event"
+                            type="text"
+                            value={data.nama_event}
+                            onChange={(e) =>
+                                setData("nama_event", e.target.value)
+                            }
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-900 placeholder-gray-400"
+                            placeholder="Contoh: Festival Kuliner Banjar 2025"
+                            required
+                        />
+                        {errors.nama_event && (
+                            <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                                <FiAlertCircle className="w-4 h-4" />
+                                {errors.nama_event}
+                            </p>
+                        )}
+                    </div>
+
+                    {/* File Upload Section */}
+                    <div>
+                        <label
+                            htmlFor="proposal_document"
+                            className="block text-sm font-semibold text-gray-700 mb-3"
+                        >
+                            Unggah Dokumen Proposal (PDF) *
+                        </label>
+                        {!data.proposal_document ? (
+                            // STATE 1: No file selected. Show the upload box.
+                            <div className="border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-400 transition-all duration-200">
+                                <div className="p-8 text-center">
+                                    <div className="flex flex-col items-center">
+                                        <div className="p-4 bg-gray-50 rounded-full mb-4">
+                                            <FiFileText className="h-10 w-10 text-gray-400" />
+                                        </div>
+                                        <label
+                                            htmlFor="proposal_document_input"
+                                            className="cursor-pointer"
+                                        >
+                                            <span className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+                                                <FiUploadCloud className="w-4 h-4" />
+                                                Pilih file untuk diunggah
+                                            </span>
+                                            <input
+                                                id="proposal_document_input"
+                                                name="proposal_document"
+                                                type="file"
+                                                className="sr-only"
+                                                onChange={(e) =>
+                                                    setData(
+                                                        "proposal_document",
+                                                        e.target.files[0]
+                                                    )
+                                                }
+                                                accept=".pdf"
+                                                required
+                                            />
+                                        </label>
+                                        <p className="text-xs text-gray-500 mt-3">
+                                            Ukuran maksimal: 5MB • Format: PDF
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            // STATE 2: File has been selected. Show file info and a remove button.
+                            <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white p-2 shadow-sm sm:gap-4 sm:p-3">
+                                <div className="flex-shrink-0">
+                                    {/* Ikon file generik dengan warna brand/aksi */}
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 sm:h-12 sm:w-12">
+                                        <FiFileText className="h-5 w-5 text-blue-600 sm:h-6 sm:w-6" />
+                                    </div>
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <p className="truncate text-sm font-semibold text-gray-800">
+                                        {data.proposal_document.name}
+                                    </p>
+                                    <p className="flex items-center gap-1 text-xs text-gray-500">
+                                        <FiCheckCircle className="h-3 w-3 text-green-500" />
+                                        PDF siap diunggah
+                                    </p>
+                                </div>
+                                <div className="flex-shrink-0">
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setData("proposal_document", null)
+                                        }
+                                        className="rounded-md border border-gray-300 bg-white px-2.5 py-1 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:px-3 sm:py-1.5"
+                                    >
+                                        Ganti
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                        {/* Error message remains unchanged */}
+                        {errors.proposal_document && (
+                            <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                                <FiAlertCircle className="w-4 h-4" />
+                                {errors.proposal_document}
+                            </p>
+                        )}
+                    </div>
+                </div>
+
+                {/* Submit Button */}
+                <div className="flex justify-end pt-8 border-t border-gray-200 mt-8">
+                    <button
+                        type="submit"
+                        disabled={processing}
+                        className="inline-flex items-center gap-2 px-8 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                    >
+                        {processing ? (
+                            <>
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                Mengajukan...
+                            </>
+                        ) : (
+                            <>
+                                <FiUploadCloud className="w-4 h-4" />
+                                Lanjut: Ajukan Dokumen
+                            </>
+                        )}
+                    </button>
+                </div>
+            </form>
+        </div>
+    );
+};
+
+// Step 2: Details Component - Enhanced layout
+const Step2Details = ({ event, isAccessible }) => {
+    const { data, setData, post, processing, errors } = useForm({
+        deskripsi_event: event?.deskripsi_event || "",
+        poster_event: null, // Poster selalu di-reset
+        pendaftaran_dibuka: event?.pendaftaran_dibuka || "",
+        pendaftaran_ditutup: event?.pendaftaran_ditutup || "",
+        tanggal_mulai_acara: event?.tanggal_mulai_acara || "",
+        tanggal_selesai_acara: event?.tanggal_selesai_acara || "",
+        lokasi_event: event?.lokasi_event || "",
+        biaya_pendaftaran_umkm: event?.biaya_pendaftaran_umkm || 0,
+        kuota_umkm: event?.kuota_umkm || 10,
+        nama_bank_penyelenggara: event?.nama_bank_penyelenggara || "",
+        nomor_rekening_penyelenggara: event?.nomor_rekening_penyelenggara || "",
+        nama_pemilik_rekening: event?.nama_pemilik_rekening || "",
+    });
+
+    const submit = (e) => {
+        e.preventDefault();
+        if (!isAccessible) return;
+
+        post(route("penyelenggara.proposal.wizard.step2", event.id), {
+            forceFormData: true,
+        });
+    };
+
+    const getMinDate = (dateString) => {
+        if (!dateString) return new Date().toISOString().split("T")[0];
+        const date = new Date(dateString);
+        date.setDate(date.getDate() + 1);
+        return date.toISOString().split("T")[0];
+    };
+
+    // If step 1 is not completed, show locked state
+    if (!isAccessible) {
+        return (
+            <div className="bg-white overflow-hidden shadow-xl rounded-2xl border border-gray-100 relative">
+                <div className="absolute inset-0 bg-gray-50/80 backdrop-blur-sm z-10 flex items-center justify-center">
+                    <div className="text-center p-8">
+                        <div className="w-16 h-16 mx-auto mb-4 bg-gray-200 rounded-full flex items-center justify-center">
+                            <FiClipboard className="w-8 h-8 text-gray-400" />
+                        </div>
+                        <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                            Langkah 2 Belum Tersedia
+                        </h3>
+                        <p className="text-gray-500 mb-4">
+                            Selesaikan langkah 1 terlebih dahulu untuk
+                            melanjutkan ke tahap ini
+                        </p>
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-600 rounded-lg">
+                            <FiAlertCircle className="w-4 h-4" />
+                            Menunggu penyelesaian langkah sebelumnya
+                        </div>
+                    </div>
+                </div>
+
+                {/* Blurred content preview */}
+                <div className="opacity-30">
+                    <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-8">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-white/20 rounded-xl">
+                                <FiClipboard className="h-8 w-8 text-white" />
+                            </div>
+                            <div>
+                                <h3 className="text-2xl font-bold text-white">
+                                    Tahap 2: Lengkapi Detail Event
+                                </h3>
+                                <p className="mt-2 text-green-100">
+                                    Lengkapi detail event setelah proposal
+                                    disetujui
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="p-8 space-y-6">
+                        <div className="h-32 bg-gray-200 rounded-xl"></div>
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div className="h-12 bg-gray-200 rounded-lg"></div>
+                            <div className="h-12 bg-gray-200 rounded-lg"></div>
+                        </div>
+                        <div className="h-24 bg-gray-200 rounded-xl"></div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="bg-white overflow-hidden shadow-xl rounded-2xl border border-gray-100">
+            {/* Header Section */}
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-8">
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-white/20 rounded-xl">
+                        <FiClipboard className="h-8 w-8 text-white" />
+                    </div>
+                    <div>
+                        <h3 className="text-2xl font-bold text-white">
+                            Tahap 2: Lengkapi Detail Event
+                        </h3>
+                        <p className="mt-2 text-green-100">
+                            Dokumen proposal Anda untuk "
+                            <strong>{event.nama_event}</strong>" telah
+                            disetujui! Silakan lengkapi detail event di bawah
+                            ini.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {/* --- ▼▼▼ Tambahkan Notifikasi Penolakan ▼▼▼ --- */}
+            {event.status_proposal === "ditolak" && (
+                <div className="p-8">
+                    <div className="p-4 mb-6 text-sm text-red-800 rounded-lg bg-red-50 border border-red-200">
+                        <p className="font-bold mb-2 flex items-center gap-2">
+                            <FiAlertTriangle /> Proposal Anda Sebelumnya Ditolak
+                        </p>
+                        <p className="font-medium">Alasan dari Admin:</p>
+                        <p className="italic ml-4 mt-1">
+                            {event.rejection_reason ||
+                                "Tidak ada alasan spesifik."}
+                        </p>
+                        <p className="mt-3">
+                            Silakan periksa kembali data Anda, perbaiki, dan
+                            kirim ulang proposal.
+                        </p>
+                    </div>
+                </div>
+            )}
+            {/* --- ▲▲▲ AKHIR DARI PERBAIKAN --- */}
+
+            <form onSubmit={submit} className="p-8">
+                <div className="space-y-10">
+                    {/* Basic Information Section */}
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2 bg-blue-100 rounded-lg">
+                                <FiClipboard className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <h4 className="text-xl font-bold text-gray-900">
+                                Informasi Dasar
+                            </h4>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                Deskripsi Event *
+                            </label>
+                            <textarea
+                                rows="4"
+                                value={data.deskripsi_event}
+                                onChange={(e) =>
+                                    setData("deskripsi_event", e.target.value)
+                                }
+                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+                                placeholder="Deskripsikan event Anda secara detail..."
+                                required
+                            />
+                            {errors.deskripsi_event && (
+                                <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                                    <FiAlertCircle className="w-4 h-4" />
+                                    {errors.deskripsi_event}
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                    <FiImage className="inline w-4 h-4 mr-1" />
+                                    Poster Event{" "}
+                                    {event.poster_event ? "(Opsional)" : "*"}
+                                </label>
+                                <input
+                                    type="file"
+                                    onChange={(e) =>
+                                        setData(
+                                            "poster_event",
+                                            e.target.files[0]
+                                        )
+                                    }
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+                                    accept="image/*"
+                                    required={!event.poster_event}
+                                />
+                                {errors.poster_event && (
+                                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                                        <FiAlertCircle className="w-4 h-4" />
+                                        {errors.poster_event}
+                                    </p>
+                                )}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                    <FiMapPin className="inline w-4 h-4 mr-1" />
+                                    Lokasi Event *
+                                </label>
+                                <input
+                                    type="text"
+                                    value={data.lokasi_event}
+                                    onChange={(e) =>
+                                        setData("lokasi_event", e.target.value)
+                                    }
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+                                    placeholder="Alamat lengkap lokasi event"
+                                    required
+                                />
+                                {errors.lokasi_event && (
+                                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                                        <FiAlertCircle className="w-4 h-4" />
+                                        {errors.lokasi_event}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Registration Schedule Section */}
+                    <div className="space-y-6 pt-8 border-t border-gray-200">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2 bg-purple-100 rounded-lg">
+                                <FiCalendar className="h-5 w-5 text-purple-600" />
+                            </div>
+                            <h4 className="text-xl font-bold text-gray-900">
+                                Jadwal Pendaftaran Peserta
+                            </h4>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                    Pendaftaran Dibuka *
+                                </label>
+                                <input
+                                    type="date"
+                                    value={data.pendaftaran_dibuka}
+                                    min={new Date().toISOString().split("T")[0]}
+                                    onChange={(e) =>
+                                        setData(
+                                            "pendaftaran_dibuka",
+                                            e.target.value
+                                        )
+                                    }
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+                                    required
+                                />
+                                {errors.pendaftaran_dibuka && (
+                                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                                        <FiAlertCircle className="w-4 h-4" />
+                                        {errors.pendaftaran_dibuka}
+                                    </p>
+                                )}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                    Pendaftaran Ditutup *
+                                </label>
+                                <input
+                                    type="date"
+                                    value={data.pendaftaran_ditutup}
+                                    min={data.pendaftaran_dibuka}
+                                    onChange={(e) =>
+                                        setData(
+                                            "pendaftaran_ditutup",
+                                            e.target.value
+                                        )
+                                    }
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                    required
+                                    disabled={!data.pendaftaran_dibuka}
+                                />
+                                {errors.pendaftaran_ditutup && (
+                                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                                        <FiAlertCircle className="w-4 h-4" />
+                                        {errors.pendaftaran_ditutup}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Event Schedule Section */}
+                    <div className="space-y-6 pt-8 border-t border-gray-200">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2 bg-orange-100 rounded-lg">
+                                <FiCalendar className="h-5 w-5 text-orange-600" />
+                            </div>
+                            <h4 className="text-xl font-bold text-gray-900">
+                                Jadwal Pelaksanaan Acara
+                            </h4>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                    Tanggal Mulai Acara *
+                                </label>
+                                <input
+                                    type="date"
+                                    value={data.tanggal_mulai_acara}
+                                    min={getMinDate(data.pendaftaran_ditutup)}
+                                    onChange={(e) =>
+                                        setData(
+                                            "tanggal_mulai_acara",
+                                            e.target.value
+                                        )
+                                    }
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                    required
+                                    disabled={!data.pendaftaran_ditutup}
+                                />
+                                {errors.tanggal_mulai_acara && (
+                                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                                        <FiAlertCircle className="w-4 h-4" />
+                                        {errors.tanggal_mulai_acara}
+                                    </p>
+                                )}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                    Tanggal Selesai Acara *
+                                </label>
+                                <input
+                                    type="date"
+                                    value={data.tanggal_selesai_acara}
+                                    min={data.tanggal_mulai_acara}
+                                    onChange={(e) =>
+                                        setData(
+                                            "tanggal_selesai_acara",
+                                            e.target.value
+                                        )
+                                    }
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                    required
+                                    disabled={!data.tanggal_mulai_acara}
+                                />
+                                {errors.tanggal_selesai_acara && (
+                                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                                        <FiAlertCircle className="w-4 h-4" />
+                                        {errors.tanggal_selesai_acara}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Financial & Quota Section */}
+                    <div className="space-y-6 pt-8 border-t border-gray-200">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2 bg-green-100 rounded-lg">
+                                <FiDollarSign className="h-5 w-5 text-green-600" />
+                            </div>
+                            <h4 className="text-xl font-bold text-gray-900">
+                                Detail Finansial & Kuota
+                            </h4>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                    <FiDollarSign className="inline w-4 h-4 mr-1" />
+                                    Biaya Pendaftaran UMKM (Rp) *
+                                </label>
+                                <input
+                                    type="number"
+                                    value={data.biaya_pendaftaran_umkm}
+                                    onChange={(e) =>
+                                        setData(
+                                            "biaya_pendaftaran_umkm",
+                                            e.target.value
+                                        )
+                                    }
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+                                    min="0"
+                                    placeholder="0"
+                                    required
+                                />
+                                {errors.biaya_pendaftaran_umkm && (
+                                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                                        <FiAlertCircle className="w-4 h-4" />
+                                        {errors.biaya_pendaftaran_umkm}
+                                    </p>
+                                )}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                    <FiUsers className="inline w-4 h-4 mr-1" />
+                                    Kuota UMKM *
+                                </label>
+                                <input
+                                    type="number"
+                                    value={data.kuota_umkm}
+                                    onChange={(e) =>
+                                        setData("kuota_umkm", e.target.value)
+                                    }
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+                                    min="1"
+                                    placeholder="10"
+                                    required
+                                />
+                                {errors.kuota_umkm && (
+                                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                                        <FiAlertCircle className="w-4 h-4" />
+                                        {errors.kuota_umkm}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Banking Information */}
+                        <div className="bg-gray-50 p-6 rounded-xl">
+                            <div className="flex items-center gap-2 mb-4">
+                                <FiCreditCard className="h-5 w-5 text-gray-600" />
+                                <h5 className="font-semibold text-gray-800">
+                                    Informasi Rekening
+                                </h5>
+                            </div>
+                            <div className="grid md:grid-cols-3 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Nama Bank *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={data.nama_bank_penyelenggara}
+                                        onChange={(e) =>
+                                            setData(
+                                                "nama_bank_penyelenggara",
+                                                e.target.value
+                                            )
+                                        }
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-sm"
+                                        placeholder="Contoh: BCA"
+                                        required
+                                    />
+                                    {errors.nama_bank_penyelenggara && (
+                                        <p className="mt-1 text-xs text-red-600 flex items-center gap-1">
+                                            <FiAlertCircle className="w-3 h-3" />
+                                            {errors.nama_bank_penyelenggara}
+                                        </p>
+                                    )}
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Nomor Rekening *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={
+                                            data.nomor_rekening_penyelenggara
+                                        }
+                                        onChange={(e) =>
+                                            setData(
+                                                "nomor_rekening_penyelenggara",
+                                                e.target.value
+                                            )
+                                        }
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-sm"
+                                        placeholder="1234567890"
+                                        required
+                                    />
+                                    {errors.nomor_rekening_penyelenggara && (
+                                        <p className="mt-1 text-xs text-red-600 flex items-center gap-1">
+                                            <FiAlertCircle className="w-3 h-3" />
+                                            {
+                                                errors.nomor_rekening_penyelenggara
+                                            }
+                                        </p>
+                                    )}
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Nama Pemilik Rekening *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={data.nama_pemilik_rekening}
+                                        onChange={(e) =>
+                                            setData(
+                                                "nama_pemilik_rekening",
+                                                e.target.value
+                                            )
+                                        }
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-sm"
+                                        placeholder="Nama lengkap"
+                                        required
+                                    />
+                                    {errors.nama_pemilik_rekening && (
+                                        <p className="mt-1 text-xs text-red-600 flex items-center gap-1">
+                                            <FiAlertCircle className="w-3 h-3" />
+                                            {errors.nama_pemilik_rekening}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Submit Button */}
+                <div className="flex justify-end pt-8 border-t border-gray-200 mt-10">
+                    <button
+                        type="submit"
+                        className="inline-flex items-center gap-2 px-8 py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                        disabled={processing}
+                    >
+                        {processing ? (
+                            <>
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                Mengajukan...
+                            </>
+                        ) : (
+                            <>
+                                <FiCheckCircle className="w-4 h-4" />
+                                Kirim & Selesaikan Proposal
+                            </>
+                        )}
+                    </button>
+                </div>
+            </form>
+        </div>
+    );
+};
+
+// Main Wizard Component
+export default function ProposalWizard({ auth, step, event }) {
+    const [completedSteps, setCompletedSteps] = useState(step > 1 ? [1] : []);
+
+    const handleStepComplete = (completedStep) => {
+        setCompletedSteps((prev) => [...prev, completedStep]);
+    };
+
+    const isStep2Accessible = completedSteps.includes(1) || step > 1;
+
+    return (
+        <AuthenticatedLayout
+            user={auth.user}
+            header={
+                <h2 className="font-semibold text-xl text-gray-800 leading-tight">
+                    Pengajuan Proposal Event
+                </h2>
+            }
+        >
+            <Head title="Wizard Pengajuan Proposal" />
+            <div className="py-12">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                    {/* Wizard Steps Indicator */}
+                    <WizardSteps
+                        currentStep={step}
+                        completedSteps={completedSteps}
+                    />
+
+                    {/* Step Content */}
+                    {step === 1 && (
+                        <Step1Upload onStepComplete={handleStepComplete} />
+                    )}
+                    {step === 2 && (
+                        <Step2Details
+                            event={event}
+                            isAccessible={isStep2Accessible}
+                        />
+                    )}
+
+                    {/* Step Navigation Info */}
+                    <div className="mt-8 text-center">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm">
+                            <FiAlertCircle className="w-4 h-4" />
+                            {step === 1 &&
+                                "Selesaikan unggahan dokumen untuk melanjutkan ke langkah berikutnya"}
+                            {step === 2 &&
+                                !isStep2Accessible &&
+                                "Lengkapi langkah 1 terlebih dahulu"}
+                            {step === 2 &&
+                                isStep2Accessible &&
+                                "Lengkapi semua detail untuk menyelesaikan pengajuan"}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </AuthenticatedLayout>
     );
 }

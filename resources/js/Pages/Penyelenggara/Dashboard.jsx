@@ -245,7 +245,10 @@ const StatusBadge = ({ proposalStatus, eventStatus, docStatus }) => {
             className: "bg-yellow-100 text-yellow-800",
         };
     } else if (proposalStatus === "ditolak") {
-        config = { text: "Ditolak", className: "bg-red-100 text-red-800" };
+        config = {
+            text: "Ditolak (Perlu Perbaikan)",
+            className: "bg-red-100 text-red-800",
+        };
     } else if (proposalStatus === "disetujui") {
         config = eventStatus
             ? {
@@ -518,10 +521,21 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
                                                     {event.panitia_pin || "-"}
                                                 </td>
                                                 <td className="py-4 px-6">
-                                                    {event.document_verification_status ===
-                                                        "document_approved" &&
-                                                    event.status_proposal ===
-                                                        "draft" ? (
+                                                    {event.status_proposal ===
+                                                    "ditolak" ? (
+                                                        <Link
+                                                            href={route(
+                                                                "penyelenggara.proposal.wizard",
+                                                                event.id
+                                                            )}
+                                                            className="px-4 py-2 bg-red-600 text-white text-xs font-semibold rounded-md hover:bg-red-700"
+                                                        >
+                                                            Perbaiki
+                                                        </Link>
+                                                    ) : event.document_verification_status ===
+                                                          "document_approved" &&
+                                                      event.status_proposal ===
+                                                          "draft" ? (
                                                         <Link
                                                             href={route(
                                                                 "penyelenggara.proposal.wizard",

@@ -319,8 +319,6 @@ class AdminController extends Controller
         $event->refresh();
         ProposalStatusUpdated::dispatch($event);
 
-        $event->delete();
-
         return redirect()->route('admin.proposals.list')->with('success', 'Proposal event telah ditolak dan diarsipkan.');
     }
 

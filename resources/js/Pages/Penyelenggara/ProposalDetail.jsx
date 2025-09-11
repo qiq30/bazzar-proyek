@@ -11,22 +11,51 @@ export default function ProposalDetail({ auth, proposal }) {
             minimumFractionDigits: 0,
         }).format(number);
 
-    const statusConfig = {
-        menunggu_persetujuan: {
-            text: "Menunggu Persetujuan",
-            className: "bg-yellow-100 text-yellow-800",
-        },
-        disetujui: {
-            text: "Disetujui",
-            className: "bg-green-100 text-green-800",
-        },
-        ditolak: { text: "Ditolak", className: "bg-red-100 text-red-800" },
+    const getStatusConfig = () => {
+        if (
+            proposal.document_verification_status ===
+            "pending_document_verification"
+        ) {
+            return {
+                text: "Verifikasi Dokumen",
+                className: "bg-yellow-100 text-yellow-800",
+            };
+        }
+        if (proposal.document_verification_status === "document_rejected") {
+            return {
+                text: "Dokumen Ditolak",
+                className: "bg-red-100 text-red-800",
+            };
+        }
+        if (proposal.status_proposal === "draft") {
+            return {
+                text: "Lengkapi Detail Event",
+                className: "bg-blue-100 text-blue-800",
+            };
+        }
+        if (proposal.status_proposal === "menunggu_persetujuan") {
+            return {
+                text: "Menunggu Persetujuan",
+                className: "bg-yellow-100 text-yellow-800",
+            };
+        }
+        if (proposal.status_proposal === "disetujui") {
+            return {
+                text: "Disetujui",
+                className: "bg-green-100 text-green-800",
+            };
+        }
+        if (proposal.status_proposal === "ditolak") {
+            return { text: "Ditolak", className: "bg-red-100 text-red-800" };
+        }
+        return { text: "Unknown", className: "bg-gray-100" };
     };
 
-    const currentStatus = statusConfig[proposal.status_proposal] || {
-        text: "Unknown",
-        className: "bg-gray-100",
-    };
+    const currentStatus = getStatusConfig();
+    const isStep1 =
+        ["pending_document_verification", "document_rejected"].includes(
+            proposal.document_verification_status
+        ) || proposal.status_proposal === "draft";
 
     return (
         <AuthenticatedLayout
@@ -49,9 +78,11 @@ export default function ProposalDetail({ auth, proposal }) {
                                     className="rounded-lg w-full object-cover"
                                 />
                             ) : (
-                                <div className="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
+                                <div className="w-full h-48 md:h-full bg-gray-200 rounded-lg flex items-center justify-center">
                                     <span className="text-gray-500">
-                                        No Image
+                                        {isStep1
+                                            ? "Poster belum diunggah"
+                                            : "No Image"}
                                     </span>
                                 </div>
                             )}
@@ -70,76 +101,106 @@ export default function ProposalDetail({ auth, proposal }) {
                                 </div>
                             </div>
 
-                            {proposal.status_proposal === "ditolak" && (
+                            {(proposal.status_proposal === "ditolak" ||
+                                proposal.document_verification_status ===
+                                    "document_rejected") && (
                                 <div className="p-4 bg-red-50 border-l-4 border-red-400 text-red-800">
                                     <p className="font-bold">
                                         Alasan Penolakan:
                                     </p>
                                     <p className="mt-1">
-                                        {proposal.rejection_reason}
+                                        {proposal.rejection_reason ||
+                                            proposal.document_rejection_reason}
                                     </p>
                                 </div>
                             )}
 
-                            <hr />
-                            <div>
-                                <span className="font-bold">Deskripsi:</span>{" "}
-                                {proposal.deskripsi_event}
-                            </div>
-                            <div>
-                                <span className="font-bold">Lokasi:</span>{" "}
-                                {proposal.lokasi_event}
-                            </div>
-                            {/* --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ --- */}
-                            <div>
-                                <span className="font-bold">
-                                    Jadwal Pendaftaran:
-                                </span>{" "}
-                                {new Date(
-                                    proposal.pendaftaran_dibuka
-                                ).toLocaleDateString("id-ID")}{" "}
-                                s/d{" "}
-                                {new Date(
-                                    proposal.pendaftaran_ditutup
-                                ).toLocaleDateString("id-ID")}
-                            </div>
-                            <div>
-                                <span className="font-bold">Jadwal Acara:</span>{" "}
-                                {new Date(
-                                    proposal.tanggal_mulai_acara
-                                ).toLocaleDateString("id-ID")}{" "}
-                                s/d{" "}
-                                {new Date(
-                                    proposal.tanggal_selesai_acara
-                                ).toLocaleDateString("id-ID")}
-                            </div>
-                            {/* --- ▲▲▲ AKHIR DARI PERBAIKAN --- */}
-                            <div>
-                                <span className="font-bold">
-                                    Biaya Pendaftaran:
-                                </span>{" "}
-                                {formatRupiah(proposal.biaya_pendaftaran_umkm)}
-                            </div>
-                            <div>
-                                <span className="font-bold">Kuota:</span>{" "}
-                                {proposal.kuota_umkm} UMKM
-                            </div>
-                            <hr />
-                            <h4 className="font-bold text-lg">
-                                Info Pembayaran
-                            </h4>
-                            <div>
-                                <span className="font-bold">Bank:</span>{" "}
-                                {proposal.nama_bank_penyelenggara}
-                            </div>
-                            <div>
-                                <span className="font-bold">No. Rekening:</span>{" "}
-                                {proposal.nomor_rekening_penyelenggara}
-                            </div>
-                            <div>
-                                <span className="font-bold">Atas Nama:</span>{" "}
-                                {proposal.nama_pemilik_rekening}
-                            </div>
+                            {!isStep1 ? (
+                                <>
+                                    <hr />
+                                    <div>
+                                        <span className="font-bold">
+                                            Deskripsi:
+                                        </span>{" "}
+                                        {proposal.deskripsi_event}
+                                    </div>
+                                    <div>
+                                        <span className="font-bold">
+                                            Lokasi:
+                                        </span>{" "}
+                                        {proposal.lokasi_event}
+                                    </div>
+                                    <div>
+                                        <span className="font-bold">
+                                            Jadwal Pendaftaran:
+                                        </span>{" "}
+                                        {new Date(
+                                            proposal.pendaftaran_dibuka
+                                        ).toLocaleDateString("id-ID")}{" "}
+                                        s/d{" "}
+                                        {new Date(
+                                            proposal.pendaftaran_ditutup
+                                        ).toLocaleDateString("id-ID")}
+                                    </div>
+                                    <div>
+                                        <span className="font-bold">
+                                            Jadwal Acara:
+                                        </span>{" "}
+                                        {new Date(
+                                            proposal.tanggal_mulai_acara
+                                        ).toLocaleDateString("id-ID")}{" "}
+                                        s/d{" "}
+                                        {new Date(
+                                            proposal.tanggal_selesai_acara
+                                        ).toLocaleDateString("id-ID")}
+                                    </div>
+                                    <div>
+                                        <span className="font-bold">
+                                            Biaya Pendaftaran:
+                                        </span>{" "}
+                                        {formatRupiah(
+                                            proposal.biaya_pendaftaran_umkm
+                                        )}
+                                    </div>
+                                    <div>
+                                        <span className="font-bold">
+                                            Kuota:
+                                        </span>{" "}
+                                        {proposal.kuota_umkm} UMKM
+                                    </div>
+                                    <hr />
+                                    <h4 className="font-bold text-lg">
+                                        Info Pembayaran
+                                    </h4>
+                                    <div>
+                                        <span className="font-bold">Bank:</span>{" "}
+                                        {proposal.nama_bank_penyelenggara}
+                                    </div>
+                                    <div>
+                                        <span className="font-bold">
+                                            No. Rekening:
+                                        </span>{" "}
+                                        {proposal.nomor_rekening_penyelenggara}
+                                    </div>
+                                    <div>
+                                        <span className="font-bold">
+                                            Atas Nama:
+                                        </span>{" "}
+                                        {proposal.nama_pemilik_rekening}
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="p-4 bg-blue-50 border-l-4 border-blue-400 text-blue-800">
+                                    <p className="font-bold">
+                                        Menunggu Detail Event
+                                    </p>
+                                    <p className="text-sm mt-1">
+                                        Detail lengkap event akan ditampilkan di
+                                        sini setelah Anda melengkapi proposal
+                                        tahap 2.
+                                    </p>
+                                </div>
+                            )}
 
                             <Link
                                 href={route("penyelenggara.dashboard")}

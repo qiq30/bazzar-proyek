@@ -28,8 +28,7 @@ class PenyelenggaraController extends Controller
         $user = Auth::user();
         $profile = $user->penyelenggaraProfile;
 
-        $events = Event::withTrashed()
-            ->withCount('eventRegistrations')
+        $events = Event::withCount('eventRegistrations')
             ->where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->get();
@@ -43,16 +42,18 @@ class PenyelenggaraController extends Controller
 
     public function proposalWizard(Event $event = null)
     {
-        // Jika ada event dan statusnya sudah lolos verifikasi dokumen,
-        // tampilkan step 2 untuk melengkapi data.
-        if ($event && $event->user_id === Auth::id() && $event->document_verification_status === 'document_approved') {
+        // Kondisi 1: Lanjutkan ke Step 2 jika dokumen disetujui ATAU proposal ditolak (untuk diperbaiki)
+        if (
+            $event && $event->user_id === Auth::id() &&
+            ($event->document_verification_status === 'document_approved' || $event->status_proposal === 'ditolak')
+        ) {
             return Inertia::render('Penyelenggara/ProposalWizard', [
                 'step' => 2,
                 'event' => $event
             ]);
         }
 
-        // Jika tidak, tampilkan step 1 untuk membuat proposal baru.
+        // Kondisi 2: Kembali ke Step 1 untuk proposal baru
         return Inertia::render('Penyelenggara/ProposalWizard', [
             'step' => 1,
             'event' => null
@@ -99,14 +100,14 @@ class PenyelenggaraController extends Controller
 
     public function storeProposalStep2(Request $request, Event $event)
     {
-        // Pastikan event ini milik user yang sedang login dan sudah disetujui dokumennya
-        if ($event->user_id !== Auth::id() || $event->document_verification_status !== 'document_approved') {
+        // Boleh diakses jika dokumen disetujui ATAU proposalnya ditolak
+        if ($event->user_id !== Auth::id() || !in_array($event->document_verification_status, ['document_approved', 'ditolak'])) {
             abort(403, 'Aksi tidak diizinkan.');
         }
 
         $request->validate([
             'deskripsi_event' => 'required|string',
-            'poster_event' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'poster_event' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'pendaftaran_dibuka' => 'required|date|after_or_equal:today',
             'pendaftaran_ditutup' => 'required|date|after_or_equal:pendaftaran_dibuka',
             'tanggal_mulai_acara' => 'required|date|after:pendaftaran_ditutup',
@@ -119,30 +120,27 @@ class PenyelenggaraController extends Controller
             'nama_pemilik_rekening' => 'required|string|max:255',
         ]);
 
-        $posterPath = $request->file('poster_event')->store('events/posters', 'public');
+        $updateData = $request->except('poster_event'); // Ambil semua data kecuali poster
 
-        $event->update([
-            // Update semua field dari form step 2
-            'deskripsi_event' => $request->deskripsi_event,
-            'poster_event' => $posterPath,
-            'pendaftaran_dibuka' => $request->pendaftaran_dibuka,
-            'pendaftaran_ditutup' => $request->pendaftaran_ditutup,
-            'tanggal_mulai_acara' => $request->tanggal_mulai_acara,
-            'tanggal_selesai_acara' => $request->tanggal_selesai_acara,
-            'lokasi_event' => $request->lokasi_event,
-            'biaya_pendaftaran_umkm' => $request->biaya_pendaftaran_umkm,
-            'kuota_umkm' => $request->kuota_umkm,
-            'nama_bank_penyelenggara' => $request->nama_bank_penyelenggara,
-            'nomor_rekening_penyelenggara' => $request->nomor_rekening_penyelenggara,
-            'nama_pemilik_rekening' => $request->nama_pemilik_rekening,
-            'status_proposal' => 'menunggu_persetujuan', // Status proposal berubah menunggu persetujuan akhir
-        ]);
+        if ($request->hasFile('poster_event')) {
+            // Hapus poster lama jika ada
+            if ($event->poster_event) {
+                Storage::disk('public')->delete($event->poster_event);
+            }
+            // Simpan poster baru dan tambahkan ke data update
+            $updateData['poster_event'] = $request->file('poster_event')->store('events/posters', 'public');
+        }
+
+        // Set status kembali menjadi 'menunggu_persetujuan'
+        $updateData['status_proposal'] = 'menunggu_persetujuan';
+
+        $event->update($updateData);
 
         $event->load('user');
 
         ProposalSubmitted::dispatch($event);
 
-        return redirect()->route('penyelenggara.dashboard')->with('success', 'Detail proposal berhasil dikirim dan sedang menunggu persetujuan akhir dari admin.');
+        return redirect()->route('penyelenggara.dashboard')->with('success', 'Detail proposal berhasil dikirim ulang dan sedang menunggu persetujuan akhir dari admin.');
     }
 
     public function createProfile()
