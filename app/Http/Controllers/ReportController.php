@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use App\Models\User;
 
 class ReportController extends Controller
 {
@@ -20,6 +21,16 @@ class ReportController extends Controller
         // === STATISTIK UMKM ===
         $totalUmkm = UmkmProfile::count();
         $verifiedUmkm = UmkmProfile::where('status', 'verified')->count();
+
+        $incompleteUmkmProfiles = User::where('is_penyelenggara', false)
+            ->where('is_admin', false)
+            ->where('is_super_admin', false)
+            ->whereDoesntHave('umkmProfile')
+            ->count();
+
+        $incompletePenyelenggaraProfiles = User::where('is_penyelenggara', true)
+            ->whereDoesntHave('penyelenggaraProfile')
+            ->count();
 
         $monthlyGrowth = UmkmProfile::select(
             DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
@@ -46,6 +57,7 @@ class ReportController extends Controller
             'pending' => ['value' => UmkmProfile::where('status', 'pending')->count(), 'description' => 'Profil baru yang menunggu peninjauan.'],
             'rejected' => ['value' => UmkmProfile::where('status', 'rejected')->count(), 'description' => 'Profil yang ditolak saat verifikasi.'],
             'new_last_30_days' => ['value' => UmkmProfile::where('created_at', '>=', Carbon::now()->subDays(30))->count(), 'description' => 'Pendaftar baru dalam sebulan terakhir.'],
+            'incomplete_profiles' => ['value' => $incompleteUmkmProfiles, 'description' => 'Pengguna UMKM yang mendaftar tapi belum melengkapi profil.'],
             'by_type' => UmkmProfile::where('status', 'verified')
                 ->groupBy('business_type')
                 ->selectRaw('business_type, count(*) as total')
@@ -59,6 +71,7 @@ class ReportController extends Controller
             'verified' => ['value' => PenyelenggaraProfile::where('status', 'verified')->count(), 'description' => 'Akun yang sudah dapat membuat event.'],
             'pending' => ['value' => PenyelenggaraProfile::where('status', 'pending')->count(), 'description' => 'Akun yang menunggu persetujuan.'],
             'rejected' => ['value' => PenyelenggaraProfile::where('status', 'rejected')->count(), 'description' => 'Akun yang ditolak saat verifikasi.'],
+            'incomplete_profiles' => ['value' => $incompletePenyelenggaraProfiles, 'description' => 'Pengguna Penyelenggara yang mendaftar tapi belum melengkapi profil.'],
         ];
 
         // === STATISTIK EVENT & PARTISIPASI ===

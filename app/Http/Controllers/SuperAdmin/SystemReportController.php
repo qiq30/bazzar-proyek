@@ -36,6 +36,16 @@ class SystemReportController extends Controller
             $userMonthlyGrowth[$month] = $monthlyGrowth->get($month, 0);
         }
 
+        $incompleteUmkm = User::where('is_penyelenggara', false)
+            ->where('is_admin', false)
+            ->where('is_super_admin', false)
+            ->whereDoesntHave('umkmProfile')
+            ->count();
+
+        $incompletePenyelenggara = User::where('is_penyelenggara', true)
+            ->whereDoesntHave('penyelenggaraProfile')
+            ->count();
+
         $userStats = [
             'total' => ['value' => User::count(), 'description' => 'Semua akun yang terdaftar di sistem.'],
             'umkm' => User::where('is_admin', false)->where('is_penyelenggara', false)->where('is_super_admin', false)->count(),
@@ -52,6 +62,8 @@ class SystemReportController extends Controller
             'penyelenggara_verified' => PenyelenggaraProfile::where('status', 'verified')->count(),
             'penyelenggara_pending' => PenyelenggaraProfile::where('status', 'pending')->count(),
             'penyelenggara_rejected' => PenyelenggaraProfile::where('status', 'rejected')->count(),
+            'umkm_incomplete' => $incompleteUmkm,
+            'penyelenggara_incomplete' => $incompletePenyelenggara,
         ];
 
         $eventStats = [

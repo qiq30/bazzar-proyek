@@ -24,23 +24,30 @@ export default function Login({ status, canResetPassword }) {
         };
     }, []);
 
+    // Hook ini akan berjalan SETIAP KALI 'g-recaptcha-response' berubah
+    useEffect(() => {
+        // Hanya jalankan post jika token sudah terisi
+        if (data["g-recaptcha-response"]) {
+            post(route("login"));
+        }
+    }, [data["g-recaptcha-response"]]); // Pantau perubahan token
+
     const submit = (e) => {
         e.preventDefault();
 
-        window.grecaptcha.ready(() => {
-            // Gunakan variabel recaptcha_v3_site_key, bukan string Blade
-            window.grecaptcha
-                .execute(recaptcha_v3_site_key, { action: "submit" })
-                .then((token) => {
-                    // Langsung post setelah mendapatkan token
-                    post(
-                        route("login", {
-                            ...data,
-                            "g-recaptcha-response": token,
-                        })
-                    );
-                });
-        });
+        // Fungsi ini sekarang HANYA bertugas mengambil dan MENYIMPAN token.
+        // useEffect di atas yang akan menangani pengiriman form.
+        if (window.grecaptcha) {
+            window.grecaptcha.ready(() => {
+                window.grecaptcha
+                    .execute(recaptcha_v3_site_key, { action: "submit" })
+                    .then((token) => {
+                        setData("g-recaptcha-response", token);
+                    });
+            });
+        } else {
+            console.error("reCAPTCHA script not loaded");
+        }
     };
 
     return (

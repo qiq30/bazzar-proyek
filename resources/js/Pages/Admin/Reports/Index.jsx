@@ -26,14 +26,20 @@ const AnimatedStatCard = ({
     description,
     color = "blue",
     icon,
-    allowDecimal = false, // Prop untuk mengizinkan desimal
+    allowDecimal = false,
 }) => {
+    // Pastikan value adalah number untuk animasi
+    const numericValue = Number(value) || 0;
+
     const { number } = useSpring({
         from: { number: 0 },
-        number: Number(value) || 0,
+        number: numericValue,
         delay: 200,
         config: { mass: 1, tension: 20, friction: 10 },
     });
+
+    // Format Rupiah jika judul mengandung kata "Pendapatan"
+    const isCurrency = title.toLowerCase().includes("pendapatan");
 
     const colorClasses = {
         blue: {
@@ -170,7 +176,7 @@ export default function Reports({
                             title="Laporan UMKM"
                             subtitle="Data lengkap registrasi dan verifikasi UMKM"
                         />
-                        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                             <AnimatedStatCard
                                 title="Total UMKM Terdaftar"
                                 value={umkmStats.total.value}
@@ -191,6 +197,15 @@ export default function Reports({
                                 description={umkmStats.pending.description}
                                 color="yellow"
                                 icon={<FiClock className="h-6 w-6" />}
+                            />
+                            <AnimatedStatCard
+                                title="Profil Belum Selesai"
+                                value={umkmStats.incomplete_profiles.value}
+                                description={
+                                    umkmStats.incomplete_profiles.description
+                                }
+                                color="red"
+                                icon={<FiXCircle className="h-6 w-6" />}
                             />
                             <AnimatedStatCard
                                 title="UMKM Baru (30 Hari)"
@@ -218,7 +233,7 @@ export default function Reports({
                             title="Laporan Penyelenggara"
                             subtitle="Data registrasi dan aktivitas penyelenggara event"
                         />
-                        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                             <AnimatedStatCard
                                 title="Total Penyelenggara"
                                 value={penyelenggaraStats.total.value}
@@ -245,6 +260,18 @@ export default function Reports({
                                 }
                                 color="yellow"
                                 icon={<FiClock className="h-6 w-6" />}
+                            />
+                            <AnimatedStatCard
+                                title="Profil Belum Selesai"
+                                value={
+                                    penyelenggaraStats.incomplete_profiles.value
+                                }
+                                description={
+                                    penyelenggaraStats.incomplete_profiles
+                                        .description
+                                }
+                                color="red"
+                                icon={<FiXCircle className="h-6 w-6" />}
                             />
                             <AnimatedStatCard
                                 title="Ditolak"

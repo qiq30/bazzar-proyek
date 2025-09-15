@@ -109,7 +109,7 @@ export default function SystemReport({
     };
 
     const profileComparisonData = {
-        labels: ["Terverifikasi", "Menunggu", "Ditolak"],
+        labels: ["Terverifikasi", "Menunggu", "Ditolak", "Belum Selesai"],
         datasets: [
             {
                 label: "UMKM",
@@ -117,6 +117,7 @@ export default function SystemReport({
                     profileStats.umkm_verified,
                     profileStats.umkm_pending,
                     profileStats.umkm_rejected,
+                    profileStats.umkm_incomplete,
                 ],
                 backgroundColor: "rgba(59, 130, 246, 0.7)",
             },
@@ -126,6 +127,7 @@ export default function SystemReport({
                     profileStats.penyelenggara_verified,
                     profileStats.penyelenggara_pending,
                     profileStats.penyelenggara_rejected,
+                    profileStats.penyelenggara_incomplete,
                 ],
                 backgroundColor: "rgba(236, 72, 153, 0.7)",
             },
