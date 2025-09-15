@@ -176,7 +176,8 @@ export default function Reports({
                             title="Laporan UMKM"
                             subtitle="Data lengkap registrasi dan verifikasi UMKM"
                         />
-                        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {" "}
                             <AnimatedStatCard
                                 title="Total UMKM Terdaftar"
                                 value={umkmStats.total.value}
@@ -198,24 +199,36 @@ export default function Reports({
                                 color="yellow"
                                 icon={<FiClock className="h-6 w-6" />}
                             />
-                            <AnimatedStatCard
-                                title="Profil Belum Selesai"
-                                value={umkmStats.incomplete_profiles.value}
-                                description={
-                                    umkmStats.incomplete_profiles.description
-                                }
-                                color="red"
-                                icon={<FiXCircle className="h-6 w-6" />}
-                            />
-                            <AnimatedStatCard
-                                title="UMKM Baru (30 Hari)"
-                                value={umkmStats.new_last_30_days.value}
-                                description={
-                                    umkmStats.new_last_30_days.description
-                                }
-                                color="orange"
-                                icon={<FiTrendingUp className="h-6 w-6" />}
-                            />
+                            <div className="md:col-span-2 lg:col-span-3 flex justify-center gap-6">
+                                <div className="w-full lg:w-auto">
+                                    <AnimatedStatCard
+                                        title="Profil Belum Selesai"
+                                        value={
+                                            umkmStats.incomplete_profiles.value
+                                        }
+                                        description={
+                                            umkmStats.incomplete_profiles
+                                                .description
+                                        }
+                                        color="red"
+                                        icon={<FiXCircle className="h-6 w-6" />}
+                                    />
+                                </div>
+                                <div className="w-full lg:w-auto">
+                                    <AnimatedStatCard
+                                        title="UMKM Baru (30 Hari)"
+                                        value={umkmStats.new_last_30_days.value}
+                                        description={
+                                            umkmStats.new_last_30_days
+                                                .description
+                                        }
+                                        color="orange"
+                                        icon={
+                                            <FiTrendingUp className="h-6 w-6" />
+                                        }
+                                    />
+                                </div>
+                            </div>
                         </div>
                         <div className="p-6 border-t border-gray-200">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
@@ -233,7 +246,8 @@ export default function Reports({
                             title="Laporan Penyelenggara"
                             subtitle="Data registrasi dan aktivitas penyelenggara event"
                         />
-                        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {" "}
                             <AnimatedStatCard
                                 title="Total Penyelenggara"
                                 value={penyelenggaraStats.total.value}
@@ -261,27 +275,37 @@ export default function Reports({
                                 color="yellow"
                                 icon={<FiClock className="h-6 w-6" />}
                             />
-                            <AnimatedStatCard
-                                title="Profil Belum Selesai"
-                                value={
-                                    penyelenggaraStats.incomplete_profiles.value
-                                }
-                                description={
-                                    penyelenggaraStats.incomplete_profiles
-                                        .description
-                                }
-                                color="red"
-                                icon={<FiXCircle className="h-6 w-6" />}
-                            />
-                            <AnimatedStatCard
-                                title="Ditolak"
-                                value={penyelenggaraStats.rejected.value}
-                                description={
-                                    penyelenggaraStats.rejected.description
-                                }
-                                color="red"
-                                icon={<FiXCircle className="h-6 w-6" />}
-                            />
+                            <div className="md:col-span-2 lg:col-span-3 flex justify-center gap-6">
+                                <div className="w-full lg:w-auto">
+                                    <AnimatedStatCard
+                                        title="Profil Belum Selesai"
+                                        value={
+                                            penyelenggaraStats
+                                                .incomplete_profiles.value
+                                        }
+                                        description={
+                                            penyelenggaraStats
+                                                .incomplete_profiles.description
+                                        }
+                                        color="red"
+                                        icon={<FiXCircle className="h-6 w-6" />}
+                                    />
+                                </div>
+                                <div className="w-full lg:w-auto">
+                                    <AnimatedStatCard
+                                        title="Ditolak"
+                                        value={
+                                            penyelenggaraStats.rejected.value
+                                        }
+                                        description={
+                                            penyelenggaraStats.rejected
+                                                .description
+                                        }
+                                        color="red"
+                                        icon={<FiXCircle className="h-6 w-6" />}
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
 
