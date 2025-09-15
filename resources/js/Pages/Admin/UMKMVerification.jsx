@@ -25,7 +25,6 @@ export default function UMKMVerification({
     const [viewingUmkm, setViewingUmkm] = useState(null);
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
 
-    // --- ▼▼▼ PERBAIKAN DI SINI: SATUKAN SEMUA AKSI DALAM SATU useForm HOOK ▼▼▼ ---
     const { data, setData, post, processing, errors, reset } = useForm({
         rejection_reason: "",
     });
@@ -39,7 +38,6 @@ export default function UMKMVerification({
             });
         }
     };
-    // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
 
     const openRejectModal = (profile) => {
         setViewingUmkm(profile);
@@ -75,7 +73,6 @@ export default function UMKMVerification({
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
-                    {/* ... (Tabel tidak ada perubahan) ... */}
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 border-b border-gray-200">
                             <h3 className="text-xl font-bold text-gray-900">
