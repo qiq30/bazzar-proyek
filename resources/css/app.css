@@ -95,3 +95,8 @@ textarea:focus {
 ::-webkit-scrollbar-thumb:hover {
     background: #a8a8a8;
 }
+
+/* Hide reCAPTCHA badge */
+.grecaptcha-badge {
+    visibility: hidden !important;
+}

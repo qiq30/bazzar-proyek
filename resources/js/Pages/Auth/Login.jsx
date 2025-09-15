@@ -3,7 +3,7 @@ import Checkbox from "@/Components/Checkbox";
 import InputError from "@/Components/InputError";
 import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
-import { Head, Link, useForm } from "@inertiajs/react";
+import { Head, Link, useForm, usePage } from "@inertiajs/react";
 
 // Import untuk ikon dan animasi
 import { EnvelopeIcon, LockClosedIcon } from "@heroicons/react/24/solid";
@@ -14,7 +14,9 @@ export default function Login({ status, canResetPassword }) {
         email: "",
         password: "",
         remember: false,
+        "g-recaptcha-response": "",
     });
+    const { recaptcha_v3_site_key } = usePage().props;
 
     useEffect(() => {
         return () => {
@@ -24,7 +26,21 @@ export default function Login({ status, canResetPassword }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route("login"));
+
+        window.grecaptcha.ready(() => {
+            // Gunakan variabel recaptcha_v3_site_key, bukan string Blade
+            window.grecaptcha
+                .execute(recaptcha_v3_site_key, { action: "submit" })
+                .then((token) => {
+                    // Langsung post setelah mendapatkan token
+                    post(
+                        route("login", {
+                            ...data,
+                            "g-recaptcha-response": token,
+                        })
+                    );
+                });
+        });
     };
 
     return (
@@ -145,6 +161,31 @@ export default function Login({ status, canResetPassword }) {
                                                     </Link>
                                                 </div>
                                             )}
+                                        </div>
+
+                                        <div className="pt-1 text-center text-xs text-gray-500">
+                                            Situs ini dilindungi oleh reCAPTCHA
+                                            dan berlaku
+                                            <a
+                                                href="https://policies.google.com/privacy"
+                                                className="text-blue-600 hover:underline"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {" "}
+                                                Kebijakan Privasi
+                                            </a>{" "}
+                                            dan
+                                            <a
+                                                href="https://policies.google.com/terms"
+                                                className="text-blue-600 hover:underline"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {" "}
+                                                Persyaratan Layanan
+                                            </a>{" "}
+                                            Google.
                                         </div>
 
                                         <PrimaryButton

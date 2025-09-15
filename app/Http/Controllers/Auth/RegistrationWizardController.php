@@ -14,8 +14,7 @@ use Inertia\Inertia;
 use Illuminate\Validation\Rules;
 use App\Events\NewUserRegisteredForVerification;
 use App\Events\ProfileStatusUpdated;
-
-// Import tambahan untuk OTP
+use App\Rules\Recaptcha;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\SendOtpMail;
 use Carbon\Carbon;
@@ -58,6 +57,8 @@ class RegistrationWizardController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role' => 'required|in:umkm,penyelenggara',
+            'g-recaptcha-response' => ['required', new Recaptcha],
+
         ]);
 
         // Generate 6-digit OTP

@@ -3,6 +3,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Rules\Recaptcha;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
@@ -14,7 +15,6 @@ use Inertia\Response;
 
 class AuthenticatedSessionController extends Controller
 {
-    // ... method create() tidak berubah ...
     public function create(): Response
     {
         return Inertia::render('Auth/Login', [
@@ -23,9 +23,13 @@ class AuthenticatedSessionController extends Controller
         ]);
     }
 
-
     public function store(LoginRequest $request): RedirectResponse
     {
+        // Validasi reCAPTCHA sebelum otentikasi
+        $request->validate([
+            'g-recaptcha-response' => ['required', new Recaptcha],
+        ]);
+
         $request->authenticate();
         $request->session()->regenerate();
         $user = $request->user();
@@ -40,7 +44,6 @@ class AuthenticatedSessionController extends Controller
         return redirect()->intended($home);
     }
 
-    // ... method destroy() tidak berubah ...
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();

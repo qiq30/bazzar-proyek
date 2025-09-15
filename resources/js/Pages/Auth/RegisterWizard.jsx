@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Head, useForm, Link } from "@inertiajs/react";
+import { Head, useForm, Link, usePage } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     FiUser,
@@ -605,6 +605,7 @@ const Step2PenyelenggaraProfile = ({
 
 // --- Komponen Wizard Utama ---
 export default function RegisterWizard({ role, initialStep }) {
+    const { recaptcha_v3_site_key } = usePage().props;
     const [logoPreview, setLogoPreview] = useState(null);
     const [ktpPreview, setKtpPreview] = useState(null);
     const [docPreview, setDocPreview] = useState(null);
@@ -623,6 +624,7 @@ export default function RegisterWizard({ role, initialStep }) {
         logo: null,
         ktp: null,
         organizer_name: "",
+        "g-recaptcha-response": "",
         verification_document: null,
     });
 
@@ -673,21 +675,32 @@ export default function RegisterWizard({ role, initialStep }) {
     const handleFormSubmit = (e) => {
         e.preventDefault();
 
-        if (initialStep === 1) {
-            post(route("register.wizard.step1"));
-        } else {
-            post(route("register.wizard.finish"), {
-                forceFormData: true,
-                onSuccess: () => {
-                    console.log(
-                        "Form submitted successfully, Inertia will now redirect."
-                    );
-                },
-                onError: (errors) => {
-                    console.error("Validation errors:", errors);
-                },
-            });
-        }
+        // Ambil token reCAPTCHA sebelum submit
+        window.grecaptcha.ready(() => {
+            window.grecaptcha
+                .execute(recaptcha_v3_site_key, { action: "submit" })
+                .then((token) => {
+                    // Set token ke dalam data form
+                    setData("g-recaptcha-response", token);
+
+                    // Lanjutkan dengan submit form
+                    if (initialStep === 1) {
+                        post(route("register.wizard.step1"));
+                    } else {
+                        post(route("register.wizard.finish"), {
+                            forceFormData: true,
+                            onSuccess: () => {
+                                console.log(
+                                    "Form submitted successfully, Inertia will now redirect."
+                                );
+                            },
+                            onError: (errors) => {
+                                console.error("Validation errors:", errors);
+                            },
+                        });
+                    }
+                });
+        });
     };
 
     const isStepComplete = (step) => {
@@ -958,6 +971,30 @@ export default function RegisterWizard({ role, initialStep }) {
                                 <span>Login Google</span>
                             </a>
                         </AnimatePresence>
+
+                        <div className="mt-4 text-center text-xs text-gray-500">
+                            Situs ini dilindungi oleh reCAPTCHA dan berlaku
+                            <a
+                                href="https://policies.google.com/privacy"
+                                className="text-blue-600 hover:underline"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                {" "}
+                                Kebijakan Privasi
+                            </a>{" "}
+                            dan
+                            <a
+                                href="https://policies.google.com/terms"
+                                className="text-blue-600 hover:underline"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                {" "}
+                                Persyaratan Layanan
+                            </a>{" "}
+                            Google.
+                        </div>
 
                         <motion.div
                             className="flex items-center justify-between mt-8"

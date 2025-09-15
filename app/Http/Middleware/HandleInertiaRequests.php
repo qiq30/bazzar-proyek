@@ -52,6 +52,8 @@ class HandleInertiaRequests extends Middleware
                 ->where('expires_at', '>', now())
                 ->exists()
                 : null,
+            'recaptcha_v3_site_key' => env('RECAPTCHA_V3_SITE_KEY'),
+
         ]);
     }
 }
