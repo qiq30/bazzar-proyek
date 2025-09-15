@@ -40,10 +40,8 @@ class StoreNewUserRegisteredNotification
                 'user_id' => $admin->id,
                 'type'    => get_class($event),
                 'data'    => [
-                    // --- ▼▼▼ PERUBAHAN DI SINI ▼▼▼ ---
                     'title'   => 'Profil Menunggu Verifikasi',
                     'message' => "Profil pengguna '{$newUser->name}' ({$role}) telah diajukan dan menunggu verifikasi Anda.",
-                    // --- ▲▲▲ AKHIR DARI PERUBAHAN ---
                     'url'     => $verificationUrl,
                 ]
             ]);

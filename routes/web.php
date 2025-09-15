@@ -84,9 +84,6 @@ Route::middleware(['auth', 'super_admin'])->prefix('superadmin')->name('superadm
     Route::get('/system-report', [SystemReportController::class, 'index'])->name('system.report');
 });
 
-
-
-
 // ADMIN LOGIN ROUTE
 Route::middleware('guest')->prefix('admin')->name('admin.')->group(function () {
     Route::get('login', [AdminLoginController::class, 'create'])->name('login');
@@ -102,7 +99,6 @@ Route::get('/umkm/{umkm}', [PublicController::class, 'umkmDetail'])->name('publi
 require __DIR__ . '/auth.php';
 
 // UMKM Routes (Authenticated Users)
-// Terapkan middleware 'umkm'
 Route::middleware(['auth', 'verified', 'umkm'])->group(function () {
     Route::get('/dashboard', [UmkmController::class, 'dashboard'])->name('umkm.dashboard');
     Route::get('/profile/setup', [UmkmController::class, 'profileSetup'])->name('umkm.profile.setup');

@@ -32,7 +32,6 @@ class StoreProfileStatusNotification
 
         $notificationData = [];
 
-        // --- ▼▼▼ PERUBAHAN DI SINI ▼▼▼ ---
         switch ($status) {
             case 'pending':
                 $notificationData = [
@@ -49,7 +48,6 @@ class StoreProfileStatusNotification
                 ];
                 break;
             case 'rejected':
-                // TAMBAHKAN LOGIKA FALLBACK UNTUK ALASAN PENOLAKAN
                 $rejectionReason = $profile->rejection_reason ?: 'Tidak ada alasan spesifik yang diberikan.';
                 $notificationData = [
                     'title'   => 'Profil Ditolak',
@@ -58,7 +56,6 @@ class StoreProfileStatusNotification
                 ];
                 break;
         }
-        // --- ▲▲▲ AKHIR DARI PERUBAHAN ▲▲▲ ---
 
         if (!empty($notificationData)) {
             $notification = Notification::create([

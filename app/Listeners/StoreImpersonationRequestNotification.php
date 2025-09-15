@@ -33,9 +33,7 @@ class StoreImpersonationRequestNotification
             'data'    => [
                 'title'   => 'Permintaan Akses Akun',
                 'message' => "Super Admin '{$superAdmin->name}' meminta izin untuk masuk sebagai Anda.",
-                // --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ ---
                 'url'     => route('impersonate.requests.index'),
-                // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
             ]
         ]);
 
