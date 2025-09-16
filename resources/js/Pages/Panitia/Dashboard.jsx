@@ -1,129 +1,21 @@
-// resources/js/Pages/Panitia/Dashboard.jsx
-
 import { useState, useEffect, useRef } from "react";
 import { Head, Link } from "@inertiajs/react";
 import axios from "axios";
 import { Html5QrcodeScanner } from "html5-qrcode";
 
-// --- Komponen Ikon SVG (Tidak ada perubahan) ---
-const UsersIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m-7.5-2.962c.57-1.023-.194-2.34-.974-3.32a8.963 8.963 0 00-4.962 0c-.78.98-.546 2.297.194 3.32m8.737 2.062a8.963 8.963 0 01-4.962 0m8.737 2.062a8.963 8.963 0 01-4.962 0M12 19.252a8.963 8.963 0 01-4.962 0m4.962 0a8.963 8.963 0 004.962 0M12 6.75a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM12 12.75a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0z"
-        />
-    </svg>
-);
-const UserCheckIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M9 12.75L11.25 15 15 9.75M21 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2m8-11a4 4 0 100-8 4 4 0 000 8z"
-        />
-    </svg>
-);
-const LogoutIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
-        />
-    </svg>
-);
-const QrCodeIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M3.75 4.5A.75.75 0 014.5 3.75h4.5a.75.75 0 01.75.75v4.5a.75.75 0 01-.75.75h-4.5a.75.75 0 01-.75-.75v-4.5zM3.75 14.25a.75.75 0 01.75-.75h4.5a.75.75 0 01.75.75v4.5a.75.75 0 01-.75.75h-4.5a.75.75 0 01-.75-.75v-4.5zM13.5 4.5a.75.75 0 01.75-.75h4.5a.75.75 0 01.75.75v4.5a.75.75 0 01-.75.75h-4.5a.75.75 0 01-.75-.75v-4.5zM13.5 14.25a.75.75 0 01.75-.75h4.5a.75.75 0 01.75.75v4.5a.75.75 0 01-.75.75h-4.5a.75.75 0 01-.75-.75v-4.5z"
-        />
-    </svg>
-);
-const ListIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
-        />
-    </svg>
-);
-const SearchIcon = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-    >
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-        />
-    </svg>
-);
-const Spinner = () => (
-    <svg
-        className="animate-spin h-5 w-5 text-white"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-    >
-        <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-        ></circle>
-        <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-        ></path>
-    </svg>
-);
+// --- ▼▼▼ PERUBAHAN DI SINI: MENGGUNAKAN IKON DARI REACT-ICONS/FI ▼▼▼ ---
+import {
+    FiUsers,
+    FiUserCheck,
+    FiLogOut,
+    FiCamera,
+    FiList,
+    FiSearch,
+    FiLoader,
+} from "react-icons/fi";
+// --- ▲▲▲ AKHIR PERUBAHAN ▲▲▲ ---
+
+const Spinner = () => <FiLoader className="animate-spin h-5 w-5 text-white" />;
 
 const StatusBadge = ({ status }) => {
     const statusConfig = {
@@ -157,14 +49,11 @@ const CheckInSection = ({ event }) => {
 
     useEffect(() => {
         if (isScanning) {
-            // ▼▼▼ PERUBAHAN DI SINI ▼▼▼
             const config = {
                 qrbox: { width: 250, height: 250 },
                 fps: 10,
-                // Baris ini secara eksplisit meminta kamera belakang
                 facingMode: "environment",
             };
-            // ▲▲▲ AKHIR PERUBAHAN ▲▲▲
 
             const scanner = new Html5QrcodeScanner(
                 "qr-scanner-region",
@@ -289,7 +178,8 @@ const CheckInSection = ({ event }) => {
                         disabled={isLoading || !searchTerm}
                         className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300"
                     >
-                        <SearchIcon className="h-5 w-5" />
+                        {/* --- ▼▼▼ PERUBAHAN IKON ▼▼▼ --- */}
+                        <FiSearch className="h-5 w-5" />
                     </button>
                 </form>
                 <div className="mt-4 border-t pt-4">
@@ -301,7 +191,8 @@ const CheckInSection = ({ event }) => {
                                 : "bg-gray-200 text-gray-800"
                         }`}
                     >
-                        <QrCodeIcon className="h-5 w-5" />
+                        {/* --- ▼▼▼ PERUBAHAN IKON ▼▼▼ --- */}
+                        <FiCamera className="h-5 w-5" />
                         {isScanning ? "Stop Scan" : "Mulai Scan QR Code"}
                     </button>
                 </div>
@@ -347,11 +238,13 @@ const CheckInSection = ({ event }) => {
                                 disabled={
                                     isLoading || result.status !== "approved"
                                 }
-                                className="w-full py-3 font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:bg-gray-400 flex items-center justify-center"
+                                className="w-full py-3 font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:bg-gray-400 flex items-center justify-center gap-2"
                             >
                                 {isLoading ? (
                                     <>
-                                        <Spinner /> Memproses...
+                                        {/* --- ▼▼▼ PERUBAHAN IKON ▼▼▼ --- */}
+                                        <FiLoader className="animate-spin" />
+                                        Memproses...
                                     </>
                                 ) : result.status === "sudah_check_in" ? (
                                     "✓ Sudah Check-in"
@@ -465,7 +358,8 @@ export default function PanitiaDashboard({ event }) {
                             as="button"
                             className="flex items-center space-x-2 px-4 py-2 bg-white/20 text-white text-sm font-semibold rounded-lg hover:bg-white/30 transition-colors"
                         >
-                            <LogoutIcon className="h-5 w-5" />
+                            {/* --- ▼▼▼ PERUBAHAN IKON ▼▼▼ --- */}
+                            <FiLogOut className="h-5 w-5" />
                             <span>Keluar</span>
                         </Link>
                     </div>
@@ -482,7 +376,8 @@ export default function PanitiaDashboard({ event }) {
                                 </p>
                             </div>
                             <div className="text-blue-500 bg-blue-100 p-3 rounded-full">
-                                <UsersIcon className="h-8 w-8" />
+                                {/* --- ▼▼▼ PERUBAHAN IKON ▼▼▼ --- */}
+                                <FiUsers className="h-8 w-8" />
                             </div>
                         </div>
                         <div className="bg-white p-6 rounded-lg shadow-sm flex justify-between items-center">
@@ -495,7 +390,8 @@ export default function PanitiaDashboard({ event }) {
                                 </p>
                             </div>
                             <div className="text-green-500 bg-green-100 p-3 rounded-full">
-                                <UserCheckIcon className="h-8 w-8" />
+                                {/* --- ▼▼▼ PERUBAHAN IKON ▼▼▼ --- */}
+                                <FiUserCheck className="h-8 w-8" />
                             </div>
                         </div>
                     </div>
@@ -510,7 +406,8 @@ export default function PanitiaDashboard({ event }) {
                                     : "text-gray-600 hover:bg-blue-50"
                             }`}
                         >
-                            <QrCodeIcon className="h-5 w-5" />
+                            {/* --- ▼▼▼ PERUBAHAN IKON ▼▼▼ --- */}
+                            <FiCamera className="h-5 w-5" />
                             <span>Check-in Peserta</span>
                         </button>
                         <button
@@ -521,7 +418,8 @@ export default function PanitiaDashboard({ event }) {
                                     : "text-gray-600 hover:bg-blue-50"
                             }`}
                         >
-                            <ListIcon className="h-5 w-5" />
+                            {/* --- ▼▼▼ PERUBAHAN IKON ▼▼▼ --- */}
+                            <FiList className="h-5 w-5" />
                             <span>Lihat Semua Peserta</span>
                         </button>
                     </div>
