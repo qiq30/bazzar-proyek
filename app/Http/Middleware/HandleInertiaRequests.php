@@ -44,7 +44,7 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn() => $request->session()->get('success'),
                 'error' => fn() => $request->session()->get('error'),
             ],
-            'adminContact' => fn() => config('contact.admin_whatsapp'), // <-- Tambahkan baris ini
+            'adminContact' => fn() => config('contact.admin_whatsapp'),
             'impersonating' => fn() => $request->session()->has('impersonate_by'),
             'pendingImpersonationRequest' => fn() => $request->user()
                 ? ImpersonationRequest::where('target_user_id', $request->user()->id)
@@ -53,7 +53,7 @@ class HandleInertiaRequests extends Middleware
                 ->exists()
                 : null,
             'recaptcha_v3_site_key' => env('RECAPTCHA_V3_SITE_KEY'),
-
+            'recaptcha_v2_site_key' => env('RECAPTCHA_V2_SITE_KEY'),
         ]);
     }
 }

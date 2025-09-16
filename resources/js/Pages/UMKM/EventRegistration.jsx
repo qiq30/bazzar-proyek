@@ -1,10 +1,12 @@
 // resources/js/Pages/UMKM/EventRegistration.jsx
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, usePage, router } from "@inertiajs/react";
+import { Head, Link, usePage, router, useForm } from "@inertiajs/react"; // Ditambah useForm
 import { useEffect, useState, useMemo, useCallback } from "react";
+import Modal from "@/Components/Modal"; // Ditambahkan
+import ReCAPTCHA from "react-google-recaptcha"; // Ditambahkan
 
-// --- Komponen Peringatan Waktu ---
+// --- Komponen Peringatan Waktu --- (TIDAK BERUBAH)
 const TimeMismatchWarning = ({ onDismiss }) => (
     <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-md shadow-sm relative">
         <h4 className="font-bold">Peringatan Ketidaksesuaian Waktu</h4>
@@ -41,7 +43,7 @@ const TimeMismatchWarning = ({ onDismiss }) => (
     </div>
 );
 
-// Komponen ProfileActionNotice
+// Komponen ProfileActionNotice (TIDAK BERUBAH)
 const ProfileActionNotice = ({ hasProfile }) => (
     <div className="bg-white rounded-lg shadow-sm text-center p-8">
         <div className="text-yellow-500 text-6xl mb-4">⚠️</div>
@@ -66,6 +68,124 @@ const ProfileActionNotice = ({ hasProfile }) => (
     </div>
 );
 
+// --- ▼▼▼ PENAMBAHAN BARU: Komponen Modal Konfirmasi Pendaftaran ▼▼▼ ---
+const RegistrationConfirmationModal = ({
+    event,
+    onClose,
+    recaptchaSiteKey,
+}) => {
+    const { post, processing, errors, setData, data } = useForm({
+        payment_confirmation: "",
+        "g-recaptcha-response": "",
+    });
+
+    const amount = event.biaya_pendaftaran_umkm || 0;
+    const amountString = String(amount);
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        post(route("umkm.events.register", event.id), {
+            onSuccess: () => onClose(),
+        });
+    };
+
+    return (
+        <Modal show={true} onClose={onClose} maxWidth="md">
+            <form onSubmit={handleSubmit} className="p-6">
+                <h2 className="text-2xl font-bold text-gray-900">
+                    Konfirmasi Akhir Pendaftaran
+                </h2>
+                <p className="mt-2 text-sm text-gray-600">
+                    Anda akan mendaftar untuk event:
+                    <br />
+                    <strong className="text-lg">"{event.nama_event}"</strong>
+                </p>
+
+                <div className="mt-4 bg-gray-50 p-4 rounded-lg">
+                    <p className="font-semibold">Total Nilai Pendaftaran:</p>
+                    <p className="text-2xl font-bold text-blue-600">
+                        {new Intl.NumberFormat("id-ID", {
+                            style: "currency",
+                            currency: "IDR",
+                            minimumFractionDigits: 0,
+                        }).format(amount)}
+                    </p>
+                </div>
+
+                <div className="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800">
+                    <p className="font-bold">Peringatan</p>
+                    <p className="text-sm">
+                        Tindakan ini tidak dapat dibatalkan setelah diproses.
+                        Pastikan semua data sudah benar.
+                    </p>
+                </div>
+
+                <div className="mt-6">
+                    <label
+                        htmlFor="payment_confirmation"
+                        className="block text-sm font-medium text-gray-700"
+                    >
+                        Untuk menyetujui, silakan ketik total nilai pendaftaran
+                        tanpa titik atau koma ({amountString}) di bawah ini.
+                    </label>
+                    <input
+                        id="payment_confirmation"
+                        type="text"
+                        value={data.payment_confirmation}
+                        onChange={(e) =>
+                            setData("payment_confirmation", e.target.value)
+                        }
+                        className={`mt-1 block w-full rounded-md ${
+                            errors.payment_confirmation
+                                ? "border-red-500"
+                                : "border-gray-300"
+                        }`}
+                        required
+                    />
+                    {errors.payment_confirmation && (
+                        <p className="text-red-500 text-xs mt-1">
+                            {errors.payment_confirmation}
+                        </p>
+                    )}
+                </div>
+
+                <div className="mt-6">
+                    <ReCAPTCHA
+                        sitekey={recaptchaSiteKey}
+                        onChange={(token) =>
+                            setData("g-recaptcha-response", token)
+                        }
+                    />
+                    {errors["g-recaptcha-response"] && (
+                        <p className="text-red-500 text-xs mt-1">
+                            {errors["g-recaptcha-response"]}
+                        </p>
+                    )}
+                </div>
+
+                <div className="mt-6 flex justify-end space-x-4">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="px-6 py-2 border rounded-md text-sm font-medium hover:bg-gray-100"
+                        disabled={processing}
+                    >
+                        Batal
+                    </button>
+                    <button
+                        type="submit"
+                        className="px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                        disabled={processing}
+                    >
+                        {processing ? "Memproses..." : "Ya, Lanjutkan"}
+                    </button>
+                </div>
+            </form>
+        </Modal>
+    );
+};
+// --- ▲▲▲ AKHIR DARI PENAMBAHAN BARU ---
+
 export default function EventRegistration({
     auth,
     events,
@@ -76,7 +196,12 @@ export default function EventRegistration({
 }) {
     const [isTimeMismatched, setIsTimeMismatched] = useState(false);
     const [showWarning, setShowWarning] = useState(false);
-    const [processingEvents, setProcessingEvents] = useState(new Set());
+    // --- ▼▼▼ PENAMBAHAN BARU ▼▼▼ ---
+    const [confirmingEvent, setConfirmingEvent] = useState(null); // State untuk modal
+    const { recaptcha_v2_site_key } = usePage().props;
+    // --- ▲▲▲ AKHIR DARI PENAMBAHAN BARU ---
+
+    // Fungsi lama handleSafeRegisterClick dihapus karena sekarang digantikan oleh modal
 
     useEffect(() => {
         // Fungsi untuk memeriksa perbedaan waktu
@@ -97,7 +222,6 @@ export default function EventRegistration({
         checkTime();
 
         // Set interval untuk memeriksa waktu setiap 10 detik.
-        // Ini memastikan jika pengguna memperbaiki waktunya, UI akan diperbarui.
         const intervalId = setInterval(checkTime, 10000);
 
         // Hentikan interval saat komponen dilepas untuk mencegah kebocoran memori
@@ -116,58 +240,17 @@ export default function EventRegistration({
         }
     }, [auth.user]);
 
-    // Safe register handler dengan multiple protections
-    const handleSafeRegisterClick = useCallback(
-        async (eventId) => {
-            // Multiple safety checks sebelum execute
-            if (!eventId || isTimeMismatched || processingEvents.has(eventId)) {
-                if (isTimeMismatched) {
-                    alert(
-                        "Waktu pada perangkat Anda tidak sesuai. Mohon perbaiki sebelum mendaftar."
-                    );
-                }
-                return; // Langsung return jika ada kondisi yang tidak memenuhi
-            }
-
-            try {
-                // Set processing state untuk event specific
-                setProcessingEvents((prev) => new Set([...prev, eventId]));
-
-                // Execute registration
-                router.post(
-                    route("umkm.events.register", eventId),
-                    {},
-                    {
-                        onFinish: () => {
-                            // Remove dari processing state setelah selesai
-                            setProcessingEvents((prev) => {
-                                const newSet = new Set(prev);
-                                newSet.delete(eventId);
-                                return newSet;
-                            });
-                        },
-                        onError: () => {
-                            // Remove dari processing state jika error
-                            setProcessingEvents((prev) => {
-                                const newSet = new Set(prev);
-                                newSet.delete(eventId);
-                                return newSet;
-                            });
-                        },
-                    }
-                );
-            } catch (error) {
-                console.error("Registration error:", error);
-                // Remove dari processing state jika exception
-                setProcessingEvents((prev) => {
-                    const newSet = new Set(prev);
-                    newSet.delete(eventId);
-                    return newSet;
-                });
-            }
-        },
-        [isTimeMismatched, processingEvents]
-    );
+    // --- ▼▼▼ PENAMBAHAN BARU: Fungsi untuk membuka modal ▼▼▼ ---
+    const handleRegisterClick = (event) => {
+        if (isTimeMismatched) {
+            alert(
+                "Waktu pada perangkat Anda tidak sesuai. Mohon perbaiki sebelum mendaftar."
+            );
+            return;
+        }
+        setConfirmingEvent(event);
+    };
+    // --- ▲▲▲ AKHIR DARI PENAMBAHAN BARU ---
 
     const formatRupiah = (number) => {
         if (number === null || number === undefined || number == 0)
@@ -335,27 +418,10 @@ export default function EventRegistration({
                                     const isRegistrationUpcoming =
                                         now < startDate;
 
-                                    // Calculate if this specific event button should be disabled
-                                    const isEventProcessing =
-                                        processingEvents.has(event.id);
-                                    const isButtonDisabled = useMemo(() => {
-                                        return (
-                                            isTimeMismatched ||
-                                            isEventProcessing ||
-                                            !event?.id ||
-                                            !event?.biaya_pendaftaran_umkm ===
-                                                undefined ||
-                                            isQuotaFull ||
-                                            !isRegistrationOpen
-                                        );
-                                    }, [
-                                        isTimeMismatched,
-                                        isEventProcessing,
-                                        event?.id,
-                                        event?.biaya_pendaftaran_umkm,
-                                        isQuotaFull,
-                                        isRegistrationOpen,
-                                    ]);
+                                    const isButtonDisabled =
+                                        isTimeMismatched ||
+                                        isQuotaFull ||
+                                        !isRegistrationOpen;
 
                                     return (
                                         <div
@@ -460,10 +526,11 @@ export default function EventRegistration({
                                                         ) : isRegistrationOpen ? (
                                                             <button
                                                                 onClick={() =>
-                                                                    handleSafeRegisterClick(
-                                                                        event.id
+                                                                    // --- ▼▼▼ PERUBAHAN DI SINI ▼▼▼ ---
+                                                                    handleRegisterClick(
+                                                                        event
                                                                     )
-                                                                }
+                                                                } // --- ▲▲▲ AKHIR PERUBAHAN ▲▲▲ ---
                                                                 className={`w-full block px-4 py-2 text-white text-center rounded-lg transition ${
                                                                     isButtonDisabled
                                                                         ? "bg-gray-400 cursor-not-allowed opacity-50"
@@ -485,15 +552,11 @@ export default function EventRegistration({
                                                                 }}
                                                                 type="button"
                                                             >
-                                                                {isEventProcessing ? (
-                                                                    <LoadingSpinner />
-                                                                ) : isTimeMismatched ? (
-                                                                    "Perbaiki Waktu Perangkat Anda"
-                                                                ) : (
-                                                                    `Daftar Sekarang (${formatRupiah(
-                                                                        event.biaya_pendaftaran_umkm
-                                                                    )})`
-                                                                )}
+                                                                {isTimeMismatched
+                                                                    ? "Perbaiki Waktu Perangkat Anda"
+                                                                    : `Daftar Sekarang (${formatRupiah(
+                                                                          event.biaya_pendaftaran_umkm
+                                                                      )})`}
                                                             </button>
                                                         ) : isRegistrationUpcoming ? (
                                                             <div className="w-full block px-4 py-2 bg-gray-100 text-gray-700 text-center rounded-lg">
@@ -544,6 +607,13 @@ export default function EventRegistration({
                     )}
                 </div>
             </div>
+            {confirmingEvent && (
+                <RegistrationConfirmationModal
+                    event={confirmingEvent}
+                    onClose={() => setConfirmingEvent(null)}
+                    recaptchaSiteKey={recaptcha_v2_site_key}
+                />
+            )}
         </AuthenticatedLayout>
     );
 }

@@ -1,4 +1,5 @@
 <?php
+
 // app/Http/Controllers/UmkmController.php
 
 namespace App\Http\Controllers;
@@ -19,7 +20,7 @@ use App\Events\ProfileStatusUpdated;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
-
+use App\Rules\RecaptchaV2;
 
 class UmkmController extends Controller
 {
@@ -213,8 +214,23 @@ class UmkmController extends Controller
         return back()->with('success', 'Produk berhasil dihapus!');
     }
 
-    public function startRegistration(Event $event)
+    public function startRegistration(Request $request, Event $event)
     {
+        // Validasi input konfirmasi dari modal
+        $request->validate([
+            'payment_confirmation' => [
+                'required',
+                'numeric',
+                // Pastikan nilai yang diinput sama dengan biaya pendaftaran
+                function ($attribute, $value, $fail) use ($event) {
+                    if ((int) $value != (int) $event->biaya_pendaftaran_umkm) {
+                        $fail('Jumlah konfirmasi tidak sesuai dengan biaya pendaftaran.');
+                    }
+                },
+            ],
+            'g-recaptcha-response' => ['required', new RecaptchaV2],
+        ]);
+
         if (!Carbon::now()->between($event->pendaftaran_dibuka, $event->pendaftaran_ditutup->endOfDay())) {
             return redirect()->route('umkm.events')->with('error', 'Pendaftaran untuk event ini sedang tidak dibuka.');
         }
