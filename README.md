@@ -137,9 +137,9 @@ Berikut adalah panduan langkah-demi-langkah untuk meng-clone dan menjalankan pro
     Perintah ini akan:
 
     -   Menjalankan server pengembangan PHP (`php artisan serve`).
-    -   Menjalankan server Vite. ('npm run dev')
-    -   Menjalankan listener untuk antrian (queue). ('php artisan queue:work')
-    -   Menjalankan server Laravel Reverb.('php artisan reverb:start')
+    -   Menjalankan server Vite. (`npm run dev`)
+    -   Menjalankan listener untuk antrian (queue). (`php artisan queue:work`)
+    -   Menjalankan server Laravel Reverb.(`php artisan reverb:start`)
 
 8.  **Akses Aplikasi**
     Setelah semua server berjalan, Anda bisa membuka aplikasi di browser pada alamat yang ditampilkan (biasanya `http://127.0.0.1:8000`).
