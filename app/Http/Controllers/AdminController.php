@@ -159,35 +159,10 @@ class AdminController extends Controller
             ->orderBy('updated_at', 'desc')
             ->get();
 
-        $pendingRegistrations = EventRegistration::with(['umkmProfile', 'event'])
-            ->where('status', 'pembayaran_terkonfirmasi')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
         return Inertia::render('Admin/UMKMVerification', [
             'pendingUmkmProfiles' => $pendingUmkmProfiles,
             'verifiedUmkmProfiles' => $verifiedUmkmProfiles,
-            'registrations' => $pendingRegistrations,
         ]);
-    }
-
-    public function finalizeRegistration(EventRegistration $registration)
-    {
-        if (is_null($registration->nomor_stand)) {
-            return back()->with('error', 'Penyelenggara belum menginput nomor stand untuk UMKM ini.');
-        }
-
-        $kodePin = rand(100000, 999999);
-
-        $registration->update([
-            'status'      => 'approved',
-            'kode_pin'    => $kodePin,
-        ]);
-
-        $registration->load('event', 'umkmProfile');
-        RegistrationFinalized::dispatch($registration);
-
-        return back()->with('success', 'Pendaftaran UMKM berhasil disetujui! E-Ticket telah dibuat.');
     }
 
     public function verifyUmkm(UmkmProfile $umkm)

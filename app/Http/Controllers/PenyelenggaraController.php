@@ -16,13 +16,13 @@ use Illuminate\Http\Request;
 use App\Events\NewUserRegisteredForVerification;
 use App\Events\ProfileStatusUpdated;
 use Carbon\Carbon;
-use App\Events\ProposalStep1Submitted; // Ditambahkan
-use App\Models\Notification;           // Ditambahkan
-use App\Events\NotificationReceived;  // Ditambahkan
+use App\Events\ProposalStep1Submitted;
+use App\Models\Notification;
+use App\Events\NotificationReceived;
+use App\Events\RegistrationFinalized;
 
 class PenyelenggaraController extends Controller
 {
-    // ... (method dashboard() tidak berubah) ...
     public function dashboard()
     {
         $user = Auth::user();
@@ -234,7 +234,6 @@ class PenyelenggaraController extends Controller
         ]);
     }
 
-
     public function showVerifikasi(EventRegistration $registration)
     {
         if ($registration->event->user_id !== Auth::id()) {
@@ -246,19 +245,34 @@ class PenyelenggaraController extends Controller
             'registration' => $registration
         ]);
     }
+
     public function confirmPayment(EventRegistration $registration)
     {
         if ($registration->event->user_id !== Auth::id()) {
             abort(403);
         }
 
-        $registration->update(['status' => 'pembayaran_terkonfirmasi', 'rejection_reason' => null]);
+        // Langsung setujui pendaftaran jika nomor stand sudah diisi
+        if (is_null($registration->nomor_stand)) {
+            return back()->with('error', 'Anda harus menetapkan nomor stand terlebih dahulu sebelum menyetujui pembayaran.');
+        }
 
-        $registration->load('umkmProfile');
+        // Buat PIN acak untuk check-in
+        $kodePin = rand(100000, 999999);
 
-        RegistrationStatusUpdated::dispatch($registration);
+        $registration->update([
+            'status'      => 'approved',
+            'kode_pin'    => $kodePin,
+            'rejection_reason' => null
+        ]);
 
-        return redirect()->route('penyelenggara.pendaftar.verifikasi.list')->with('success', 'Pembayaran telah dikonfirmasi.');
+        $registration->load('umkmProfile', 'event');
+
+        // Kirim notifikasi e-ticket ke UMKM
+        RegistrationFinalized::dispatch($registration);
+
+
+        return redirect()->route('penyelenggara.pendaftar.verifikasi.list')->with('success', 'Pembayaran telah dikonfirmasi dan pendaftaran UMKM berhasil disetujui. E-Ticket telah dikirim.');
     }
 
     public function rejectPayment(Request $request, EventRegistration $registration)
