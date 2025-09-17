@@ -167,6 +167,14 @@ class AdminController extends Controller
 
     public function verifyUmkm(UmkmProfile $umkm)
     {
+        // Ambil user yang berelasi dengan profil
+        $user = $umkm->user;
+
+        // Update kolom email_verified_at jika belum terisi
+        if ($user && !$user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+        }
+
         $umkm->update(['status' => 'verified', 'rejection_reason' => null]);
         $umkm->refresh();
         ProfileStatusUpdated::dispatch($umkm);
@@ -208,6 +216,14 @@ class AdminController extends Controller
 
     public function verifyPenyelenggara(PenyelenggaraProfile $penyelenggara)
     {
+        // Ambil user yang berelasi dengan profil
+        $user = $penyelenggara->user;
+
+        // Update kolom email_verified_at jika belum terisi
+        if ($user && !$user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+        }
+
         $penyelenggara->update(['status' => 'verified', 'rejection_reason' => null]);
         $penyelenggara->refresh();
         ProfileStatusUpdated::dispatch($penyelenggara);
