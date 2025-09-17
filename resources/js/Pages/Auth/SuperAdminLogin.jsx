@@ -49,7 +49,6 @@ export default function SuperAdminLogin() {
                             </div>
 
                             <form onSubmit={submit} className="space-y-6">
-                                {/* PEMBENAHAN: FIELD EMAIL */}
                                 <div>
                                     <div className="relative">
                                         <EnvelopeIcon className="absolute w-5 h-5 text-gray-400 left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -72,7 +71,6 @@ export default function SuperAdminLogin() {
                                     />
                                 </div>
 
-                                {/* PEMBENAHAN: FIELD PASSWORD */}
                                 <div>
                                     <div className="relative">
                                         <LockClosedIcon className="absolute w-5 h-5 text-gray-400 left-4 top-1/2 -translate-y-1/2 pointer-events-none" />

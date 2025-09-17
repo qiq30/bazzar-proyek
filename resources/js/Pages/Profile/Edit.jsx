@@ -9,12 +9,10 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
         <>
             <Head title="Profile" />
 
-            {/* DIUBAH: Latar belakang dibuat lebih simpel */}
             <div className="min-h-screen bg-slate-50 py-8">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Header Section */}
                     <div className="text-center mb-8">
-                        {/* DIUBAH: Gradient diganti warna solid khas (teal) */}
                         <div className="inline-flex items-center justify-center w-16 h-16 bg-teal-600 rounded-full mb-4 shadow-lg">
                             <svg
                                 className="w-8 h-8 text-white"
@@ -43,7 +41,6 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
                     <div className="space-y-8">
                         {/* Profile Information Card */}
                         <div className="bg-white shadow-xl rounded-2xl border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-2xl">
-                            {/* DIUBAH: Gradient biru/ungu menjadi warna biru langit yang tenang */}
                             <div className="bg-sky-700 px-6 py-4">
                                 <div className="flex items-center space-x-3">
                                     <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
@@ -65,7 +62,6 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
                                         <h3 className="text-lg font-semibold text-white">
                                             Informasi Profil
                                         </h3>
-                                        {/* DIUBAH: Disesuaikan dengan warna header baru */}
                                         <p className="text-sky-100 text-sm">
                                             Perbarui detail akun dan alamat
                                             email Anda.
@@ -84,7 +80,6 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
 
                         {/* Security Settings Card */}
                         <div className="bg-white shadow-xl rounded-2xl border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-2xl">
-                            {/* DIUBAH: Gradient hijau menjadi warna hijau emerald yang terinspirasi alam */}
                             <div className="bg-emerald-700 px-6 py-4">
                                 <div className="flex items-center space-x-3">
                                     <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
@@ -120,7 +115,6 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
 
                         {/* Danger Zone Card */}
                         <div className="bg-white shadow-xl rounded-2xl border border-red-200 overflow-hidden transition-all duration-300 hover:shadow-2xl">
-                            {/* DIUBAH: Gradient merah/pink menjadi warna merah solid yang tegas */}
                             <div className="bg-red-700 px-6 py-4">
                                 <div className="flex items-center space-x-3">
                                     <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">

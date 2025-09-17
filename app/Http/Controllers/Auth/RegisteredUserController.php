@@ -50,9 +50,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        // 🔽 PERUBAHAN LOGIKA REDIRECT DI SINI 🔽
-        // Logika ini disamakan dengan yang ada di AuthenticatedSessionController
-
         if ($user->is_admin) {
             return redirect()->route('admin.dashboard');
         }
@@ -62,6 +59,5 @@ class RegisteredUserController extends Controller
         }
 
         return redirect(route('dashboard', absolute: false));
-        // 🔼 AKHIR DARI PERUBAHAN 🔼
     }
 }

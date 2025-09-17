@@ -123,7 +123,7 @@ class RegistrationWizardController extends Controller
             return redirect()->route('register.show.otp')->withErrors(['otp' => 'Kode OTP tidak valid.']);
         }
 
-        // --- OTP is valid, now proceed to the next step ---
+        // OTP is valid, now proceed to the next step
         $request->session()->forget('otp_details'); // Clear OTP from session
         $request->session()->put('wizard_data.step1_verified', true); // Mark step 1 as verified
 
@@ -134,7 +134,7 @@ class RegistrationWizardController extends Controller
 
     public function storeFinal(Request $request)
     {
-        // --- Bagian Validasi dan Pembuatan User (Tidak perlu diubah) ---
+        // Bagian Validasi dan Pembuatan User (Tidak perlu diubah)
         $step1Data = $request->session()->get('wizard_data.step1');
 
         // Ensure user has verified OTP for step 1

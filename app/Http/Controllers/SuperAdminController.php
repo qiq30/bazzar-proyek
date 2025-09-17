@@ -27,7 +27,6 @@ class SuperAdminController extends Controller
             'penyelenggaraCount' => User::where('is_penyelenggara', true)->count(),
         ];
 
-        // --- ▼▼▼ DATA BARU UNTUK GRAFIK ▼▼▼ ---
         $monthlyGrowth = User::select(
             DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
             DB::raw('count(*) as count')
@@ -53,11 +52,10 @@ class SuperAdminController extends Controller
             ],
             'monthlyGrowth' => $userMonthlyGrowth,
         ];
-        // --- ▲▲▲ AKHIR DARI DATA GRAFIK ---
 
         return Inertia::render('SuperAdmin/Dashboard', [
             'stats' => $stats,
-            'chartData' => $chartData, // <-- Kirim data baru ke frontend
+            'chartData' => $chartData,
         ]);
     }
 

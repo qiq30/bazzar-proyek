@@ -4,8 +4,6 @@ import InputError from "@/Components/InputError";
 import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
 import { Head, Link, useForm, usePage } from "@inertiajs/react";
-
-// Import untuk ikon dan animasi
 import { EnvelopeIcon, LockClosedIcon } from "@heroicons/react/24/solid";
 import { motion, AnimatePresence } from "framer-motion";
 

@@ -7,7 +7,7 @@ import { FiUsers, FiSettings, FiFileText, FiUserCheck } from "react-icons/fi";
 import PieChart from "@/Components/PieChart";
 import LineChart from "@/Components/LineChart";
 
-// --- Komponen Kartu Statistik dengan Garis Warna di Kiri ---
+// Komponen Kartu Statistik
 const AnimatedStatCard = ({ title, value, icon, color }) => {
     const { number } = useSpring({
         from: { number: 0 },
@@ -171,7 +171,7 @@ export default function Dashboard({ auth, stats, chartData }) {
                         </div>
                     </div>
 
-                    {/* --- Bagian Grafik --- */}
+                    {/*  Bagian Grafik  */}
                     <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
                         <div className="lg:col-span-3 bg-white p-6 rounded-lg shadow-sm">
                             <h3 className="text-lg font-semibold text-gray-800 mb-4">

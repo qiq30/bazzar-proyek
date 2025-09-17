@@ -310,7 +310,7 @@ export default function Dashboard({
                             </div>
                         </div>
 
-                        {/* --- Kartu Event Terdaftar --- */}
+                        {/*  Kartu Event Terdaftar  */}
                         <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-green-500 flex flex-col justify-between">
                             <StatCardContent
                                 title="Event Terdaftar"
@@ -330,7 +330,7 @@ export default function Dashboard({
                             </Link>
                         </div>
 
-                        {/* --- Kartu QRIS --- */}
+                        {/* Kartu QRIS  */}
                         <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-purple-500 flex flex-col justify-between">
                             <StatCardContent
                                 title="QRIS"

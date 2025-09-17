@@ -4,7 +4,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, useForm } from "@inertiajs/react";
 import { useEffect, useState } from "react";
 
-// --- KOMPONEN COUNTDOWN TIMER ---
+// KOMPONEN COUNTDOWN TIMER
 const CountdownTimer = ({ expiryTime, serverTime }) => {
     const calculateTimeLeft = () => {
         const serverNow = new Date(serverTime).getTime();
@@ -62,7 +62,6 @@ const CountdownTimer = ({ expiryTime, serverTime }) => {
         </div>
     );
 };
-// --- AKHIR KOMPONEN COUNTDOWN TIMER ---
 
 export default function PaymentPage({ auth, event, registration, serverTime }) {
     const { setData, post, processing, errors } = useForm({
@@ -98,7 +97,7 @@ export default function PaymentPage({ auth, event, registration, serverTime }) {
                             Selesaikan Pembayaran untuk "{event.nama_event}"
                         </h3>
 
-                        {/* --- Tampilan Countdown Waktu --- */}
+                        {/*  Tampilan Countdown Waktu  */}
                         <div className="mt-6 p-4 bg-red-50 border border-red-300 rounded-lg">
                             <h4 className="font-bold text-lg text-red-900 text-center">
                                 Sisa Waktu Pembayaran

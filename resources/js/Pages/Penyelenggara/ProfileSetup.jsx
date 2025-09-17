@@ -6,7 +6,6 @@ import { useState } from "react";
 
 export default function ProfileSetup({ auth, profile }) {
     const [logoPreview, setLogoPreview] = useState(profile?.logo_url || null);
-    // --- ▼▼▼ PERBAIKAN PATH PREVIEW DOKUMEN ▼▼▼ ---
     const [documentPreview, setDocumentPreview] = useState(
         profile ? `/storage/${profile.verification_document_path}` : null
     );
@@ -18,7 +17,6 @@ export default function ProfileSetup({ auth, profile }) {
         verification_document: null,
         logo: null,
     });
-    // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
 
     const handleFileChange = (e, field, setPreview) => {
         const file = e.target.files[0];
@@ -184,7 +182,6 @@ export default function ProfileSetup({ auth, profile }) {
                                         </div>
                                     </div>
                                     <div>
-                                        {/* --- ▼▼▼ PERBAIKAN LABEL & BANTUAN DI SINI ▼▼▼ --- */}
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Dokumen Verifikasi{" "}
                                             {profile
@@ -196,7 +193,6 @@ export default function ProfileSetup({ auth, profile }) {
                                                 ? "Unggah baru jika ingin mengganti."
                                                 : "Wajib diisi. Bisa berupa KTP Penanggung Jawab atau Surat Izin Usaha."}
                                         </p>
-                                        {/* --- ▲▲▲ AKHIR DARI PERBAIKAN --- */}
                                         <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition h-40 flex items-center justify-center">
                                             {documentPreview ? (
                                                 <div className="space-y-2">

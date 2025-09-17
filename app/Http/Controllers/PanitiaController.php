@@ -52,7 +52,7 @@ class PanitiaController extends Controller
         ]);
     }
 
-
+    // Mencari pendaftar berdasarkan kode pendaftaran, kode PIN, atau nama UMKM
     public function search(Request $request, Event $event)
     {
         $request->validate(['term' => 'required|string']);
@@ -72,7 +72,7 @@ class PanitiaController extends Controller
 
         return response()->json($registration);
     }
-
+    // Memproses check-in pendaftar
     public function processCheckIn(EventRegistration $registration)
     {
         // Pastikan pendaftar ini milik event yang sedang diakses panitia

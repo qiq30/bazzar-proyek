@@ -21,7 +21,7 @@ class UmkmProfile extends Model
         'status',
         'address',
         'business_type',
-        'rejection_reason', // <-- TAMBAHKAN INI
+        'rejection_reason',
     ];
 
     /**
@@ -30,8 +30,6 @@ class UmkmProfile extends Model
      * @var array
      */
     protected $appends = ['logo_url', 'qris_url'];
-
-    // ... (relasi lainnya)
 
     public function products()
     {
@@ -60,13 +58,11 @@ class UmkmProfile extends Model
         return $this->status === 'verified';
     }
 
-    // 🔽 Perubahan: Menggunakan Storage::url() untuk path yang benar
     public function getLogoUrlAttribute()
     {
         return $this->logo_path ? Storage::url($this->logo_path) : null;
     }
 
-    // 🔽 Perubahan: Menggunakan Storage::url() untuk path yang benar
     public function getQrisUrlAttribute()
     {
         return $this->qris_path ? Storage::url($this->qris_path) : null;

@@ -7,7 +7,6 @@ import { useState, useEffect } from "react";
 export default function PublishEventForm({ auth, proposals }) {
     const [selectedProposal, setSelectedProposal] = useState(null);
 
-    // --- ▼▼▼ PERUBAHAN STATE FORM ▼▼▼ ---
     // State disederhanakan, namun akan diisi lengkap oleh useEffect
     const { data, setData, post, processing, errors, reset } = useForm({
         proposal_id: "",
@@ -16,7 +15,6 @@ export default function PublishEventForm({ auth, proposals }) {
         status: "upcoming",
         // Field lain akan ditambahkan secara dinamis
     });
-    // --- ▲▲▲ AKHIR DARI PERUBAHAN ---
 
     useEffect(() => {
         if (selectedProposal) {
@@ -100,7 +98,6 @@ export default function PublishEventForm({ auth, proposals }) {
                             {selectedProposal && (
                                 <>
                                     <div className="border-t pt-6 space-y-6">
-                                        {/* --- ▼▼▼ FORM DISEMPURNAKAN DI SINI ▼▼▼ --- */}
                                         <div>
                                             <label className="block text-sm font-medium">
                                                 Nama Event (dapat disesuaikan)
@@ -210,7 +207,6 @@ export default function PublishEventForm({ auth, proposals }) {
                                                 </option>
                                             </select>
                                         </div>
-                                        {/* --- ▲▲▲ AKHIR DARI PENYEMPURNAAN --- */}
                                     </div>
                                     <div className="flex justify-end">
                                         <button

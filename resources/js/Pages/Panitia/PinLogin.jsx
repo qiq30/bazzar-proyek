@@ -1,5 +1,5 @@
 import { Head, Link, useForm } from "@inertiajs/react";
-import { FiTag, FiKey, FiLogIn, FiLoader } from "react-icons/fi"; // FiTicket diubah menjadi FiTag
+import { FiTag, FiKey, FiLogIn, FiLoader } from "react-icons/fi";
 
 export default function PinLogin({ errors }) {
     const { data, setData, post, processing } = useForm({ pin: "" });
@@ -37,12 +37,10 @@ export default function PinLogin({ errors }) {
                 <div className="text-center">
                     <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
                         <FiTag className="h-6 w-6 text-blue-600" />{" "}
-                        {/* Diubah di sini */}
                     </div>
                     <h1 className="text-2xl font-bold text-gray-900">
                         Akses Panel Panitia
                     </h1>
-                    {/* ... sisa kode tidak berubah ... */}
                     <p className="text-gray-500 mt-2">
                         Masukkan PIN 6 digit yang diberikan.
                     </p>

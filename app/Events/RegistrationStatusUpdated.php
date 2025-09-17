@@ -1,5 +1,4 @@
 <?php
-// File: app/Events/RegistrationStatusUpdated.php
 
 namespace App\Events;
 

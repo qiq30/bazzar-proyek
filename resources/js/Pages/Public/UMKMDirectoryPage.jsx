@@ -3,14 +3,13 @@
 import { Head, Link } from "@inertiajs/react";
 import { useState } from "react";
 import PublicLayout from "@/Layouts/PublicLayout";
-// --- Impor Ikon (dengan FiStore yang sudah diperbaiki) ---
 import {
     FiCalendar,
     FiMapPin,
     FiUsers,
     FiSearch,
     FiShoppingBag,
-} from "react-icons/fi"; // <-- FiStore diganti menjadi FiShoppingBag
+} from "react-icons/fi";
 
 export default function UMKMDirectoryPage({ event, umkmProfiles }) {
     const [searchTerm, setSearchTerm] = useState("");

@@ -5,7 +5,6 @@ import { Head, Link } from "@inertiajs/react";
 import { useSpring, animated } from "@react-spring/web";
 import PieChart from "@/Components/PieChart";
 import BarChart from "@/Components/BarChart";
-// --- Impor Ikon dari React-Icons ---
 import {
     FiGrid,
     FiUsers,
@@ -107,7 +106,6 @@ export default function AdminDashboard({ auth, stats, chartData }) {
                         <h3 className="text-lg font-semibold text-gray-700 mb-4">
                             Statistik Event & Proposal
                         </h3>
-                        {/* --- ▼▼▼ PERBAIKAN GRID DI SINI ▼▼▼ --- */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <AnimatedStatCard
                                 title="Total Event Diterbitkan"

@@ -26,10 +26,8 @@ class StorePaymentRejectedNotification
         $registration = $event->registration;
         $umkmUser = $registration->umkmProfile->user;
 
-        // --- ▼▼▼ PERUBAHAN DI SINI ▼▼▼ ---
         $rejectionReason = $registration->rejection_reason ?? 'Tidak ada alasan spesifik.';
         $message = "Mohon perhatian, pembayaran Anda untuk event '{$registration->event->nama_event}' ditolak. Alasan: \"{$rejectionReason}\". Silakan unggah ulang bukti bayar yang valid.";
-        // --- ▲▲▲ AKHIR DARI PERUBAHAN ---
 
         // Buat notifikasi di database
         $notification = Notification::create([

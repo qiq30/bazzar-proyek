@@ -1,5 +1,4 @@
 <?php
-// File: app/Events/ProposalSubmitted.php
 
 namespace App\Events;
 
@@ -8,7 +7,6 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-// Hapus "implements ShouldBroadcast" dari sini
 class ProposalSubmitted
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;

@@ -27,7 +27,7 @@ class StoreProposalNotification
         $admins = User::where('is_admin', true)->get();
 
         foreach ($admins as $admin) {
-            $notification = Notification::create([ // <-- 2. Simpan ke variabel $notification
+            $notification = Notification::create([
                 'user_id' => $admin->id,
                 'type' => get_class($event),
                 'data' => [

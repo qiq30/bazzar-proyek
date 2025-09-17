@@ -5,7 +5,6 @@ import { Head, useForm, Link } from "@inertiajs/react";
 import { useState } from "react";
 
 const PendingProfileView = ({ profile }) => (
-    // ... Komponen ini tidak berubah
     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
         <div className="p-6 bg-yellow-50 border-b border-yellow-200">
             <h3 className="text-2xl font-bold text-yellow-800">
@@ -296,7 +295,6 @@ const ProfileForm = ({ umkmProfile }) => {
                             </div>
                         </div>
                         <div>
-                            {/* --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ --- */}
                             <InputLabel
                                 value={`Foto KTP ${
                                     umkmProfile
@@ -309,7 +307,6 @@ const ProfileForm = ({ umkmProfile }) => {
                                     ? "Unggah baru jika ingin mengganti."
                                     : "Wajib diisi untuk verifikasi."}
                             </p>
-                            {/* --- ▲▲▲ AKHIR DARI PERBAIKAN --- */}
                             <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 text-center h-40 flex items-center justify-center">
                                 {ktpPreview ? (
                                     <img
@@ -384,7 +381,7 @@ export default function ProfileSetup({ auth, umkmProfile }) {
     );
 }
 
-// -- Helper Components --
+//  Helper Components
 const InputLabel = ({ value, className = "", children, ...props }) => (
     <label
         {...props}

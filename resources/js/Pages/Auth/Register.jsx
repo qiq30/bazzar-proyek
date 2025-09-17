@@ -1,6 +1,6 @@
 // resources/js/Pages/Auth/Register.jsx
 
-import { useEffect } from "react"; // Import useEffect
+import { useEffect } from "react";
 import GuestLayout from "@/Layouts/GuestLayout";
 import InputError from "@/Components/InputError";
 import InputLabel from "@/Components/InputLabel";
@@ -9,7 +9,6 @@ import TextInput from "@/Components/TextInput";
 import { Head, Link, useForm } from "@inertiajs/react";
 
 export default function Register() {
-    // 🔽 PERUBAHAN DI SINI 🔽
     // 1. Dapatkan role dari URL
     const params = new URLSearchParams(window.location.search);
     const role = params.get("role") || "umkm"; // Default ke 'umkm' jika tidak ada
@@ -22,7 +21,6 @@ export default function Register() {
         password_confirmation: "",
         role: role, // Tambahkan role di sini
     });
-    // 🔼 AKHIR PERUBAHAN 🔼
 
     // useEffect tidak perlu diubah, biarkan saja
     useEffect(() => {
@@ -41,8 +39,6 @@ export default function Register() {
             <Head title="Register" />
 
             <form onSubmit={submit}>
-                {/* Form input fields (name, email, password) tidak berubah */}
-                {/* ... */}
                 <div>
                     <InputLabel htmlFor="name" value="Name" />
 

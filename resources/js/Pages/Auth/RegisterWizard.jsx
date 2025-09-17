@@ -11,13 +11,11 @@ import {
     FiAlertCircle,
 } from "react-icons/fi";
 
-// Asumsi komponen ini sudah ada dari proyek Laravel Breeze/Jetstream Anda
 import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
 import InputLabel from "@/Components/InputLabel";
 import InputError from "@/Components/InputError";
 
-// --- Komponen Bantuan ---
 const Spinner = () => (
     <svg
         className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"

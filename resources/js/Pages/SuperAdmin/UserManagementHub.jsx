@@ -2,10 +2,7 @@
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link } from "@inertiajs/react";
-// Menggunakan ikon dari react-icons untuk konsistensi
 import { FiUserCheck, FiUsers, FiEye, FiUserX } from "react-icons/fi";
-
-// Komponen kartu yang didesain ulang, mirip dengan LogAktivitasHub
 const HubCard = ({ href, icon, title, description, comingSoon = false }) => {
     const cardClasses = `
         relative block p-8 bg-white border border-gray-200 rounded-lg shadow-sm 

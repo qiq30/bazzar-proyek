@@ -1,7 +1,7 @@
 // resources/js/Pages/SuperAdmin/UserManagement.jsx
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, router } from "@inertiajs/react"; // Import router
+import { Head, Link, router } from "@inertiajs/react";
 
 export default function UserManagement({ auth, users }) {
     const handleRequestImpersonate = (userId, userName) => {

@@ -107,7 +107,6 @@ export default function EventParticipantVerification({
                                                 />
                                             </td>
                                             <td className="py-4 px-6">
-                                                {/* 🔽 LOGIKA TOMBOL BARU 🔽 */}
                                                 {reg.status ===
                                                     "pembayaran_terkonfirmasi" && (
                                                     <button

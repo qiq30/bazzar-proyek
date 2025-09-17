@@ -1,8 +1,8 @@
 // resources/js/Pages/Impersonate/ImpersonationRequests.jsx
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, router } from "@inertiajs/react"; // <-- GANTI useForm menjadi router
-import React, { useState } from "react"; // <-- GANTI import React
+import { Head, Link, router } from "@inertiajs/react";
+import React, { useState } from "react";
 
 const CountdownTimer = ({ expiryTime }) => {
     const calculateTimeLeft = () => {
@@ -48,7 +48,6 @@ export default function ImpersonationRequests({
     pendingRequest,
     dashboardRoute,
 }) {
-    // --- ▼▼▼ PERUBAHAN UTAMA DI SINI ▼▼▼ ---
     const [processing, setProcessing] = useState(false);
 
     const handleResponse = (decision) => {
@@ -71,7 +70,6 @@ export default function ImpersonationRequests({
             );
         }
     };
-    // --- ▲▲▲ AKHIR DARI PERUBAHAN ▲▲▲ ---
 
     return (
         <AuthenticatedLayout

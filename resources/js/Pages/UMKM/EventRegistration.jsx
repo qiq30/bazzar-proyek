@@ -1,12 +1,11 @@
 // resources/js/Pages/UMKM/EventRegistration.jsx
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, usePage, router, useForm } from "@inertiajs/react"; // Ditambah useForm
+import { Head, Link, usePage, router, useForm } from "@inertiajs/react";
 import { useEffect, useState, useMemo, useCallback } from "react";
-import Modal from "@/Components/Modal"; // Ditambahkan
-import ReCAPTCHA from "react-google-recaptcha"; // Ditambahkan
+import Modal from "@/Components/Modal";
+import ReCAPTCHA from "react-google-recaptcha";
 
-// --- Komponen Peringatan Waktu --- (TIDAK BERUBAH)
 const TimeMismatchWarning = ({ onDismiss }) => (
     <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-md shadow-sm relative">
         <h4 className="font-bold">Peringatan Ketidaksesuaian Waktu</h4>
@@ -43,7 +42,7 @@ const TimeMismatchWarning = ({ onDismiss }) => (
     </div>
 );
 
-// Komponen ProfileActionNotice (TIDAK BERUBAH)
+// Komponen ProfileActionNotice
 const ProfileActionNotice = ({ hasProfile }) => (
     <div className="bg-white rounded-lg shadow-sm text-center p-8">
         <div className="text-yellow-500 text-6xl mb-4">⚠️</div>
@@ -68,7 +67,6 @@ const ProfileActionNotice = ({ hasProfile }) => (
     </div>
 );
 
-// --- ▼▼▼ PENAMBAHAN BARU: Komponen Modal Konfirmasi Pendaftaran ▼▼▼ ---
 const RegistrationConfirmationModal = ({
     event,
     onClose,
@@ -184,7 +182,6 @@ const RegistrationConfirmationModal = ({
         </Modal>
     );
 };
-// --- ▲▲▲ AKHIR DARI PENAMBAHAN BARU ---
 
 export default function EventRegistration({
     auth,
@@ -196,10 +193,8 @@ export default function EventRegistration({
 }) {
     const [isTimeMismatched, setIsTimeMismatched] = useState(false);
     const [showWarning, setShowWarning] = useState(false);
-    // --- ▼▼▼ PENAMBAHAN BARU ▼▼▼ ---
     const [confirmingEvent, setConfirmingEvent] = useState(null); // State untuk modal
     const { recaptcha_v2_site_key } = usePage().props;
-    // --- ▲▲▲ AKHIR DARI PENAMBAHAN BARU ---
 
     // Fungsi lama handleSafeRegisterClick dihapus karena sekarang digantikan oleh modal
 
@@ -240,7 +235,6 @@ export default function EventRegistration({
         }
     }, [auth.user]);
 
-    // --- ▼▼▼ PENAMBAHAN BARU: Fungsi untuk membuka modal ▼▼▼ ---
     const handleRegisterClick = (event) => {
         if (isTimeMismatched) {
             alert(
@@ -250,7 +244,6 @@ export default function EventRegistration({
         }
         setConfirmingEvent(event);
     };
-    // --- ▲▲▲ AKHIR DARI PENAMBAHAN BARU ---
 
     const formatRupiah = (number) => {
         if (number === null || number === undefined || number == 0)

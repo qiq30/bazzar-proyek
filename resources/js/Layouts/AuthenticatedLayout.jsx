@@ -131,7 +131,6 @@ export default function AuthenticatedLayout({ user, header, children }) {
         };
     }, [user?.id]);
 
-    // PERBAIKAN: Jika data user belum siap, jangan render apapun untuk sementara.
     // Ini akan mencegah semua error 'Cannot read properties of undefined'.
     if (!user) {
         return null;

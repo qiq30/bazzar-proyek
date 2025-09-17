@@ -44,7 +44,6 @@ class LoginRequest extends FormRequest
 
         $user = User::where('email', $this->string('email'))->first();
 
-        // --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ ---
         // Periksa apakah pengguna adalah admin atau super admin
         if ($user && ($user->is_admin || $user->is_super_admin)) {
             RateLimiter::hit($this->throttleKey());
@@ -54,7 +53,6 @@ class LoginRequest extends FormRequest
                 'email' => 'Akun ini tidak diizinkan login dari halaman ini.',
             ]);
         }
-        // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
 
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());

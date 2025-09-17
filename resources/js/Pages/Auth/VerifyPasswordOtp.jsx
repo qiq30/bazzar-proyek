@@ -58,7 +58,6 @@ export default function VerifyPasswordOtp({ email }) {
         }
     };
 
-    // --- ▼▼▼ FUNGSI BARU UNTUK BACKSPACE ▼▼▼ ---
     const handleKeyDown = (e, index) => {
         if (e.key === "Backspace") {
             e.preventDefault();
@@ -77,7 +76,6 @@ export default function VerifyPasswordOtp({ email }) {
             }
         }
     };
-    // --- ▲▲▲ AKHIR FUNGSI BARU ▲▲▲ ---
 
     const handlePaste = (e) => {
         const value = e.clipboardData.getData("text");
@@ -129,7 +127,7 @@ export default function VerifyPasswordOtp({ email }) {
                                     onChange={(e) =>
                                         handleChange(e.target, index)
                                     }
-                                    onKeyDown={(e) => handleKeyDown(e, index)} // Tambahkan event handler ini
+                                    onKeyDown={(e) => handleKeyDown(e, index)}
                                     ref={(el) =>
                                         (inputsRef.current[index] = el)
                                     }
@@ -139,7 +137,7 @@ export default function VerifyPasswordOtp({ email }) {
                                                 ? "border-red-500 focus:ring-red-500 focus:border-red-500 bg-red-50"
                                                 : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                         }`}
-                                    required // Tambahkan validasi wajib isi
+                                    required
                                 />
                             ))}
                         </div>
@@ -157,7 +155,7 @@ export default function VerifyPasswordOtp({ email }) {
                             onChange={(e) =>
                                 setData("password", e.target.value)
                             }
-                            required // --- ▼▼▼ TAMBAHKAN INI ▼▼▼
+                            required
                         />
                         <InputError
                             message={errors.password}
@@ -179,7 +177,7 @@ export default function VerifyPasswordOtp({ email }) {
                             onChange={(e) =>
                                 setData("password_confirmation", e.target.value)
                             }
-                            required // --- ▼▼▼ TAMBAHKAN INI ▼▼▼
+                            required
                         />
                         <InputError
                             message={errors.password_confirmation}

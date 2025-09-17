@@ -24,7 +24,6 @@ const Modal = ({ show, onClose, children }) => {
 export default function ProposalDetail({ auth, proposal }) {
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
 
-    // --- ▼▼▼ PERBAIKAN DI SINI: SATUKAN SEMUA AKSI DALAM SATU useForm HOOK ▼▼▼ ---
     const { data, setData, post, processing, errors, reset } = useForm({
         rejection_reason: "",
     });
@@ -52,7 +51,6 @@ export default function ProposalDetail({ auth, proposal }) {
             onSuccess: () => closeRejectModal(),
         });
     };
-    // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
 
     const formatRupiah = (number) =>
         new Intl.NumberFormat("id-ID", {

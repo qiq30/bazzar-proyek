@@ -27,7 +27,6 @@ export default function PenyelenggaraVerification({
     const [viewingProfile, setViewingProfile] = useState(null);
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
 
-    // --- ▼▼▼ PERBAIKAN DI SINI: SATUKAN SEMUA AKSI DALAM SATU useForm HOOK ▼▼▼ ---
     const { data, setData, post, processing, errors, reset } = useForm({
         rejection_reason: "",
     });
@@ -40,7 +39,6 @@ export default function PenyelenggaraVerification({
             });
         }
     };
-    // --- ▲▲▲ AKHIR DARI PERBAIKAN ---
 
     const openRejectModal = (profile) => {
         setViewingProfile(profile);

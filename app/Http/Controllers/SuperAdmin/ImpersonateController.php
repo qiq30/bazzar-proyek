@@ -15,7 +15,7 @@ class ImpersonateController extends Controller
     /**
      * Meminta izin untuk impersonasi user lain.
      */
-    public function request(User $user) // <-- UBAH NAMA METHOD DAN PARAMETER
+    public function request(User $user)
     {
         $superAdmin = Auth::user();
 
@@ -58,8 +58,6 @@ class ImpersonateController extends Controller
             abort(403, 'Akses Ditolak.');
         }
 
-        // --- ▼▼▼ PERBAIKAN UTAMA DI SINI ▼▼▼ ---
-
         // 1. Simpan ID super admin sebelum sesi berubah.
         $superAdminId = Auth::id();
         $targetUser = $impersonationRequest->targetUser;
@@ -72,8 +70,6 @@ class ImpersonateController extends Controller
 
         // 4. Setelah sesi baru dibuat, simpan ID super admin ke dalamnya.
         session(['impersonate_by' => $superAdminId]);
-
-        // --- ▲▲▲ AKHIR DARI PERBAIKAN ▲▲▲ ---
 
         // Logika redirect setelah berhasil login
         $home = match (true) {

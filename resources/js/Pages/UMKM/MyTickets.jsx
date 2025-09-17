@@ -5,7 +5,6 @@ import { Head } from "@inertiajs/react";
 import html2canvas from "html2canvas";
 import { useRef } from "react";
 
-// --- ▼▼▼ MODIFIKASI KOMPONEN E-TICKET CARD (Tampilan Baru) ▼▼▼ ---
 const ETicketCard = ({ ticket, ticketRef }) => {
     const isCheckedIn = ticket.status === "sudah_check_in";
     const bannerClass = isCheckedIn ? "bg-slate-600" : "bg-blue-600";
@@ -109,7 +108,6 @@ const ETicketCard = ({ ticket, ticketRef }) => {
         </div>
     );
 };
-// --- ▲▲▲ AKHIR DARI MODIFIKASI ---
 
 export default function MyTickets({ auth, tickets = [] }) {
     const ticketRefs = tickets.reduce((acc, ticket) => {

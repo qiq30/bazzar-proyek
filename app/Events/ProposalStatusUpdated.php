@@ -24,7 +24,7 @@ class ProposalStatusUpdated
      * Create a new event instance.
      * @param \App\Models\Event|array $proposal
      */
-    public function __construct($proposal) // <-- Hapus type-hint Event
+    public function __construct($proposal)
     {
         $this->proposal = $proposal;
     }

@@ -28,7 +28,6 @@ const AnimatedStatCard = ({
     icon,
     allowDecimal = false,
 }) => {
-    // Pastikan value adalah number untuk animasi
     const numericValue = Number(value) || 0;
 
     const { number } = useSpring({
@@ -128,7 +127,7 @@ const SectionHeader = ({ title, subtitle }) => (
     </div>
 );
 
-// --- MAIN COMPONENT ---
+// MAIN COMPONENT
 export default function Reports({
     auth,
     umkmStats,

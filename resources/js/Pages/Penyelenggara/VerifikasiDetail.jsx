@@ -2,9 +2,8 @@
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, useForm } from "@inertiajs/react";
-import { useState } from "react"; // 1. Import useState
+import { useState } from "react";
 
-// --- ▼▼▼ TAMBAHKAN KOMPONEN MODAL BARU DI SINI ▼▼▼ ---
 const Modal = ({ show, onClose, children }) => {
     if (!show) return null;
     return (
@@ -21,7 +20,6 @@ const Modal = ({ show, onClose, children }) => {
         </div>
     );
 };
-// --- ▲▲▲ AKHIR DARI PENAMBAHAN MODAL ---
 
 export default function VerifikasiDetail({ auth, registration }) {
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false); // 2. State untuk modal
@@ -36,7 +34,6 @@ export default function VerifikasiDetail({ auth, registration }) {
         nomor_stand: registration.nomor_stand || "",
     });
 
-    // --- ▼▼▼ MODIFIKASI BAGIAN FORM ACTION ▼▼▼ ---
     const {
         data: actionData,
         setData: setActionData,
@@ -45,9 +42,8 @@ export default function VerifikasiDetail({ auth, registration }) {
         errors: actionErrors,
         reset: resetAction,
     } = useForm({
-        rejection_reason: "", // Tambahkan state untuk alasan
+        rejection_reason: "",
     });
-    // --- ▲▲▲ AKHIR DARI MODIFIKASI ---
 
     const handleAssignStand = (e) => {
         e.preventDefault();
@@ -78,7 +74,6 @@ export default function VerifikasiDetail({ auth, registration }) {
         }
     };
 
-    // --- ▼▼▼ MODIFIKASI BAGIAN FUNGSI PENOLAKAN ▼▼▼ ---
     const openRejectModal = () => {
         resetAction("rejection_reason");
         setIsRejectModalOpen(true);
@@ -97,8 +92,8 @@ export default function VerifikasiDetail({ auth, registration }) {
             }
         );
     };
-    // --- ▲▲▲ AKHIR DARI MODIFIKASI ---
 
+    // Fungsi untuk format mata uang Rupiah
     const formatRupiah = (number) =>
         new Intl.NumberFormat("id-ID", {
             style: "currency",
@@ -213,7 +208,6 @@ export default function VerifikasiDetail({ auth, registration }) {
                                         </div>
                                     </form>
 
-                                    {/* --- ▼▼▼ MODIFIKASI BAGIAN TOMBOL ▼▼▼ --- */}
                                     <div className="flex space-x-4 mt-6">
                                         <button
                                             onClick={handleConfirm}
@@ -226,14 +220,13 @@ export default function VerifikasiDetail({ auth, registration }) {
                                             ✅ Konfirmasi Pembayaran
                                         </button>
                                         <button
-                                            onClick={openRejectModal} // Ganti fungsi onClick
+                                            onClick={openRejectModal}
                                             disabled={processingAction}
                                             className="w-full px-6 py-3 bg-red-600 text-white font-bold rounded-md hover:bg-red-700 disabled:opacity-50"
                                         >
                                             ❌ Tolak Pembayaran
                                         </button>
                                     </div>
-                                    {/* --- ▲▲▲ AKHIR DARI MODIFIKASI --- */}
                                     {!registration.nomor_stand && (
                                         <p className="text-xs text-center text-orange-600">
                                             Harap input dan simpan Nomor Stand
@@ -277,7 +270,6 @@ export default function VerifikasiDetail({ auth, registration }) {
                 </div>
             </AuthenticatedLayout>
 
-            {/* --- ▼▼▼ TAMBAHKAN KODE MODAL DI SINI ▼▼▼ --- */}
             <Modal show={isRejectModalOpen} onClose={closeRejectModal}>
                 <form onSubmit={handleRejectSubmit} className="space-y-4">
                     <h2 className="text-xl font-bold text-gray-900">
@@ -334,7 +326,6 @@ export default function VerifikasiDetail({ auth, registration }) {
                     </div>
                 </form>
             </Modal>
-            {/* --- ▲▲▲ AKHIR DARI KODE MODAL --- */}
         </>
     );
 }

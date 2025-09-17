@@ -2,8 +2,8 @@
 
 namespace App\Events;
 
-use App\Models\Notification; // Import model Notification
-use App\Models\User; // Import model User
+use App\Models\Notification;
+use App\Models\User;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;

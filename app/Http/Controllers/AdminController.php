@@ -9,7 +9,7 @@ use App\Events\ProposalStatusUpdated;
 use App\Models\Event;
 use App\Models\UmkmProfile;
 use App\Models\EventRegistration;
-use App\Models\User; // <-- Pastikan User model di-import
+use App\Models\User;
 use App\Events\RegistrationFinalized;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;

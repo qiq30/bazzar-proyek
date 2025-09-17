@@ -15,7 +15,7 @@ import {
     FiFileText,
 } from "react-icons/fi";
 
-// --- Komponen Kartu Statistik yang sudah diperbaiki ---
+// Komponen Kartu Statistik
 const StatCard = ({ title, value, description, icon, color }) => {
     const isCurrency = String(value).startsWith("Rp");
     const numericValue = Number(String(value).replace(/[^0-9.-]+/g, "")) || 0;
@@ -76,7 +76,7 @@ const StatCard = ({ title, value, description, icon, color }) => {
     );
 };
 
-// --- Komponen Wrapper untuk Bagian Laporan ---
+// Komponen Wrapper untuk Bagian Laporan
 const ReportSection = ({ title, subtitle, children }) => (
     <div className="bg-white overflow-hidden shadow-lg sm:rounded-xl border border-gray-100">
         <div className="p-6 border-b border-gray-200">

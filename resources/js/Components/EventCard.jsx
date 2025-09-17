@@ -56,7 +56,6 @@ export default function EventCard({ event }) {
                     {getStatusBadge(event.status)}
                 </div>
 
-                {/* --- ▼▼▼ PERUBAHAN TAMPILAN TANGGAL DI SINI ▼▼▼ --- */}
                 <div className="space-y-3 mb-4 text-sm text-gray-600">
                     <div>
                         <p className="font-semibold text-gray-700">
@@ -87,7 +86,6 @@ export default function EventCard({ event }) {
                         <span>{event.lokasi_event}</span>
                     </div>
                 </div>
-                {/* --- ▲▲▲ AKHIR DARI PERUBAHAN TANGGAL --- */}
 
                 <div className="mt-auto flex justify-between items-center">
                     <Link

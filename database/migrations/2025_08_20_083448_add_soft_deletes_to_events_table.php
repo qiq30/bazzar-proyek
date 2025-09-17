@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('events', function (Blueprint $table) {
-            $table->softDeletes(); // <-- TAMBAHKAN BARIS INI
+            $table->softDeletes();
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('events', function (Blueprint $table) {
-            $table->dropSoftDeletes(); // <-- TAMBAHKAN BARIS INI
+            $table->dropSoftDeletes();
         });
     }
 };

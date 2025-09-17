@@ -28,7 +28,6 @@ class Notification extends Model
         return $this->belongsTo(User::class);
     }
 
-    // --- ▼▼▼ TAMBAHKAN METHOD INI ▼▼▼ ---
     /**
      * Mark the notification as read.
      */
@@ -38,5 +37,4 @@ class Notification extends Model
             $this->forceFill(['read_at' => $this->freshTimestamp()])->save();
         }
     }
-    // --- ▲▲▲ AKHIR DARI PERUBAHAN ▲▲▲ ---
 }

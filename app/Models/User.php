@@ -24,8 +24,8 @@ class User extends Authenticatable
         'is_admin',
         'is_penyelenggara',
         'is_super_admin',
-        'google_id',      // <-- Tambahkan ini
-        'google_token',   // <-- Tambahkan ini
+        'google_id',
+        'google_token',
     ];
 
     /**

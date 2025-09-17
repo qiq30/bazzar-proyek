@@ -1,9 +1,9 @@
 // File: resources/js/Pages/Public/UMKMDetailPage.jsx
 
 import { Head, Link } from "@inertiajs/react";
-import PublicLayout from "@/Layouts/PublicLayout"; // <-- Gunakan layout baru
+import PublicLayout from "@/Layouts/PublicLayout";
 import QRISCard from "@/Components/QRISCard";
-import { FiUser, FiPhone, FiMapPin, FiShoppingBag } from "react-icons/fi"; // <-- Impor ikon
+import { FiUser, FiPhone, FiMapPin, FiShoppingBag } from "react-icons/fi";
 
 export default function UMKMDetailPage({ umkm }) {
     /**

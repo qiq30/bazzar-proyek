@@ -10,7 +10,6 @@ class EventRegistration extends Model
 {
     use HasFactory;
 
-    // --- ▼▼▼ PERBAIKAN DI SINI ▼▼▼ ---
     protected $fillable = [
         'event_id',
         'umkm_profile_id',
@@ -21,9 +20,8 @@ class EventRegistration extends Model
         'nomor_stand',
         'kode_pin',
         'payment_due',
-        'rejection_reason', // Tambahkan ini
+        'rejection_reason',
     ];
-    // --- ▲▲▲ AKHIR DARI PERUBAHAN ---
 
     /**
      * The attributes that should be cast.

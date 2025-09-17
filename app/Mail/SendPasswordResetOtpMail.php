@@ -45,7 +45,7 @@ class SendPasswordResetOtpMail extends Mailable
     public function content()
     {
         return new Content(
-            view: 'mail.password-reset-otp', // Kita akan buat view ini selanjutnya
+            view: 'mail.password-reset-otp',
         );
     }
 

@@ -9,12 +9,12 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
-use App\Models\User; // Tambahkan ini
-use Illuminate\Support\Facades\DB; // Tambahkan ini
-use Illuminate\Support\Facades\Hash; // Tambahkan ini
-use Illuminate\Support\Facades\Mail; // Tambahkan ini
-use App\Mail\SendPasswordResetOtpMail; // Tambahkan ini
-use Carbon\Carbon; // Tambahkan ini
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SendPasswordResetOtpMail;
+use Carbon\Carbon;
 
 class PasswordResetLinkController extends Controller
 {

@@ -174,7 +174,6 @@ export default function EventManagement({ auth, events }) {
 
                         <div className="overflow-x-auto">
                             <table className="min-w-full bg-white">
-                                {/* --- ▼▼▼ PERBAIKAN HEADER TABEL DI SINI ▼▼▼ --- */}
                                 <thead className="bg-gray-200">
                                     <tr>
                                         <th className="py-2 px-4 text-left">
@@ -194,14 +193,12 @@ export default function EventManagement({ auth, events }) {
                                         </th>
                                     </tr>
                                 </thead>
-                                {/* --- ▲▲▲ AKHIR DARI PERBAIKAN --- */}
                                 <tbody>
                                     {events.map((event) => (
                                         <tr key={event.id} className="border-b">
                                             <td className="py-2 px-4 font-medium">
                                                 {event.nama_event}
                                             </td>
-                                            {/* --- ▼▼▼ PERBAIKAN ISI TABEL DI SINI ▼▼▼ --- */}
                                             <td className="py-2 px-4 text-sm">
                                                 {new Date(
                                                     event.pendaftaran_dibuka
@@ -224,7 +221,6 @@ export default function EventManagement({ auth, events }) {
                                                     event.tanggal_selesai_acara
                                                 ).toLocaleDateString("id-ID")}
                                             </td>
-                                            {/* --- ▲▲▲ AKHIR DARI PERBAIKAN --- */}
                                             <td className="py-2 px-4">
                                                 <span
                                                     className={`px-2 py-1 text-xs font-semibold rounded-full ${

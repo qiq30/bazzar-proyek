@@ -2,7 +2,6 @@
 
 import { Link, usePage } from "@inertiajs/react";
 import { useState } from "react";
-// --- Impor ikon yang dibutuhkan ---
 import {
     FiMenu,
     FiX,
@@ -76,7 +75,6 @@ export default function PublicLayout({ children }) {
                                     </Link>
                                 </>
                             ) : (
-                                // --- ▼▼▼ PERBAIKAN DI SINI (MENU DESKTOP) ▼▼▼ ---
                                 <div className="flex items-center space-x-4">
                                     <Link
                                         href={route("login")}
@@ -103,7 +101,6 @@ export default function PublicLayout({ children }) {
                                         <span>Jadi Penyelenggara</span>
                                     </Link>
                                 </div>
-                                // --- ▲▲▲ AKHIR PERBAIKAN ---
                             )}
                         </nav>
 
@@ -150,7 +147,6 @@ export default function PublicLayout({ children }) {
                                 </Link>
                             </>
                         ) : (
-                            // --- ▼▼▼ PERBAIKAN DI SINI (MENU MOBILE) ▼▼▼ ---
                             <>
                                 <Link
                                     href={route("login")}
@@ -177,7 +173,6 @@ export default function PublicLayout({ children }) {
                                     <span>Jadi Penyelenggara</span>
                                 </Link>
                             </>
-                            // --- ▲▲▲ AKHIR PERBAIKAN ---
                         )}
                     </div>
                 )}

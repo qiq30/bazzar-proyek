@@ -2,8 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { Head, Link } from "@inertiajs/react";
 import axios from "axios";
 import { Html5QrcodeScanner } from "html5-qrcode";
-
-// --- ▼▼▼ PERUBAHAN DI SINI: MENGGUNAKAN IKON DARI REACT-ICONS/FI ▼▼▼ ---
 import {
     FiUsers,
     FiUserCheck,
@@ -13,7 +11,6 @@ import {
     FiSearch,
     FiLoader,
 } from "react-icons/fi";
-// --- ▲▲▲ AKHIR PERUBAHAN ▲▲▲ ---
 
 const Spinner = () => <FiLoader className="animate-spin h-5 w-5 text-white" />;
 
@@ -178,7 +175,6 @@ const CheckInSection = ({ event }) => {
                         disabled={isLoading || !searchTerm}
                         className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300"
                     >
-                        {/* --- ▼▼▼ PERUBAHAN IKON ▼▼▼ --- */}
                         <FiSearch className="h-5 w-5" />
                     </button>
                 </form>
@@ -191,7 +187,6 @@ const CheckInSection = ({ event }) => {
                                 : "bg-gray-200 text-gray-800"
                         }`}
                     >
-                        {/* --- ▼▼▼ PERUBAHAN IKON ▼▼▼ --- */}
                         <FiCamera className="h-5 w-5" />
                         {isScanning ? "Stop Scan" : "Mulai Scan QR Code"}
                     </button>
@@ -358,7 +353,6 @@ export default function PanitiaDashboard({ event }) {
                             as="button"
                             className="flex items-center space-x-2 px-4 py-2 bg-white/20 text-white text-sm font-semibold rounded-lg hover:bg-white/30 transition-colors"
                         >
-                            {/* --- ▼▼▼ PERUBAHAN IKON ▼▼▼ --- */}
                             <FiLogOut className="h-5 w-5" />
                             <span>Keluar</span>
                         </Link>
@@ -390,7 +384,6 @@ export default function PanitiaDashboard({ event }) {
                                 </p>
                             </div>
                             <div className="text-green-500 bg-green-100 p-3 rounded-full">
-                                {/* --- ▼▼▼ PERUBAHAN IKON ▼▼▼ --- */}
                                 <FiUserCheck className="h-8 w-8" />
                             </div>
                         </div>
@@ -406,7 +399,6 @@ export default function PanitiaDashboard({ event }) {
                                     : "text-gray-600 hover:bg-blue-50"
                             }`}
                         >
-                            {/* --- ▼▼▼ PERUBAHAN IKON ▼▼▼ --- */}
                             <FiCamera className="h-5 w-5" />
                             <span>Check-in Peserta</span>
                         </button>
@@ -418,7 +410,6 @@ export default function PanitiaDashboard({ event }) {
                                     : "text-gray-600 hover:bg-blue-50"
                             }`}
                         >
-                            {/* --- ▼▼▼ PERUBAHAN IKON ▼▼▼ --- */}
                             <FiList className="h-5 w-5" />
                             <span>Lihat Semua Peserta</span>
                         </button>

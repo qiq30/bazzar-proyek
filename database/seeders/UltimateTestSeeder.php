@@ -121,7 +121,6 @@ class UltimateTestSeeder extends Seeder
             'Night Market Kayutangi',
             'Job Fair Terbesar Banjarmasin 2025',
             'Semarak Tahun Baru di Siring 0 KM',
-            // -- 4 EVENT BARU DITAMBAHKAN --
             'Pekan Raya Banjarmasin 2025',
             'Festival Kopi & Senja di Tepi Sungai',
             'Bazar Buku dan Literasi Banua',
@@ -131,7 +130,7 @@ class UltimateTestSeeder extends Seeder
         foreach ($eventNames as $index => $eventName) {
             $eo = $allVerifiedEOs->random();
 
-            if ($index % 7 == 0) { // Skenario Draft
+            if ($index % 7 == 0) { // Skenario Konsep Awal
                 Event::create([
                     'user_id' => $eo->user_id,
                     'status_proposal' => 'draft',

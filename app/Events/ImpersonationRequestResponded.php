@@ -7,11 +7,10 @@ use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast; // <-- 1. TAMBAHKAN IMPORT
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-// 2. IMPLEMENTASIKAN ShouldBroadcast
 class ImpersonationRequestResponded implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
