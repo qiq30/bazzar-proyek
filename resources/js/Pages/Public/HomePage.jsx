@@ -5,8 +5,26 @@ import EventCard from "@/Components/EventCard";
 import { useState, useEffect } from "react";
 import PublicLayout from "@/Layouts/PublicLayout";
 import { FiSearch } from "react-icons/fi";
+import styles from "../../../css/components/AnimatedBackground.module.css";
 
-// Komponen untuk Hero Section yang dinamis
+const AnimatedBackground = () => {
+    return (
+        <ul className={styles.background}>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+        </ul>
+    );
+};
+
 const HeroSection = () => {
     const { auth } = usePage().props;
 
@@ -14,7 +32,7 @@ const HeroSection = () => {
         // Hero for guests
         return (
             <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-20">
                     <h2 className="text-4xl md:text-5xl font-bold mb-4">
                         Wadah Kreatif, Wadah Usaha
                     </h2>
@@ -59,7 +77,7 @@ const HeroSection = () => {
 
     return (
         <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-20">
                 <h2 className="text-4xl font-bold mb-4">{title}</h2>
                 <p className="text-xl mb-8 opacity-90">{description}</p>
                 <Link
@@ -78,7 +96,6 @@ export default function HomePage({ events, filters }) {
     const [status, setStatus] = useState(filters.status || "");
 
     useEffect(() => {
-        // Hindari pemanggilan ganda saat pertama kali render
         if (status !== (filters.status || "")) {
             const query = { status };
             if (search) query.search = search;
@@ -109,9 +126,11 @@ export default function HomePage({ events, filters }) {
         <PublicLayout>
             <Head title="Event Bazar UMKM - Pemko Banjarmasin" />
 
+            <AnimatedBackground />
+
             <HeroSection />
 
-            <section id="events" className="py-16">
+            <section id="events" className="py-16 bg-white">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-12">
                         <h3 className="text-3xl font-bold text-gray-900 mb-4">
@@ -123,7 +142,7 @@ export default function HomePage({ events, filters }) {
                         </p>
                     </div>
 
-                    <div className="mb-10 p-6 bg-white rounded-lg shadow-md">
+                    <div className="mb-10 p-6 bg-white rounded-lg shadow-md relative z-20">
                         <form
                             onSubmit={handleSearchSubmit}
                             className="grid md:grid-cols-3 gap-4 items-center"
