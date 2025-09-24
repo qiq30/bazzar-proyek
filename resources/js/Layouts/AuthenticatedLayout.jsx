@@ -156,7 +156,7 @@ export default function AuthenticatedLayout({ user, header, children }) {
         <div className="min-h-screen bg-gray-100 flex flex-col">
             <Toaster position="top-right" reverseOrder={false} />
             <ImpersonateBanner />
-            <nav className="bg-white border-b border-gray-100 sticky top-0 z-50">
+            <nav className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16">
                         <div className="flex">
@@ -275,44 +275,85 @@ export default function AuthenticatedLayout({ user, header, children }) {
                     </div>
                 </div>
 
+                {/* Mobile Navigation Menu - Improved Layout */}
                 <div
-                    className={
-                        (showingNavigationDropdown ? "block" : "hidden") +
-                        " sm:hidden"
-                    }
+                    className={`sm:hidden transition-all duration-300 ease-in-out overflow-hidden ${
+                        showingNavigationDropdown
+                            ? "max-h-screen opacity-100"
+                            : "max-h-0 opacity-0"
+                    }`}
                 >
-                    <div className="pt-2 pb-3 space-y-1">
-                        <ResponsiveNavLink
-                            href={getDashboardRoute()}
-                            active={isDashboardActive()}
-                        >
-                            <FiGrid className="mr-3 h-5 w-5" />
-                            Dashboard
-                        </ResponsiveNavLink>
-                    </div>
-
-                    <div className="pt-4 pb-1 border-t border-gray-200">
-                        <div className="px-4 mb-3">
-                            <div className="font-medium text-base text-gray-800">
-                                {user.name}
-                            </div>
-                            <div className="font-medium text-sm text-gray-500">
-                                {user.email}
+                    <div className="bg-white border-t border-gray-200 shadow-lg">
+                        {/* User Info Section - Moved to Top */}
+                        <div className="px-4 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
+                            <div className="flex items-center">
+                                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-500 text-white mr-4 shadow-md">
+                                    <span className="text-lg font-semibold">
+                                        {user.name.charAt(0).toUpperCase()}
+                                    </span>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="font-semibold text-lg text-gray-900 truncate">
+                                        {user.name}
+                                    </div>
+                                    <div className="text-sm text-gray-600 truncate">
+                                        {user.email}
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                    </div>
 
+                    {/* Navigation Links Section */}
+                    <div className="py-3">
+                        <div className="px-4 py-2">
+                            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                Navigasi
+                            </h3>
+                        </div>
                         <div className="space-y-1">
-                            <ResponsiveNavLink href={route("profile.edit")}>
-                                <FiUser className="mr-3 h-5 w-5" />
-                                Profile
+                            <ResponsiveNavLink
+                                href={getDashboardRoute()}
+                                active={isDashboardActive()}
+                                className="flex items-center px-4 py-3 mx-2 rounded-lg text-base font-medium transition-all duration-200 hover:bg-blue-50"
+                            >
+                                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-100 mr-3">
+                                    <FiGrid className="h-5 w-5 text-blue-600" />
+                                </div>
+                                <span className="text-gray-700">Dashboard</span>
+                            </ResponsiveNavLink>
+                        </div>
+                    </div>
+
+                    {/* Account Actions Section */}
+                    <div className="py-3 border-t border-gray-200 bg-gray-50">
+                        <div className="px-4 py-2">
+                            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                Akun
+                            </h3>
+                        </div>
+                        <div className="space-y-1">
+                            <ResponsiveNavLink
+                                href={route("profile.edit")}
+                                className="flex items-center px-4 py-3 mx-2 rounded-lg text-base font-medium transition-all duration-200 hover:bg-white hover:shadow-sm"
+                            >
+                                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-green-100 mr-3">
+                                    <FiUser className="h-5 w-5 text-green-600" />
+                                </div>
+                                <span className="text-gray-700">
+                                    Edit Profile
+                                </span>
                             </ResponsiveNavLink>
                             <ResponsiveNavLink
                                 method="post"
                                 href={route("logout")}
                                 as="button"
+                                className="flex items-center px-4 py-3 mx-2 rounded-lg text-base font-medium transition-all duration-200 w-full text-left hover:bg-red-50"
                             >
-                                <FiLogOut className="mr-3 h-5 w-5" />
-                                Log Out
+                                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-red-100 mr-3">
+                                    <FiLogOut className="h-5 w-5 text-red-600" />
+                                </div>
+                                <span className="text-gray-700">Keluar</span>
                             </ResponsiveNavLink>
                         </div>
                     </div>
