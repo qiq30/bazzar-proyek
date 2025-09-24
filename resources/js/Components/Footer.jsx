@@ -244,7 +244,7 @@ export default function Footer({ user = null }) {
                             </h3>
                             <div className="space-y-3">
                                 <a
-                                    href="https://instagram.com/pemkobanjarmasin"
+                                    href="https://instagram.com/pemko_banjarmasin"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex items-center space-x-3 p-2 rounded-lg hover:bg-white transition-colors duration-200 group"
@@ -257,12 +257,12 @@ export default function Footer({ user = null }) {
                                             Instagram
                                         </div>
                                         <div className="text-gray-500 text-xs">
-                                            @pemkobanjarmasin
+                                            @pemko_banjarmasin
                                         </div>
                                     </div>
                                 </a>
                                 <a
-                                    href="https://facebook.com/pemkobanjarmasin"
+                                    href="https://facebook.com/PemerintahKotaBanjarmasin"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex items-center space-x-3 p-2 rounded-lg hover:bg-white transition-colors duration-200 group"
@@ -280,7 +280,7 @@ export default function Footer({ user = null }) {
                                     </div>
                                 </a>
                                 <a
-                                    href="https://youtube.com/@pemkobanjarmasin"
+                                    href="https://youtube.com/@banjarmasinpostnewsvideo"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex items-center space-x-3 p-2 rounded-lg hover:bg-white transition-colors duration-200 group"
