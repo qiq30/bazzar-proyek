@@ -1,5 +1,6 @@
 // File: resources/js/Layouts/PublicLayout.jsx
 
+import Footer from "@/Components/Footer";
 import { Link, usePage } from "@inertiajs/react";
 import { useState } from "react";
 import {
@@ -243,12 +244,7 @@ export default function PublicLayout({ children }) {
 
             <main className="flex-grow">{children}</main>
 
-            <footer className="bg-white border-t mt-12">
-                <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-gray-500">
-                    &copy; {new Date().getFullYear()} Pemerintah Kota
-                    Banjarmasin. All rights reserved.
-                </div>
-            </footer>
+            <Footer user={user} />
         </div>
     );
 }
