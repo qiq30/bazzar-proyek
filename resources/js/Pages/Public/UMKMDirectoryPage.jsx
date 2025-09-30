@@ -124,7 +124,7 @@ export default function UMKMDirectoryPage({ event, umkmProfiles }) {
                                                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                             />
                                         ) : (
-                                            <FiShoppingBag className="text-gray-300 text-6xl" /> // <-- Ikon diperbaiki di sini
+                                            <FiShoppingBag className="text-gray-300 text-6xl" />
                                         )}
                                     </div>
                                     <div className="p-4">

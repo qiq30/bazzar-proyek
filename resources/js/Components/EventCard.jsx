@@ -1,6 +1,7 @@
 // resources/js/Components/EventCard.jsx
 
 import { Link } from "@inertiajs/react";
+import { FiCalendar, FiMapPin, FiChevronsRight } from "react-icons/fi";
 
 export default function EventCard({ event }) {
     const getStatusBadge = (status) => {
@@ -44,7 +45,7 @@ export default function EventCard({ event }) {
                         className="w-full h-full object-cover"
                     />
                 ) : (
-                    <div className="text-white text-6xl">🎪</div>
+                    <FiCalendar className="text-white text-6xl opacity-50" />
                 )}
             </div>
 
@@ -62,7 +63,7 @@ export default function EventCard({ event }) {
                             Jadwal Pendaftaran:
                         </p>
                         <div className="flex items-center">
-                            <span className="mr-2">📅</span>
+                            <FiCalendar className="mr-2 text-gray-500" />
                             <span>
                                 {formatDate(event.pendaftaran_dibuka)} -{" "}
                                 {formatDate(event.pendaftaran_ditutup)}
@@ -74,7 +75,7 @@ export default function EventCard({ event }) {
                             Jadwal Acara:
                         </p>
                         <div className="flex items-center">
-                            <span className="mr-2">🗓️</span>
+                            <FiCalendar className="mr-2 text-gray-500" />
                             <span>
                                 {formatDate(event.tanggal_mulai_acara)} -{" "}
                                 {formatDate(event.tanggal_selesai_acara)}
@@ -82,7 +83,7 @@ export default function EventCard({ event }) {
                         </div>
                     </div>
                     <div className="flex items-center">
-                        <span className="mr-2">📍</span>
+                        <FiMapPin className="mr-2 text-blue-600" />
                         <span>{event.lokasi_event}</span>
                     </div>
                 </div>
@@ -90,9 +91,10 @@ export default function EventCard({ event }) {
                 <div className="mt-auto flex justify-between items-center">
                     <Link
                         href={`/events/${event.id}/umkm`}
-                        className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                        className="text-blue-600 hover:text-blue-800 font-medium text-sm inline-flex items-center"
                     >
-                        Lihat Peserta UMKM →
+                        Lihat Peserta UMKM
+                        <FiChevronsRight className="ml-1" />
                     </Link>
                 </div>
             </div>
