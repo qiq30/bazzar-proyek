@@ -1,6 +1,6 @@
 // File: resources/js/Components/EventMap.jsx
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import { FiMaximize, FiMinimize } from "react-icons/fi";
@@ -14,38 +14,27 @@ L.Icon.Default.mergeOptions({
     shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
-function ResizeHandler({ isMaximized }) {
+function MapResizer({ isMaximized }) {
     const map = useMap();
+
     useEffect(() => {
         const timer = setTimeout(() => {
             map.invalidateSize();
-        }, 300);
+        }, 100);
+
         return () => clearTimeout(timer);
-    }, [isMaximized, map]);
+    }, [map, isMaximized]);
+
     return null;
 }
 
-export default function EventMap({ latitude, longitude, popupText }) {
-    const [isMaximized, setIsMaximized] = useState(false);
-    const mapContainerRef = useRef(null);
-
-    useEffect(() => {
-        const mapNode = mapContainerRef.current;
-        if (!mapNode) return;
-
-        const handleTouchMove = (e) => {
-            e.preventDefault();
-        };
-
-        mapNode.addEventListener("touchmove", handleTouchMove, {
-            passive: false,
-        });
-
-        return () => {
-            mapNode.removeEventListener("touchmove", handleTouchMove);
-        };
-    }, []);
-
+export default function EventMap({
+    latitude,
+    longitude,
+    popupText,
+    isMaximized,
+    setIsMaximized,
+}) {
     if (!latitude || !longitude) {
         return (
             <div className="p-4 text-center">Lokasi peta tidak tersedia.</div>
@@ -56,7 +45,6 @@ export default function EventMap({ latitude, longitude, popupText }) {
 
     return (
         <div
-            ref={mapContainerRef}
             className={`
             ${
                 isMaximized
@@ -70,21 +58,26 @@ export default function EventMap({ latitude, longitude, popupText }) {
                     relative w-full rounded-lg overflow-hidden transition-all duration-300
                     ${
                         isMaximized
-                            ? "w-full h-full md:w-11/12 md:h-5/6"
-                            : "h-64 md:h-80" // <-- PERUBAHAN UTAMA DI SINI
+                            ? "w-full h-full md:w-11/12 md:h-3/4"
+                            : "h-64 md:h-80"
                     }
                 `}
             >
-                {/* Tombol Maximize/Minimize */}
+                {/* --- PERUBAHAN UTAMA DI SINI --- */}
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
                         setIsMaximized(!isMaximized);
                     }}
-                    className="absolute top-2 right-2 z-[1000] bg-white p-2 rounded-md shadow-lg text-gray-700 hover:bg-gray-100 transition"
+                    // Menambahkan dimensi pasti (w-10, h-10) dan flexbox untuk centering
+                    className="absolute top-3 right-3 z-[1000] bg-white w-10 h-10 flex items-center justify-center rounded-md shadow-lg text-gray-700 hover:bg-gray-100 transition"
                     aria-label={isMaximized ? "Minimize map" : "Maximize map"}
                 >
-                    {isMaximized ? <FiMinimize /> : <FiMaximize />}
+                    {isMaximized ? (
+                        <FiMinimize className="w-5 h-5" />
+                    ) : (
+                        <FiMaximize className="w-5 h-5" />
+                    )}
                 </button>
 
                 <MapContainer
@@ -102,7 +95,7 @@ export default function EventMap({ latitude, longitude, popupText }) {
                     <Marker position={position}>
                         <Popup>{popupText || "Lokasi Event"}</Popup>
                     </Marker>
-                    <ResizeHandler isMaximized={isMaximized} />
+                    <MapResizer isMaximized={isMaximized} />
                 </MapContainer>
             </div>
         </div>

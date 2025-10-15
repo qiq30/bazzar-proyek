@@ -19,9 +19,25 @@ export default function UMKMDirectoryPage({ event, umkmProfiles }) {
     const [activeTab, setActiveTab] = useState("details");
     const [isClient, setIsClient] = useState(false);
 
+    // --- PERUBAHAN 1: State untuk peta maximize dipindahkan ke sini ---
+    const [isMapMaximized, setIsMapMaximized] = useState(false);
+
     useEffect(() => {
         setIsClient(true);
     }, []);
+
+    // --- PERUBAHAN 2: Efek untuk mengunci scroll body saat peta maximize ---
+    useEffect(() => {
+        if (isMapMaximized) {
+            document.body.classList.add("overflow-hidden");
+        } else {
+            document.body.classList.remove("overflow-hidden");
+        }
+        // Cleanup function
+        return () => {
+            document.body.classList.remove("overflow-hidden");
+        };
+    }, [isMapMaximized]);
 
     const hasCoordinates = event.latitude && event.longitude;
 
@@ -48,14 +64,13 @@ export default function UMKMDirectoryPage({ event, umkmProfiles }) {
             <Head title={`Peserta UMKM - ${event.nama_event}`} />
 
             {/* Event Header */}
-            {/* PERUBAHAN UTAMA DI SINI: Tambahkan `relative` dan `z-30` */}
             <section className="relative z-30 bg-blue-600 text-white py-12">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <h2 className="text-3xl font-bold mb-2">
+                    <h2 className="text-3xl font-bold mb-4">
                         {event.nama_event}
                     </h2>
-                    <div className="flex flex-col md:flex-row flex-wrap items-start gap-x-8 gap-y-4 text-blue-100">
-                        <div className="flex flex-col gap-y-4">
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-x-8 gap-y-4 text-blue-100">
+                        <div className="flex flex-col md:flex-row md:items-center flex-wrap gap-y-3 md:gap-x-6">
                             <span className="flex items-center gap-2">
                                 <FiCalendar />
                                 {new Date(
@@ -76,13 +91,13 @@ export default function UMKMDirectoryPage({ event, umkmProfiles }) {
                             <span className="flex items-center gap-2">
                                 <FiUsers /> {umkmProfiles.length} UMKM Terdaftar
                             </span>
-                        </div>
-                        <div className="w-full flex-1 min-w-0 md:max-w-md lg:max-w-lg">
-                            <p className="font-semibold mb-2 flex items-center gap-2">
+                            <p className="font-semibold flex items-center gap-2">
                                 <FiMapPin /> Lokasi Acara:
                             </p>
+                        </div>
+
+                        <div className="w-full md:max-w-md">
                             <div className="border border-blue-400 bg-blue-500/50 rounded-lg overflow-hidden shadow-lg">
-                                {/* Tombol Tab yang Diperbarui */}
                                 <div className="flex border-b border-blue-400">
                                     <button
                                         onClick={() => setActiveTab("details")}
@@ -108,8 +123,7 @@ export default function UMKMDirectoryPage({ event, umkmProfiles }) {
                                     )}
                                 </div>
 
-                                {/* Konten Tab */}
-                                <div className="p-4 bg-white text-gray-800 min-h-[100px]">
+                                <div className="p-4 bg-white text-gray-800 min-h-[150px]">
                                     {activeTab === "details" && (
                                         <p>{event.lokasi_event}</p>
                                     )}
@@ -120,6 +134,11 @@ export default function UMKMDirectoryPage({ event, umkmProfiles }) {
                                                 latitude={event.latitude}
                                                 longitude={event.longitude}
                                                 popupText={event.nama_event}
+                                                // --- PERUBAHAN 3: Kirim state dan function ke komponen EventMap ---
+                                                isMaximized={isMapMaximized}
+                                                setIsMaximized={
+                                                    setIsMapMaximized
+                                                }
                                             />
                                         )}
                                     {activeTab === "map" &&
@@ -136,8 +155,12 @@ export default function UMKMDirectoryPage({ event, umkmProfiles }) {
                 </div>
             </section>
 
-            {/* Search & Filter (Sticky) */}
-            <section className="sticky top-[88px] bg-white shadow-sm border-b z-40">
+            {/* --- PERUBAHAN 4: Sembunyikan section ini jika peta maximize --- */}
+            <section
+                className={`sticky top-[88px] bg-white shadow-sm border-b z-40 ${
+                    isMapMaximized ? "hidden" : ""
+                }`}
+            >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex flex-col md:flex-row gap-4">
                         <div className="relative flex-1">
