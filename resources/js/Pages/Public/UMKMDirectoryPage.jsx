@@ -1,7 +1,7 @@
 // File: resources/js/Pages/Public/UMKMDirectoryPage.jsx
 
 import { Head, Link } from "@inertiajs/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PublicLayout from "@/Layouts/PublicLayout";
 import {
     FiCalendar,
@@ -10,10 +10,20 @@ import {
     FiSearch,
     FiShoppingBag,
 } from "react-icons/fi";
+import EventMap from "@/Components/EventMap";
+import "leaflet/dist/leaflet.css";
 
 export default function UMKMDirectoryPage({ event, umkmProfiles }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedType, setSelectedType] = useState("");
+    const [activeTab, setActiveTab] = useState("details");
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    const hasCoordinates = event.latitude && event.longitude;
 
     const filteredUmkm = umkmProfiles.filter((umkm) => {
         const matchesSearch =
@@ -38,35 +48,90 @@ export default function UMKMDirectoryPage({ event, umkmProfiles }) {
             <Head title={`Peserta UMKM - ${event.nama_event}`} />
 
             {/* Event Header */}
-            <section className="bg-blue-600 text-white py-12">
+            {/* PERUBAHAN UTAMA DI SINI: Tambahkan `relative` dan `z-30` */}
+            <section className="relative z-30 bg-blue-600 text-white py-12">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <h2 className="text-3xl font-bold mb-2">
                         {event.nama_event}
                     </h2>
-                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-blue-100">
-                        <span className="flex items-center gap-2">
-                            <FiCalendar />
-                            {new Date(
-                                event.tanggal_mulai_acara
-                            ).toLocaleDateString("id-ID", {
-                                day: "numeric",
-                                month: "long",
-                            })}{" "}
-                            -{" "}
-                            {new Date(
-                                event.tanggal_selesai_acara
-                            ).toLocaleDateString("id-ID", {
-                                day: "numeric",
-                                month: "long",
-                                year: "numeric",
-                            })}
-                        </span>
-                        <span className="flex items-center gap-2">
-                            <FiMapPin /> {event.lokasi_event}
-                        </span>
-                        <span className="flex items-center gap-2">
-                            <FiUsers /> {umkmProfiles.length} UMKM Terdaftar
-                        </span>
+                    <div className="flex flex-col md:flex-row flex-wrap items-start gap-x-8 gap-y-4 text-blue-100">
+                        <div className="flex flex-col gap-y-4">
+                            <span className="flex items-center gap-2">
+                                <FiCalendar />
+                                {new Date(
+                                    event.tanggal_mulai_acara
+                                ).toLocaleDateString("id-ID", {
+                                    day: "numeric",
+                                    month: "long",
+                                })}{" "}
+                                -{" "}
+                                {new Date(
+                                    event.tanggal_selesai_acara
+                                ).toLocaleDateString("id-ID", {
+                                    day: "numeric",
+                                    month: "long",
+                                    year: "numeric",
+                                })}
+                            </span>
+                            <span className="flex items-center gap-2">
+                                <FiUsers /> {umkmProfiles.length} UMKM Terdaftar
+                            </span>
+                        </div>
+                        <div className="w-full flex-1 min-w-0 md:max-w-md lg:max-w-lg">
+                            <p className="font-semibold mb-2 flex items-center gap-2">
+                                <FiMapPin /> Lokasi Acara:
+                            </p>
+                            <div className="border border-blue-400 bg-blue-500/50 rounded-lg overflow-hidden shadow-lg">
+                                {/* Tombol Tab yang Diperbarui */}
+                                <div className="flex border-b border-blue-400">
+                                    <button
+                                        onClick={() => setActiveTab("details")}
+                                        className={`flex-1 p-3 text-sm font-medium text-center transition-colors duration-200 ${
+                                            activeTab === "details"
+                                                ? "text-white border-b-2 border-white"
+                                                : "text-blue-200 hover:text-white"
+                                        }`}
+                                    >
+                                        Detail Alamat
+                                    </button>
+                                    {hasCoordinates && (
+                                        <button
+                                            onClick={() => setActiveTab("map")}
+                                            className={`flex-1 p-3 text-sm font-medium text-center transition-colors duration-200 ${
+                                                activeTab === "map"
+                                                    ? "text-white border-b-2 border-white"
+                                                    : "text-blue-200 hover:text-white"
+                                            }`}
+                                        >
+                                            Lihat Peta
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* Konten Tab */}
+                                <div className="p-4 bg-white text-gray-800 min-h-[100px]">
+                                    {activeTab === "details" && (
+                                        <p>{event.lokasi_event}</p>
+                                    )}
+                                    {activeTab === "map" &&
+                                        hasCoordinates &&
+                                        isClient && (
+                                            <EventMap
+                                                latitude={event.latitude}
+                                                longitude={event.longitude}
+                                                popupText={event.nama_event}
+                                            />
+                                        )}
+                                    {activeTab === "map" &&
+                                        hasCoordinates &&
+                                        !isClient && (
+                                            <div className="text-center p-4">
+                                                Memuat peta...
+                                            </div>
+                                        )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>

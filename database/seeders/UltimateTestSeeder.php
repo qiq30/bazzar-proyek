@@ -127,8 +127,17 @@ class UltimateTestSeeder extends Seeder
             'Kompetisi E-Sports & UMKM Gaming',
         ];
 
+        $locations = [
+            'Siring 0 KM' => ['latitude' => -3.3170, 'longitude' => 114.5912],
+            'Taman Kamboja' => ['latitude' => -3.3220, 'longitude' => 114.5900],
+            'Duta Mall' => ['latitude' => -3.323358, 'longitude' => 114.603555],
+        ];
+
         foreach ($eventNames as $index => $eventName) {
             $eo = $allVerifiedEOs->random();
+            $lokasi = array_rand($locations);
+            $coords = $locations[$lokasi];
+
 
             if ($index % 7 == 0) { // Skenario Konsep Awal
                 Event::create([
@@ -137,6 +146,8 @@ class UltimateTestSeeder extends Seeder
                     'nama_event' => $eventName . ' (Konsep Awal)',
                     'deskripsi_event' => 'Deskripsi akan diisi.',
                     'lokasi_event' => 'Akan ditentukan',
+                    'latitude' => null,
+                    'longitude' => null,
                     'tanggal_mulai_acara' => now()->addYear(),
                     'tanggal_selesai_acara' => now()->addYear()->addDay(),
                     'kuota_umkm' => 0,
@@ -154,7 +165,9 @@ class UltimateTestSeeder extends Seeder
                     'user_id' => $eo->user_id,
                     'nama_event' => $eventName,
                     'deskripsi_event' => "Proposal lengkap untuk event '{$eventName}'.",
-                    'lokasi_event' => collect(['Siring 0 KM', 'Taman Kamboja'])->random(),
+                    'lokasi_event' => $lokasi,
+                    'latitude' => $coords['latitude'],
+                    'longitude' => $coords['longitude'],
                     'tanggal_mulai_acara' => now()->addDays(rand(45, 90)),
                     'tanggal_selesai_acara' => now()->addDays(rand(91, 100)),
                     'status_proposal' => 'menunggu_persetujuan',
@@ -175,7 +188,9 @@ class UltimateTestSeeder extends Seeder
                 'nama_event' => $eventName,
                 'deskripsi_event' => "Event meriah untuk para UMKM dan masyarakat Banjarmasin.",
                 'poster_event' => 'seeders/poster_event_' . rand(1, 4) . '.jpg',
-                'lokasi_event' => collect(['Siring 0 KM', 'Taman Kamboja', 'Duta Mall'])->random(),
+                'lokasi_event' => $lokasi,
+                'latitude' => $coords['latitude'],
+                'longitude' => $coords['longitude'],
                 'biaya_pendaftaran_umkm' => (rand(0, 3) == 0) ? 0 : rand(5, 25) * 10000,
                 'kuota_umkm' => rand(30, 100),
                 'nama_bank_penyelenggara' => ['Bank Kalsel', 'BRI', 'BCA'][rand(0, 2)],

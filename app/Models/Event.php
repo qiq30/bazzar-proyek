@@ -41,6 +41,8 @@ class Event extends Model
         'document_rejection_reason',
         'status',
         'panitia_pin',
+        'latitude',
+        'longitude',
     ];
 
     /**

@@ -20,6 +20,8 @@ use App\Events\ProposalStep1Submitted;
 use App\Models\Notification;
 use App\Events\NotificationReceived;
 use App\Events\RegistrationFinalized;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class PenyelenggaraController extends Controller
 {
@@ -121,6 +123,32 @@ class PenyelenggaraController extends Controller
         ]);
 
         $updateData = $request->except('poster_event'); // Ambil semua data kecuali poster
+        $address = $request->input('lokasi_event');
+        $latitude = null;
+        $longitude = null;
+
+        try {
+            $response = Http::get('https://nominatim.openstreetmap.org/search', [
+                'q' => $address,
+                'format' => 'json',
+                'limit' => 1,
+                'email' => 'sniqi87@gmail.com'
+            ]);
+
+            if ($response->successful() && count($response->json()) > 0) {
+                $locationData = $response->json()[0];
+                $latitude = (float) $locationData['lat'];
+                $longitude = (float) $locationData['lon'];
+            }
+        } catch (\Exception $e) {
+            // Jika API gagal, catat errornya tapi jangan hentikan proses.
+            // Event tetap bisa dibuat, hanya saja petanya tidak akan muncul.
+            Log::error('Nominatim Geocoding API request failed: ' . $e->getMessage());
+        }
+
+        // Tambahkan latitude dan longitude ke data yang akan di-update
+        $updateData['latitude'] = $latitude;
+        $updateData['longitude'] = $longitude;
 
         if ($request->hasFile('poster_event')) {
             // Hapus poster lama jika ada
@@ -134,7 +162,7 @@ class PenyelenggaraController extends Controller
         // Set status kembali menjadi 'menunggu_persetujuan'
         $updateData['status_proposal'] = 'menunggu_persetujuan';
 
-        $event->update($updateData);
+        $event->update($updateData); // Data koordinat akan tersimpan di sini
 
         $event->load('user');
 
