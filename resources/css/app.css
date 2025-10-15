@@ -100,3 +100,7 @@ textarea:focus {
 .grecaptcha-badge {
     visibility: hidden !important;
 }
+.leaflet-control-container .leaflet-top.leaflet-left {
+    top: 155px !important;
+    transition: top 0.3s ease-in-out;
+}

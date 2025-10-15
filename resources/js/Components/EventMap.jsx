@@ -4,8 +4,6 @@ import React, { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import { FiMaximize, FiMinimize } from "react-icons/fi";
-
-// Mengatasi masalah ikon default di React-Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl:
@@ -63,23 +61,6 @@ export default function EventMap({
                     }
                 `}
             >
-                {/* --- PERUBAHAN UTAMA DI SINI --- */}
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        setIsMaximized(!isMaximized);
-                    }}
-                    // Menambahkan dimensi pasti (w-10, h-10) dan flexbox untuk centering
-                    className="absolute top-3 right-3 z-[1000] bg-white w-10 h-10 flex items-center justify-center rounded-md shadow-lg text-gray-700 hover:bg-gray-100 transition"
-                    aria-label={isMaximized ? "Minimize map" : "Maximize map"}
-                >
-                    {isMaximized ? (
-                        <FiMinimize className="w-5 h-5" />
-                    ) : (
-                        <FiMaximize className="w-5 h-5" />
-                    )}
-                </button>
-
                 <MapContainer
                     center={position}
                     zoom={15}
@@ -97,6 +78,21 @@ export default function EventMap({
                     </Marker>
                     <MapResizer isMaximized={isMaximized} />
                 </MapContainer>
+
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setIsMaximized(!isMaximized);
+                    }}
+                    className="absolute top-[180px] right-3 z-[1001] bg-white w-10 h-10 flex items-center justify-center rounded-md shadow-lg text-gray-700 hover:bg-gray-100 transition"
+                    aria-label={isMaximized ? "Minimize map" : "Maximize map"}
+                >
+                    {isMaximized ? (
+                        <FiMinimize className="w-5 h-5" />
+                    ) : (
+                        <FiMaximize className="w-5 h-5" />
+                    )}
+                </button>
             </div>
         </div>
     );

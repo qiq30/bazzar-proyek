@@ -19,21 +19,18 @@ export default function UMKMDirectoryPage({ event, umkmProfiles }) {
     const [activeTab, setActiveTab] = useState("details");
     const [isClient, setIsClient] = useState(false);
 
-    // --- PERUBAHAN 1: State untuk peta maximize dipindahkan ke sini ---
     const [isMapMaximized, setIsMapMaximized] = useState(false);
 
     useEffect(() => {
         setIsClient(true);
     }, []);
 
-    // --- PERUBAHAN 2: Efek untuk mengunci scroll body saat peta maximize ---
     useEffect(() => {
         if (isMapMaximized) {
             document.body.classList.add("overflow-hidden");
         } else {
             document.body.classList.remove("overflow-hidden");
         }
-        // Cleanup function
         return () => {
             document.body.classList.remove("overflow-hidden");
         };
@@ -134,7 +131,6 @@ export default function UMKMDirectoryPage({ event, umkmProfiles }) {
                                                 latitude={event.latitude}
                                                 longitude={event.longitude}
                                                 popupText={event.nama_event}
-                                                // --- PERUBAHAN 3: Kirim state dan function ke komponen EventMap ---
                                                 isMaximized={isMapMaximized}
                                                 setIsMaximized={
                                                     setIsMapMaximized
@@ -155,7 +151,6 @@ export default function UMKMDirectoryPage({ event, umkmProfiles }) {
                 </div>
             </section>
 
-            {/* --- PERUBAHAN 4: Sembunyikan section ini jika peta maximize --- */}
             <section
                 className={`sticky top-[88px] bg-white shadow-sm border-b z-40 ${
                     isMapMaximized ? "hidden" : ""
