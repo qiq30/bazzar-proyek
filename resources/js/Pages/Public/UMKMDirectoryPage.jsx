@@ -1,5 +1,3 @@
-// File: resources/js/Pages/Public/UMKMDirectoryPage.jsx
-
 import { Head, Link } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import PublicLayout from "@/Layouts/PublicLayout";
@@ -16,7 +14,6 @@ import "leaflet/dist/leaflet.css";
 export default function UMKMDirectoryPage({ event, umkmProfiles }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedType, setSelectedType] = useState("");
-    const [activeTab, setActiveTab] = useState("details");
     const [isClient, setIsClient] = useState(false);
 
     const [isMapMaximized, setIsMapMaximized] = useState(false);
@@ -61,99 +58,107 @@ export default function UMKMDirectoryPage({ event, umkmProfiles }) {
             <Head title={`Peserta UMKM - ${event.nama_event}`} />
 
             {/* Event Header */}
-            <section className="relative z-30 bg-blue-600 text-white py-12">
+            <section
+                className={`relative bg-blue-600 text-white py-12 ${
+                    isMapMaximized ? "hidden" : "z-30"
+                }`}
+            >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <h2 className="text-3xl font-bold mb-4">
                         {event.nama_event}
                     </h2>
-                    <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-x-8 gap-y-4 text-blue-100">
-                        <div className="flex flex-col md:flex-row md:items-center flex-wrap gap-y-3 md:gap-x-6">
-                            <span className="flex items-center gap-2">
-                                <FiCalendar />
-                                {new Date(
-                                    event.tanggal_mulai_acara
-                                ).toLocaleDateString("id-ID", {
-                                    day: "numeric",
-                                    month: "long",
-                                })}{" "}
-                                -{" "}
-                                {new Date(
-                                    event.tanggal_selesai_acara
-                                ).toLocaleDateString("id-ID", {
-                                    day: "numeric",
-                                    month: "long",
-                                    year: "numeric",
-                                })}
-                            </span>
-                            <span className="flex items-center gap-2">
-                                <FiUsers /> {umkmProfiles.length} UMKM Terdaftar
-                            </span>
-                            <p className="font-semibold flex items-center gap-2">
-                                <FiMapPin /> Lokasi Acara:
-                            </p>
-                        </div>
-
-                        <div className="w-full md:max-w-md">
-                            <div className="border border-blue-400 bg-blue-500/50 rounded-lg overflow-hidden shadow-lg">
-                                <div className="flex border-b border-blue-400">
-                                    <button
-                                        onClick={() => setActiveTab("details")}
-                                        className={`flex-1 p-3 text-sm font-medium text-center transition-colors duration-200 ${
-                                            activeTab === "details"
-                                                ? "text-white border-b-2 border-white"
-                                                : "text-blue-200 hover:text-white"
-                                        }`}
-                                    >
-                                        Detail Alamat
-                                    </button>
-                                    {hasCoordinates && (
-                                        <button
-                                            onClick={() => setActiveTab("map")}
-                                            className={`flex-1 p-3 text-sm font-medium text-center transition-colors duration-200 ${
-                                                activeTab === "map"
-                                                    ? "text-white border-b-2 border-white"
-                                                    : "text-blue-200 hover:text-white"
-                                            }`}
-                                        >
-                                            Lihat Peta
-                                        </button>
-                                    )}
-                                </div>
-
-                                <div className="p-4 bg-white text-gray-800 min-h-[150px]">
-                                    {activeTab === "details" && (
-                                        <p>{event.lokasi_event}</p>
-                                    )}
-                                    {activeTab === "map" &&
-                                        hasCoordinates &&
-                                        isClient && (
-                                            <EventMap
-                                                latitude={event.latitude}
-                                                longitude={event.longitude}
-                                                popupText={event.nama_event}
-                                                isMaximized={isMapMaximized}
-                                                setIsMaximized={
-                                                    setIsMapMaximized
-                                                }
-                                            />
-                                        )}
-                                    {activeTab === "map" &&
-                                        hasCoordinates &&
-                                        !isClient && (
-                                            <div className="text-center p-4">
-                                                Memuat peta...
-                                            </div>
-                                        )}
-                                </div>
-                            </div>
-                        </div>
+                    <div className="flex flex-col md:flex-row md:items-center flex-wrap gap-y-3 md:gap-x-8 text-blue-100">
+                        <span className="flex items-center gap-2">
+                            <FiCalendar />
+                            {new Date(
+                                event.tanggal_mulai_acara
+                            ).toLocaleDateString("id-ID", {
+                                day: "numeric",
+                                month: "long",
+                            })}{" "}
+                            -{" "}
+                            {new Date(
+                                event.tanggal_selesai_acara
+                            ).toLocaleDateString("id-ID", {
+                                day: "numeric",
+                                month: "long",
+                                year: "numeric",
+                            })}
+                        </span>
+                        <span className="flex items-center gap-2">
+                            <FiUsers /> {umkmProfiles.length} UMKM Terdaftar
+                        </span>
+                        <span className="flex items-center gap-2">
+                            <FiMapPin /> {event.lokasi_event}
+                        </span>
                     </div>
                 </div>
             </section>
 
+            {/* Map Section */}
+            {hasCoordinates && (
+                <section
+                    className={`relative ${
+                        isMapMaximized
+                            ? "fixed inset-0 z-50 bg-gray-50"
+                            : "bg-gray-50 border-b z-20"
+                    }`}
+                >
+                    <div
+                        className={`${
+                            isMapMaximized
+                                ? "h-full w-full"
+                                : "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6"
+                        }`}
+                    >
+                        <div
+                            className={`bg-white overflow-hidden ${
+                                isMapMaximized
+                                    ? "h-full w-full"
+                                    : "rounded-lg shadow-md"
+                            }`}
+                        >
+                            <div className="bg-blue-500 text-white px-4 py-3">
+                                <h3 className="font-semibold flex items-center gap-2">
+                                    <FiMapPin /> Lokasi Event
+                                </h3>
+                            </div>
+                            {isClient ? (
+                                <div
+                                    className={
+                                        isMapMaximized
+                                            ? "h-[calc(100%-52px)]"
+                                            : "h-[265px] sm:h-[300px] lg:h-[330px]"
+                                    }
+                                >
+                                    <EventMap
+                                        latitude={event.latitude}
+                                        longitude={event.longitude}
+                                        popupText={event.nama_event}
+                                        isMaximized={isMapMaximized}
+                                        setIsMaximized={setIsMapMaximized}
+                                    />
+                                </div>
+                            ) : (
+                                <div
+                                    className={`flex items-center justify-center text-gray-500 ${
+                                        isMapMaximized
+                                            ? "h-[calc(100%-52px)]"
+                                            : "h-[250px] sm:h-[300px] lg:h-[350px]"
+                                    }`}
+                                >
+                                    Memuat peta...
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            {/* Search and Filter */}
             <section
-                className={`sticky top-[88px] bg-white shadow-sm border-b z-40 ${
-                    isMapMaximized ? "hidden" : ""
+                className={`sticky top-[88px] bg-white shadow-sm border-b ${
+                    isMapMaximized ? "hidden" : "z-40"
                 }`}
             >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -189,7 +194,7 @@ export default function UMKMDirectoryPage({ event, umkmProfiles }) {
             </section>
 
             {/* UMKM Grid */}
-            <section className="py-8">
+            <section className={`py-8 ${isMapMaximized ? "hidden" : ""}`}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {filteredUmkm.length > 0 ? (
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

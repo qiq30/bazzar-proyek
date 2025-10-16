@@ -3,7 +3,8 @@
 import React, { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
-import { FiMaximize, FiMinimize } from "react-icons/fi";
+import { FiMaximize, FiMinimize, FiNavigation } from "react-icons/fi";
+
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl:
@@ -24,6 +25,31 @@ function MapResizer({ isMaximized }) {
     }, [map, isMaximized]);
 
     return null;
+}
+
+function ZoomToLocation({ latitude, longitude }) {
+    const map = useMap();
+
+    const handleZoomToLocation = () => {
+        map.setView([latitude, longitude], 15, {
+            animate: true,
+            duration: 1,
+        });
+    };
+
+    return (
+        <button
+            onClick={(e) => {
+                e.stopPropagation();
+                handleZoomToLocation();
+            }}
+            className="absolute top-[130px] right-3 z-[1001] bg-white w-10 h-10 flex items-center justify-center rounded-md shadow-lg text-gray-700 hover:bg-gray-100 transition"
+            aria-label="Zoom to location"
+            title="Zoom ke lokasi"
+        >
+            <FiNavigation className="w-5 h-5" />
+        </button>
+    );
 }
 
 export default function EventMap({
@@ -77,6 +103,7 @@ export default function EventMap({
                         <Popup>{popupText || "Lokasi Event"}</Popup>
                     </Marker>
                     <MapResizer isMaximized={isMaximized} />
+                    <ZoomToLocation latitude={latitude} longitude={longitude} />
                 </MapContainer>
 
                 <button
