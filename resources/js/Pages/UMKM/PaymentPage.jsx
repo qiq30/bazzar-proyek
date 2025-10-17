@@ -70,7 +70,8 @@ export default function PaymentPage({ auth, event, registration, serverTime }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route("umkm.events.uploadProof", registration.id));
+        // Menggunakan hashid, bukan id biasa, untuk route parameter
+        post(route("umkm.events.uploadProof", registration.hashid));
     };
 
     const formatRupiah = (number) =>
@@ -97,7 +98,7 @@ export default function PaymentPage({ auth, event, registration, serverTime }) {
                             Selesaikan Pembayaran untuk "{event.nama_event}"
                         </h3>
 
-                        {/*  Tampilan Countdown Waktu  */}
+                        {/* Tampilan Countdown Waktu  */}
                         <div className="mt-6 p-4 bg-red-50 border border-red-300 rounded-lg">
                             <h4 className="font-bold text-lg text-red-900 text-center">
                                 Sisa Waktu Pembayaran

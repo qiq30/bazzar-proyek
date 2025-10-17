@@ -271,15 +271,29 @@ export default function Login({ status, canResetPassword }) {
                                         <span>Login Google</span>
                                     </a>
 
-                                    {/*  TAUTAN REGISTRASI */}
                                     <div className="mt-6 text-center text-sm text-gray-600">
-                                        Belum punya akun?{""}
-                                        <Link
-                                            href={route("register.wizard")}
-                                            className="font-medium text-blue-600 hover:underline"
-                                        >
-                                            Daftar di sini
-                                        </Link>
+                                        Belum punya akun?
+                                        <div className="mt-2 flex flex-col sm:flex-row justify-center gap-2 sm:gap-4">
+                                            <Link
+                                                href={route("register.start", {
+                                                    role: "umkm",
+                                                })}
+                                                className="font-medium text-blue-600 hover:underline"
+                                            >
+                                                Daftar sebagai UMKM
+                                            </Link>
+                                            <span className="hidden sm:inline text-gray-400">
+                                                |
+                                            </span>
+                                            <Link
+                                                href={route("register.start", {
+                                                    role: "penyelenggara",
+                                                })}
+                                                className="font-medium text-purple-600 hover:underline"
+                                            >
+                                                Daftar sebagai Penyelenggara
+                                            </Link>
+                                        </div>
                                     </div>
                                 </motion.div>
                             </div>

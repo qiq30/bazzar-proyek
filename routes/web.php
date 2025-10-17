@@ -27,7 +27,11 @@ Route::get('/auth/google/callback', [SocialiteController::class, 'callback'])->n
 
 // RUTE WIZARD REGISTRASI
 Route::middleware('guest')->group(function () {
-    Route::get('/register', [RegistrationWizardController::class, 'showSteps'])->name('register.wizard');
+    // Rute baru untuk memulai sesi dan mendapatkan token
+    Route::get('/register/start', [RegistrationWizardController::class, 'start'])->name('register.start');
+
+    // Rute wizard sekarang menggunakan token
+    Route::get('/register/{token}', [RegistrationWizardController::class, 'showSteps'])->name('register.wizard');
 
     Route::post('/register-step-1', [RegistrationWizardController::class, 'storeStep1'])
         ->middleware('throttle:5,1')
@@ -173,7 +177,7 @@ Route::middleware(['auth', 'verified', 'penyelenggara'])->prefix('penyelenggara'
     Route::post('/verifikasi-pendaftar/{registration:hashid}/confirm', [PenyelenggaraController::class, 'confirmPayment'])->name('pendaftar.verifikasi.confirm');
     Route::post('/verifikasi-pendaftar/{registration:hashid}/reject', [PenyelenggaraController::class, 'rejectPayment'])->name('pendaftar.verifikasi.reject');
     Route::post('/verifikasi-pendaftar/{registration:hashid}/assign-stand', [PenyelenggaraController::class, 'assignStandNumber'])->name('pendaftar.verifikasi.assignStand');
-    Route::get('/proposals/{event:hashid}', [PenyelenggaraController::class, 'showProposal'])->name('proposals.show')->withTrashed();
+    Route::get('/proposals/{event}', [PenyelenggaraController::class, 'showProposal'])->name('proposals.show')->withTrashed();
 });
 
 // PANITIA ROUTES

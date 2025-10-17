@@ -1,3 +1,5 @@
+// resources/js/Pages/Auth/RegisterWizard.jsx
+
 import { useState, useEffect } from "react";
 import { Head, useForm, Link, usePage } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -133,7 +135,6 @@ const FileUpload = ({
     </div>
 );
 
-// --- Komponen Langkah (Steps) ---
 const formVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -157,7 +158,7 @@ const inputVariants = {
     },
 };
 
-const Step1Account = ({ data, setData, errors, requiredFields }) => {
+const Step1Account = ({ data, setData, errors, requiredFields, role }) => {
     const isFieldInvalid = (field) => {
         return (
             requiredFields.includes(field) &&
@@ -180,6 +181,14 @@ const Step1Account = ({ data, setData, errors, requiredFields }) => {
                 <p className="mt-2 text-gray-600">
                     Mulai perjalanan Anda bersama kami.
                 </p>
+                <div className="mt-4 inline-block bg-blue-50 text-blue-700 font-semibold px-4 py-2 rounded-lg text-sm">
+                    Anda mendaftar sebagai{" "}
+                    <strong>
+                        {role === "umkm"
+                            ? "Pelaku UMKM"
+                            : "Penyelenggara Event"}
+                    </strong>
+                </div>
             </motion.div>
 
             <motion.div variants={inputVariants}>
@@ -318,6 +327,9 @@ const Step2UmkmProfile = ({
                 <p className="mt-2 text-gray-600">
                     Ceritakan lebih banyak tentang usaha Anda.
                 </p>
+                <div className="mt-4 inline-block bg-blue-50 text-blue-700 font-semibold px-4 py-2 rounded-lg text-sm">
+                    Anda mendaftar sebagai <strong>Pelaku UMKM</strong>
+                </div>
             </motion.div>
 
             <div className="space-y-4">
@@ -496,6 +508,9 @@ const Step2PenyelenggaraProfile = ({
                 <p className="mt-2 text-gray-600">
                     Lengkapi informasi instansi Anda.
                 </p>
+                <div className="mt-4 inline-block bg-blue-50 text-blue-700 font-semibold px-4 py-2 rounded-lg text-sm">
+                    Anda mendaftar sebagai <strong>Penyelenggara Event</strong>
+                </div>
             </motion.div>
 
             <div className="space-y-4">
@@ -603,13 +618,13 @@ const Step2PenyelenggaraProfile = ({
 
 // --- Komponen Wizard Utama ---
 export default function RegisterWizard({ role, initialStep }) {
-    const { recaptcha_v3_site_key } = usePage().props;
+    const { recaptcha_v3_site_key, errors } = usePage().props;
     const [logoPreview, setLogoPreview] = useState(null);
     const [ktpPreview, setKtpPreview] = useState(null);
     const [docPreview, setDocPreview] = useState(null);
     const [requiredFields, setRequiredFields] = useState([]);
 
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, processing } = useForm({
         name: "",
         email: "",
         password: "",
@@ -626,9 +641,7 @@ export default function RegisterWizard({ role, initialStep }) {
         verification_document: null,
     });
 
-    // Hook ini akan berjalan SETIAP KALI 'g-recaptcha-response' berubah
     useEffect(() => {
-        // Hanya jalankan post jika token sudah terisi (bukan saat inisialisasi)
         if (data["g-recaptcha-response"]) {
             if (initialStep === 1) {
                 post(route("register.wizard.step1"));
@@ -638,9 +651,8 @@ export default function RegisterWizard({ role, initialStep }) {
                 });
             }
         }
-    }, [data["g-recaptcha-response"]]); // Dependency array: pantau perubahan token
+    }, [data["g-recaptcha-response"]]);
 
-    // Update required fields based on step and role
     useEffect(() => {
         if (initialStep === 1) {
             setRequiredFields([
@@ -686,9 +698,6 @@ export default function RegisterWizard({ role, initialStep }) {
 
     const handleFormSubmit = (e) => {
         e.preventDefault();
-
-        // Fungsi ini sekarang HANYA bertugas mengambil dan MENYIMPAN token.
-        // useEffect di atas yang akan menangani pengiriman form.
         window.grecaptcha.ready(() => {
             window.grecaptcha
                 .execute(recaptcha_v3_site_key, { action: "submit" })
@@ -698,41 +707,30 @@ export default function RegisterWizard({ role, initialStep }) {
         });
     };
 
-    const isStepComplete = (step) => {
-        if (step === 1) {
-            return (
-                data.name &&
-                data.email &&
-                data.password &&
-                data.password_confirmation
-            );
-        } else if (step === 2) {
-            if (role === "umkm") {
-                return (
-                    data.business_name &&
-                    data.description &&
-                    data.business_type &&
-                    data.address &&
-                    data.ktp
-                );
-            } else {
-                return (
-                    data.organizer_name &&
-                    data.description &&
-                    data.address &&
-                    data.verification_document
-                );
-            }
-        }
-        return false;
-    };
-
     const StepIcon = ({ step, currentStep, icon, label }) => {
+        const step1Errors = errors.name || errors.email || errors.password;
+        const step2UmkmErrors =
+            errors.business_name ||
+            errors.description ||
+            errors.address ||
+            errors.business_type ||
+            errors.ktp;
+        const step2PenyelenggaraErrors =
+            errors.organizer_name ||
+            errors.description ||
+            errors.address ||
+            errors.verification_document;
+
+        const hasErrors =
+            currentStep === step &&
+            (step === 1
+                ? step1Errors
+                : role === "umkm"
+                ? step2UmkmErrors
+                : step2PenyelenggaraErrors);
+
         const isActive = currentStep >= step;
-        const isComplete =
-            currentStep > step ||
-            (currentStep === step && isStepComplete(step));
-        const hasErrors = currentStep === step && !isStepComplete(step);
+        const isComplete = currentStep > step;
 
         return (
             <div className="flex flex-col items-center">
@@ -741,10 +739,10 @@ export default function RegisterWizard({ role, initialStep }) {
                             ${
                                 isComplete
                                     ? "bg-green-600 text-white shadow-lg"
+                                    : hasErrors
+                                    ? "bg-red-500 text-white shadow-lg"
                                     : isActive
-                                    ? hasErrors
-                                        ? "bg-red-500 text-white shadow-lg"
-                                        : "bg-blue-600 text-white shadow-lg"
+                                    ? "bg-blue-600 text-white shadow-lg"
                                     : "bg-gray-200 text-gray-500"
                             }`}
                     animate={{ scale: currentStep === step ? 1.1 : 1 }}
@@ -789,10 +787,10 @@ export default function RegisterWizard({ role, initialStep }) {
                     className={`mt-2 text-sm font-semibold transition-colors duration-300 ${
                         isComplete
                             ? "text-green-600"
+                            : hasErrors
+                            ? "text-red-500"
                             : isActive
-                            ? hasErrors
-                                ? "text-red-500"
-                                : "text-blue-600"
+                            ? "text-blue-600"
                             : "text-gray-500"
                     }`}
                 >
@@ -820,12 +818,11 @@ export default function RegisterWizard({ role, initialStep }) {
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
-                {/* Kolom Kiri - Gambar & Branding (DIKEMBALIKAN KE VERSI ASLI) */}
                 <div className="hidden md:block relative overflow-hidden">
                     <motion.div
                         className="absolute inset-0 bg-cover bg-center"
                         style={{
-                            backgroundImage: "url('images/fotobajardig.png')",
+                            backgroundImage: "url('/images/fotobajardig.png')",
                         }}
                         initial={{ scale: 1.1 }}
                         animate={{ scale: 1 }}
@@ -859,15 +856,14 @@ export default function RegisterWizard({ role, initialStep }) {
                         transition={{ duration: 1, delay: 0.6 }}
                     >
                         <img
-                            src="images/bajardiglogo.png"
-                            alt="Logo"
+                            src="/images/bajardiglogo.png"
+                            alt="BajarDig"
                             className="mt-20"
                             style={{ width: "800px", height: "auto" }}
                         />
                     </motion.div>
                 </div>
 
-                {/* Kolom Kanan - Form Wizard */}
                 <div className="bg-white p-8 md:p-12 flex flex-col justify-center">
                     <motion.div
                         className="flex justify-center items-center mb-10"
@@ -912,6 +908,7 @@ export default function RegisterWizard({ role, initialStep }) {
                                     setData={setData}
                                     errors={errors}
                                     requiredFields={requiredFields}
+                                    role={role}
                                 />
                             )}
                             {initialStep === 2 && role === "umkm" && (
@@ -949,7 +946,6 @@ export default function RegisterWizard({ role, initialStep }) {
                                     <div className="flex-grow border-t border-gray-300"></div>
                                 </div>
 
-                                {/* TOMBOL GOOGLE */}
                                 <a
                                     href={route("auth.google.redirect")}
                                     className="flex w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-50"

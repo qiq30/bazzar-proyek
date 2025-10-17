@@ -129,9 +129,10 @@ class UmkmController extends Controller
         if ($umkmProfile) {
             $registrations = $umkmProfile->eventRegistrations()->get();
             foreach ($registrations as $reg) {
+                // Mengirim hashid, bukan id biasa
                 $registrationStatus[$reg->event_id] = [
                     'status' => $reg->status,
-                    'id' => $reg->id,
+                    'id' => $reg->hashid, // Menggunakan hashid accessor
                     'rejection_reason' => $reg->rejection_reason,
                 ];
             }
@@ -217,12 +218,10 @@ class UmkmController extends Controller
 
     public function startRegistration(Request $request, Event $event)
     {
-        // Validasi input konfirmasi dari modal
         $request->validate([
             'payment_confirmation' => [
                 'required',
                 'numeric',
-                // Pastikan nilai yang diinput sama dengan biaya pendaftaran
                 function ($attribute, $value, $fail) use ($event) {
                     if ((int) $value != (int) $event->biaya_pendaftaran_umkm) {
                         $fail('Jumlah konfirmasi tidak sesuai dengan biaya pendaftaran.');
@@ -249,7 +248,7 @@ class UmkmController extends Controller
         }
 
         if ($existingRegistration) {
-            return redirect()->route('umkm.events.pay', ['registration' => $existingRegistration->id]);
+            return redirect()->route('umkm.events.pay', ['registration' => $existingRegistration]);
         }
 
         $participantCount = $event->eventRegistrations()
@@ -275,9 +274,10 @@ class UmkmController extends Controller
                 'rejection_reason' => null,
             ]
         );
-
-        return redirect()->route('umkm.events.pay', ['registration' => $registration->id]);
+        // Mengirim seluruh objek $registration agar Laravel bisa mengambil hashid-nya
+        return redirect()->route('umkm.events.pay', ['registration' => $registration]);
     }
+
 
     public function showPaymentPage(EventRegistration $registration)
     {
@@ -331,7 +331,6 @@ class UmkmController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Sisipkan data QR code dan signed URL ke setiap tiket
         $tickets->each(function ($ticket) {
             $ticket->qr_code_svg = base64_encode(
                 QrCode::format('svg')
@@ -340,7 +339,6 @@ class UmkmController extends Controller
                     ->generate($ticket->kode_pendaftaran)
             );
 
-            // Buat signed URL yang berlaku selama 1 jam
             $ticket->signed_download_url = URL::temporarySignedRoute(
                 'umkm.tickets.download',
                 now()->addHour(),
@@ -362,22 +360,17 @@ class UmkmController extends Controller
 
         $registration->load(['event', 'umkmProfile']);
 
-        // 1. Buat QR Code dari Kode Pendaftaran
-        // Kita akan membuat QR code dalam format SVG, lalu di-encode ke base64
-        // agar bisa langsung disematkan di HTML tanpa file terpisah.
         $qrCode = base64_encode(
             QrCode::format('svg')
-                ->size(150) // Ukuran QR Code dalam pixel
-                ->errorCorrection('H') // Tingkat koreksi error yang tinggi
+                ->size(150)
+                ->errorCorrection('H')
                 ->generate($registration->kode_pendaftaran)
         );
 
-        // 2. Encode logo Pemko untuk disematkan di PDF
         $logoPath = public_path('images/logo-banjarmasin.png');
         $logoData = base64_encode(file_get_contents($logoPath));
         $logoBase64 = 'data:image/png;base64,' . $logoData;
 
-        // 3. Gabungkan semua data untuk dikirim ke view
         $data = [
             'registration' => $registration,
             'qrCode'       => $qrCode,

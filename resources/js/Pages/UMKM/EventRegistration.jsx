@@ -193,33 +193,23 @@ export default function EventRegistration({
 }) {
     const [isTimeMismatched, setIsTimeMismatched] = useState(false);
     const [showWarning, setShowWarning] = useState(false);
-    const [confirmingEvent, setConfirmingEvent] = useState(null); // State untuk modal
+    const [confirmingEvent, setConfirmingEvent] = useState(null);
     const { recaptcha_v2_site_key } = usePage().props;
 
-    // Fungsi lama handleSafeRegisterClick dihapus karena sekarang digantikan oleh modal
-
     useEffect(() => {
-        // Fungsi untuk memeriksa perbedaan waktu
         const checkTime = () => {
             const serverTimestamp = new Date(serverTime).getTime();
             const clientTimestamp = Date.now();
             const timeDifference = Math.abs(serverTimestamp - clientTimestamp);
-            const mismatched = timeDifference > 300000; // Toleransi 5 menit
+            const mismatched = timeDifference > 300000;
 
             setIsTimeMismatched(mismatched);
-            // Hanya tampilkan peringatan jika waktu tidak cocok
             if (mismatched) {
                 setShowWarning(true);
             }
         };
-
-        // Periksa waktu saat komponen pertama kali dimuat
         checkTime();
-
-        // Set interval untuk memeriksa waktu setiap 10 detik.
         const intervalId = setInterval(checkTime, 10000);
-
-        // Hentikan interval saat komponen dilepas untuk mencegah kebocoran memori
         return () => clearInterval(intervalId);
     }, [serverTime]);
 
@@ -263,17 +253,13 @@ export default function EventRegistration({
         });
     };
 
-    const RegistrationStatusDisplay = ({
-        status,
-        registrationId,
-        eventHashid,
-    }) => {
+    const RegistrationStatusDisplay = ({ status, registrationId }) => {
         const statusConfig = {
             menunggu_pembayaran: {
                 component: (
                     <div className="p-6 text-center border-t">
                         <Link
-                            href={route("umkm.events.pay", eventHashid)}
+                            href={route("umkm.events.pay", registrationId)}
                             className="w-full block px-4 py-2 bg-yellow-500 text-white text-center rounded-lg hover:bg-yellow-600 transition"
                         >
                             Lanjutkan Pembayaran
@@ -308,7 +294,7 @@ export default function EventRegistration({
                             ✗ Pembayaran Ditolak
                         </p>
                         <Link
-                            href={route("umkm.events.pay", eventHashid)}
+                            href={route("umkm.events.pay", registrationId)}
                             className="w-full block px-4 py-2 bg-red-600 text-white text-center rounded-lg hover:bg-red-700 transition"
                         >
                             Unggah Ulang Bukti Bayar
@@ -332,7 +318,6 @@ export default function EventRegistration({
         );
     };
 
-    // Loading Spinner Component
     const LoadingSpinner = () => (
         <span className="flex items-center justify-center">
             <svg
@@ -505,9 +490,6 @@ export default function EventRegistration({
                                                         }
                                                         registrationId={
                                                             registrationId
-                                                        }
-                                                        eventHashid={
-                                                            event.hashid
                                                         }
                                                     />
                                                 ) : (

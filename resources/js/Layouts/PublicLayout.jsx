@@ -86,7 +86,7 @@ export default function PublicLayout({ children }) {
                                         <span>Login</span>
                                     </Link>
                                     <Link
-                                        href={route("register.wizard", {
+                                        href={route("register.start", {
                                             role: "umkm",
                                         })}
                                         className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 text-sm font-semibold rounded-md hover:bg-gray-200"
@@ -95,7 +95,7 @@ export default function PublicLayout({ children }) {
                                         <span>Daftar UMKM</span>
                                     </Link>
                                     <Link
-                                        href={route("register.wizard", {
+                                        href={route("register.start", {
                                             role: "penyelenggara",
                                         })}
                                         className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-700"
@@ -214,7 +214,7 @@ export default function PublicLayout({ children }) {
                                         <span>Login</span>
                                     </Link>
                                     <Link
-                                        href={route("register.wizard", {
+                                        href={route("register.start", {
                                             role: "umkm",
                                         })}
                                         className="flex items-center px-4 py-3 mx-2 rounded-lg text-base font-medium text-gray-700 transition-all duration-200 hover:bg-orange-50"
@@ -225,7 +225,7 @@ export default function PublicLayout({ children }) {
                                         <span>Daftar sebagai UMKM</span>
                                     </Link>
                                     <Link
-                                        href={route("register.wizard", {
+                                        href={route("register.start", {
                                             role: "penyelenggara",
                                         })}
                                         className="flex items-center px-4 py-3 mx-2 rounded-lg text-base font-medium text-white bg-blue-600 transition-all duration-200 hover:bg-blue-700"

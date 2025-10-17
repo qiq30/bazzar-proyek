@@ -36,7 +36,7 @@ class StorePaymentRejectedNotification
             'data'    => [
                 'title'   => 'Pembayaran Ditolak',
                 'message' => $message, // Gunakan pesan yang sudah dimodifikasi
-                'url'     => route('umkm.events.pay', $registration->id),
+                'url' => route('umkm.events.pay', ['registration' => $registration]),
             ]
         ]);
 

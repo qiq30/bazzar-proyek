@@ -22,6 +22,7 @@ use App\Events\NotificationReceived;
 use App\Events\RegistrationFinalized;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Vinkla\Hashids\Facades\Hashids;
 
 class PenyelenggaraController extends Controller
 {
@@ -32,6 +33,7 @@ class PenyelenggaraController extends Controller
 
         $events = Event::withCount('eventRegistrations')
             ->where('user_id', $user->id)
+            ->withTrashed() // Ambil semua proposal termasuk yang ditolak
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -329,10 +331,20 @@ class PenyelenggaraController extends Controller
             ->with('success', 'Pembayaran ditolak dan notifikasi telah dikirim ke UMKM.');
     }
 
-    public function showProposal(Event $event)
+    public function showProposal($eventHashid)
     {
-        $proposal = Event::withTrashed()->where('id', $event->id)->firstOrFail();
+        // 1. Decode hashid untuk mendapatkan ID asli
+        $decodedId = Hashids::decode($eventHashid)[0] ?? null;
 
+        // 2. Cari proposal (termasuk yang soft-deleted) menggunakan ID asli
+        $proposal = Event::withTrashed()->find($decodedId);
+
+        // 3. Jika tidak ditemukan, tampilkan halaman 404
+        if (!$proposal) {
+            abort(404);
+        }
+
+        // 4. Pastikan proposal ini milik user yang sedang login
         if ($proposal->user_id !== Auth::id()) {
             abort(403);
         }
@@ -341,6 +353,7 @@ class PenyelenggaraController extends Controller
             'proposal' => $proposal,
         ]);
     }
+
 
     public function assignStandNumber(Request $request, EventRegistration $registration)
     {
