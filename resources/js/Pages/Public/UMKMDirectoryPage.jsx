@@ -201,7 +201,10 @@ export default function UMKMDirectoryPage({ event, umkmProfiles }) {
                             {filteredUmkm.map((umkm) => (
                                 <Link
                                     key={umkm.id}
-                                    href={`/umkm/${umkm.id}`}
+                                    href={route(
+                                        "public.umkm.detail",
+                                        umkm.slug
+                                    )}
                                     className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1 group"
                                 >
                                     <div className="h-40 bg-gray-100 flex items-center justify-center overflow-hidden">

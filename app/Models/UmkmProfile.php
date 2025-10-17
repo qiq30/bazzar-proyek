@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class UmkmProfile extends Model
 {
@@ -14,6 +15,7 @@ class UmkmProfile extends Model
     protected $fillable = [
         'user_id',
         'business_name',
+        'slug',
         'logo_path',
         'ktp_path',
         'description',
@@ -66,5 +68,33 @@ class UmkmProfile extends Model
     public function getQrisUrlAttribute()
     {
         return $this->qris_path ? Storage::url($this->qris_path) : null;
+    }
+
+    /**
+     * Get the route key for the model.
+     *
+     * @return string
+     */
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
+
+    /**
+     * Boot the model.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($profile) {
+            $profile->slug = Str::slug($profile->business_name . '-' . uniqid());
+        });
+
+        static::updating(function ($profile) {
+            if ($profile->isDirty('business_name')) {
+                $profile->slug = Str::slug($profile->business_name . '-' . uniqid());
+            }
+        });
     }
 }

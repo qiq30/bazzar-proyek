@@ -92,8 +92,8 @@ Route::middleware('guest')->prefix('admin')->name('admin.')->group(function () {
 
 // Public Routes (No Authentication)
 Route::get('/', [PublicController::class, 'home'])->name('home');
-Route::get('/events/{event}/umkm', [PublicController::class, 'umkmDirectory'])->name('public.umkm.directory');
-Route::get('/umkm/{umkm}', [PublicController::class, 'umkmDetail'])->name('public.umkm.detail');
+Route::get('/events/{event:slug}/umkm', [PublicController::class, 'umkmDirectory'])->name('public.umkm.directory');
+Route::get('/umkm/{umkm:slug}', [PublicController::class, 'umkmDetail'])->name('public.umkm.detail');
 
 // Authentication Routes (Laravel Breeze)
 require __DIR__ . '/auth.php';
@@ -108,7 +108,7 @@ Route::middleware(['auth', 'verified', 'umkm'])->group(function () {
     Route::get('/payment/{registration}', [UmkmController::class, 'showPaymentPage'])->name('umkm.events.pay');
     Route::post('/payment/{registration}', [UmkmController::class, 'uploadPaymentProof'])->name('umkm.events.uploadProof');
     Route::get('/my-tickets', [UmkmController::class, 'myTickets'])->name('umkm.tickets');
-    Route::get('/my-tickets/{registration}/download', [UmkmController::class, 'downloadTicket'])->name('umkm.tickets.download');
+    Route::get('/my-tickets/{registration}/download', [UmkmController::class, 'downloadTicket'])->name('umkm.tickets.download')->middleware('signed');
     Route::get('/qris/upload', [UmkmController::class, 'uploadQris'])->name('umkm.qris.upload');
     Route::post('/qris/upload', [UmkmController::class, 'storeQris'])->name('umkm.qris.store');
     Route::get('/products', [UmkmController::class, 'products'])->name('umkm.products');

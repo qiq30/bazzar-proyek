@@ -90,7 +90,7 @@ export default function EventCard({ event }) {
 
                 <div className="mt-auto flex justify-between items-center">
                     <Link
-                        href={`/events/${event.id}/umkm`}
+                        href={route("public.umkm.directory", event.slug)}
                         className="text-blue-600 hover:text-blue-800 font-medium text-sm inline-flex items-center"
                     >
                         Lihat Peserta UMKM

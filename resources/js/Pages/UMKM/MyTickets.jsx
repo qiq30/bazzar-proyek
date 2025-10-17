@@ -164,10 +164,7 @@ export default function MyTickets({ auth, tickets = [] }) {
                                             Unduh E-Ticket (Gambar)
                                         </button>
                                         <a
-                                            href={route(
-                                                "umkm.tickets.download",
-                                                { registration: ticket.id }
-                                            )}
+                                            href={ticket.signed_download_url} // Gunakan signed_download_url
                                             className="w-full block text-center py-3 px-4 bg-red-700 text-white font-semibold rounded-lg hover:bg-red-800 transition-transform transform hover:scale-105"
                                         >
                                             Unduh E-Ticket (PDF)

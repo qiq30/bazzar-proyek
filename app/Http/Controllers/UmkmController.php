@@ -21,6 +21,7 @@ use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Rules\RecaptchaV2;
+use Illuminate\Support\Facades\URL;
 
 class UmkmController extends Controller
 {
@@ -330,13 +331,20 @@ class UmkmController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Sisipkan data QR code ke setiap tiket
+        // Sisipkan data QR code dan signed URL ke setiap tiket
         $tickets->each(function ($ticket) {
             $ticket->qr_code_svg = base64_encode(
                 QrCode::format('svg')
                     ->size(150)
                     ->errorCorrection('H')
                     ->generate($ticket->kode_pendaftaran)
+            );
+
+            // Buat signed URL yang berlaku selama 1 jam
+            $ticket->signed_download_url = URL::temporarySignedRoute(
+                'umkm.tickets.download',
+                now()->addHour(),
+                ['registration' => $ticket->id]
             );
         });
 

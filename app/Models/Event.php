@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Prunable;
+use Illuminate\Support\Str;
 
 class Event extends Model
 {
@@ -22,6 +23,7 @@ class Event extends Model
     protected $fillable = [
         'user_id',
         'nama_event',
+        'slug',
         'deskripsi_event',
         'poster_event',
         'proposal_document_path',
@@ -125,7 +127,6 @@ class Event extends Model
         return $this->pendaftaran_dibuka->format('d M') . ' - ' . $this->pendaftaran_ditutup->format('d M Y');
     }
 
-
     /**
      * Check if event is active.
      */
@@ -170,5 +171,33 @@ class Event extends Model
         });
 
         return $query;
+    }
+
+    /**
+     * Get the route key for the model.
+     *
+     * @return string
+     */
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
+
+    /**
+     * Boot the model.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($event) {
+            $event->slug = Str::slug($event->nama_event . '-' . uniqid());
+        });
+
+        static::updating(function ($event) {
+            if ($event->isDirty('nama_event')) {
+                $event->slug = Str::slug($event->nama_event . '-' . uniqid());
+            }
+        });
     }
 }
