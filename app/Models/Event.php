@@ -3,6 +3,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasHashids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
@@ -13,8 +14,7 @@ use Illuminate\Support\Str;
 
 class Event extends Model
 {
-    use HasFactory, SoftDeletes, Prunable;
-
+    use HasFactory, SoftDeletes, Prunable, HasHashids;
     /**
      * The attributes that are mass assignable.
      *

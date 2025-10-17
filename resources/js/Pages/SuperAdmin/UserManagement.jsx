@@ -1,17 +1,16 @@
-// resources/js/Pages/SuperAdmin/UserManagement.jsx
-
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, router } from "@inertiajs/react";
 
 export default function UserManagement({ auth, users }) {
-    const handleRequestImpersonate = (userId, userName) => {
+    const handleRequestImpersonate = (user) => {
         if (
             confirm(
-                `Kirim permintaan untuk masuk sebagai ${userName}? Pengguna akan menerima notifikasi.`
+                `Kirim permintaan untuk masuk sebagai ${user.name}? Pengguna akan menerima notifikasi.`
             )
         ) {
+            // PERBAIKAN 1: Parameter harus dalam bentuk objek { key: value }
             router.post(
-                route("superadmin.impersonate.request", userId),
+                route("superadmin.impersonate.request", { user: user.hashid }),
                 {},
                 {
                     preserveScroll: true,
@@ -90,8 +89,7 @@ export default function UserManagement({ auth, users }) {
                                                         <button
                                                             onClick={() =>
                                                                 handleRequestImpersonate(
-                                                                    user.id,
-                                                                    user.name
+                                                                    user
                                                                 )
                                                             }
                                                             className="px-3 py-1 w-full sm:w-auto text-center bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition duration-150"
@@ -104,9 +102,12 @@ export default function UserManagement({ auth, users }) {
                                                             user.role ===
                                                                 "Penyelenggara") && (
                                                             <Link
+                                                                // PERBAIKAN 2: Parameter harus dalam bentuk objek { key: value }
                                                                 href={route(
                                                                     "superadmin.users.edit",
-                                                                    user.id
+                                                                    {
+                                                                        user: user.hashid,
+                                                                    }
                                                                 )}
                                                                 className="px-3 py-1 w-full sm:w-auto text-center bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 transition duration-150"
                                                             >

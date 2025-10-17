@@ -37,7 +37,11 @@ export default function ProposalDocumentReview({ auth, proposal }) {
         if (
             confirm(`Setujui dokumen untuk proposal "${proposal.nama_event}"?`)
         ) {
-            post(route("admin.proposals.document.approve", proposal.id));
+            post(
+                route("admin.proposals.document.approve", {
+                    event: proposal.hashid,
+                })
+            );
         }
     };
 
@@ -48,9 +52,12 @@ export default function ProposalDocumentReview({ auth, proposal }) {
 
     const handleRejectSubmit = (e) => {
         e.preventDefault();
-        post(route("admin.proposals.document.reject", proposal.id), {
-            onSuccess: () => setIsRejectModalOpen(false),
-        });
+        post(
+            route("admin.proposals.document.reject", {
+                event: proposal.hashid,
+            }),
+            { onSuccess: () => setIsRejectModalOpen(false) }
+        );
     };
 
     return (

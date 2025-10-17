@@ -29,7 +29,7 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         const url = product
-            ? route("umkm.products.update", product.id)
+            ? route("umkm.products.update", product.hashid)
             : route("umkm.products.store");
         post(url, { onSuccess });
     };
@@ -134,9 +134,10 @@ export default function ProductManagement({ auth, products = [] }) {
         setEditingProduct(null);
     };
 
-    const handleDelete = (id) => {
+    const handleDelete = (product) => {
+        // Terima objek produk
         if (confirm("Apakah Anda yakin ingin menghapus produk ini?")) {
-            destroyProduct(route("umkm.products.destroy", id));
+            destroyProduct(route("umkm.products.destroy", product.hashid));
         }
     };
 
@@ -219,7 +220,7 @@ export default function ProductManagement({ auth, products = [] }) {
                                             </button>
                                             <button
                                                 onClick={() =>
-                                                    handleDelete(product.id)
+                                                    handleDelete(product)
                                                 }
                                                 className="text-sm text-red-600 hover:text-red-800"
                                             >

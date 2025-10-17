@@ -82,7 +82,7 @@ const RegistrationConfirmationModal = ({
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post(route("umkm.events.register", event.id), {
+        post(route("umkm.events.register", event.hashid), {
             onSuccess: () => onClose(),
         });
     };
@@ -263,15 +263,17 @@ export default function EventRegistration({
         });
     };
 
-    const RegistrationStatusDisplay = ({ status, registrationId }) => {
+    const RegistrationStatusDisplay = ({
+        status,
+        registrationId,
+        eventHashid,
+    }) => {
         const statusConfig = {
             menunggu_pembayaran: {
                 component: (
                     <div className="p-6 text-center border-t">
                         <Link
-                            href={route("umkm.events.pay", {
-                                registration: registrationId,
-                            })}
+                            href={route("umkm.events.pay", eventHashid)}
                             className="w-full block px-4 py-2 bg-yellow-500 text-white text-center rounded-lg hover:bg-yellow-600 transition"
                         >
                             Lanjutkan Pembayaran
@@ -306,9 +308,7 @@ export default function EventRegistration({
                             ✗ Pembayaran Ditolak
                         </p>
                         <Link
-                            href={route("umkm.events.pay", {
-                                registration: registrationId,
-                            })}
+                            href={route("umkm.events.pay", eventHashid)}
                             className="w-full block px-4 py-2 bg-red-600 text-white text-center rounded-lg hover:bg-red-700 transition"
                         >
                             Unggah Ulang Bukti Bayar
@@ -506,6 +506,9 @@ export default function EventRegistration({
                                                         registrationId={
                                                             registrationId
                                                         }
+                                                        eventHashid={
+                                                            event.hashid
+                                                        }
                                                     />
                                                 ) : (
                                                     <div className="p-6 text-center border-t">
@@ -519,11 +522,10 @@ export default function EventRegistration({
                                                         ) : isRegistrationOpen ? (
                                                             <button
                                                                 onClick={() =>
-                                                                    // --- ▼▼▼ PERUBAHAN DI SINI ▼▼▼ ---
                                                                     handleRegisterClick(
                                                                         event
                                                                     )
-                                                                } // --- ▲▲▲ AKHIR PERUBAHAN ▲▲▲ ---
+                                                                }
                                                                 className={`w-full block px-4 py-2 text-white text-center rounded-lg transition ${
                                                                     isButtonDisabled
                                                                         ? "bg-gray-400 cursor-not-allowed opacity-50"

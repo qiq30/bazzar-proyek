@@ -34,7 +34,7 @@ const UmkmProfileForm = ({ user, profile, onCancel }) => {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route("superadmin.users.update", user.id));
+        post(route("superadmin.users.update", { user: user.hashid }));
     };
 
     const businessTypes = [
@@ -216,7 +216,7 @@ const PenyelenggaraProfileForm = ({ user, profile, onCancel }) => {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route("superadmin.users.update", user.id));
+        post(route("superadmin.users.update", { user: user.hashid }));
     };
 
     return (
@@ -340,9 +340,12 @@ const PenyelenggaraProfileForm = ({ user, profile, onCancel }) => {
                 >
                     Batal
                 </button>
-                <PrimaryButton disabled={processing}>
+                <button
+                    disabled={processing}
+                    className="px-6 py-2 border rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
                     {processing ? "Menyimpan..." : "Simpan Perubahan"}
-                </PrimaryButton>
+                </button>
             </div>
         </form>
     );

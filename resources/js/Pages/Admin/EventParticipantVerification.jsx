@@ -47,7 +47,7 @@ export default function EventParticipantVerification({
                 "Setujui pendaftaran UMKM ini? Mereka akan resmi menjadi peserta."
             )
         ) {
-            post(route("admin.registrations.finalize", registrationId));
+            post(route("admin.registrations.finalize", registration.hashid));
         }
     };
 
@@ -111,9 +111,7 @@ export default function EventParticipantVerification({
                                                     "pembayaran_terkonfirmasi" && (
                                                     <button
                                                         onClick={() =>
-                                                            handleApprove(
-                                                                reg.id
-                                                            )
+                                                            handleApprove(reg)
                                                         }
                                                         disabled={processing}
                                                         className="px-4 py-2 bg-green-600 text-white text-xs font-semibold rounded-md hover:bg-green-700 disabled:opacity-50"

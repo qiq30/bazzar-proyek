@@ -57,29 +57,23 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware(['auth', 'super_admin'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/dashboard', [SuperAdminController::class, 'dashboard'])->name('dashboard');
-    // Rute baru untuk halaman hub
     Route::get('/users/hub', [SuperAdminController::class, 'userManagementHub'])->name('users.hub');
 
     Route::get('/admins', [SuperAdminController::class, 'manageAdmins'])->name('admins.manage');
     Route::post('/admins', [SuperAdminController::class, 'storeAdmin'])->name('admins.store');
-    Route::delete('/admins/{admin}', [SuperAdminController::class, 'destroyAdmin'])->name('admins.destroy');
 
     Route::get('/admins', [SuperAdminController::class, 'manageAdmins'])->name('admins.manage');
     Route::post('/admins', [SuperAdminController::class, 'storeAdmin'])->name('admins.store');
-    Route::delete('/admins/{admin}', [SuperAdminController::class, 'destroyAdmin'])->name('admins.destroy');
-
-    // Rute untuk MEMINTA akses impersonate
-    Route::post('/impersonate/request/{user}', [ImpersonateController::class, 'request'])->name('impersonate.request');
-    // Rute untuk MEMULAI impersonate SETELAH disetujui
+    Route::delete('/admins/{admin:hashid}', [SuperAdminController::class, 'destroyAdmin'])->name('admins.destroy');
+    Route::post('/impersonate/request/{user:hashid}', [ImpersonateController::class, 'request'])->name('impersonate.request');
     Route::post('/impersonate/stop', [ImpersonateController::class, 'stop'])
         ->middleware('auth') // Pastikan hanya user yang login yang bisa stop
         ->name('impersonate.stop');
     Route::get('/impersonate/start/{impersonationRequest}', [ImpersonateController::class, 'start'])->name('impersonate.start');
 
     Route::get('/users', [SuperAdminController::class, 'manageUsers'])->name('users.manage');
-    Route::get('/users/{user}/edit', [SuperAdminController::class, 'editUserProfile'])->name('users.edit');
-    Route::put('/users/{user}', [SuperAdminController::class, 'updateUserProfile'])->name('users.update');
-
+    Route::get('/users/{user:hashid}/edit', [SuperAdminController::class, 'editUserProfile'])->name('users.edit');
+    Route::put('/users/{user:hashid}', [SuperAdminController::class, 'updateUserProfile'])->name('users.update');
     Route::get('/log-hub', [SuperAdminController::class, 'logHub'])->name('log.hub');
     Route::get('/system-report', [SystemReportController::class, 'index'])->name('system.report');
 });
@@ -104,17 +98,17 @@ Route::middleware(['auth', 'verified', 'umkm'])->group(function () {
     Route::get('/profile/setup', [UmkmController::class, 'profileSetup'])->name('umkm.profile.setup');
     Route::post('/profile/setup', [UmkmController::class, 'storeProfile'])->name('umkm.profile.store');
     Route::get('/events', [UmkmController::class, 'events'])->name('umkm.events');
-    Route::post('/events/{event}/register', [UmkmController::class, 'startRegistration'])->name('umkm.events.register');
-    Route::get('/payment/{registration}', [UmkmController::class, 'showPaymentPage'])->name('umkm.events.pay');
-    Route::post('/payment/{registration}', [UmkmController::class, 'uploadPaymentProof'])->name('umkm.events.uploadProof');
+    Route::post('/events/{event:hashid}/register', [UmkmController::class, 'startRegistration'])->name('umkm.events.register');
+    Route::get('/payment/{registration:hashid}', [UmkmController::class, 'showPaymentPage'])->name('umkm.events.pay');
+    Route::post('/payment/{registration:hashid}', [UmkmController::class, 'uploadPaymentProof'])->name('umkm.events.uploadProof');
     Route::get('/my-tickets', [UmkmController::class, 'myTickets'])->name('umkm.tickets');
     Route::get('/my-tickets/{registration}/download', [UmkmController::class, 'downloadTicket'])->name('umkm.tickets.download')->middleware('signed');
     Route::get('/qris/upload', [UmkmController::class, 'uploadQris'])->name('umkm.qris.upload');
     Route::post('/qris/upload', [UmkmController::class, 'storeQris'])->name('umkm.qris.store');
     Route::get('/products', [UmkmController::class, 'products'])->name('umkm.products');
     Route::post('/products', [UmkmController::class, 'storeProduct'])->name('umkm.products.store');
-    Route::post('/products/{product}', [UmkmController::class, 'updateProduct'])->name('umkm.products.update');
-    Route::delete('/products/{product}', [UmkmController::class, 'destroyProduct'])->name('umkm.products.destroy');
+    Route::post('/products/{product:hashid}', [UmkmController::class, 'updateProduct'])->name('umkm.products.update');
+    Route::delete('/products/{product:hashid}', [UmkmController::class, 'destroyProduct'])->name('umkm.products.destroy');
 });
 
 // Profile Routes (Default Breeze)
@@ -137,32 +131,29 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/events', [AdminController::class, 'events'])->name('events');
-
-    Route::get('/proposals/document-review/{event}', [AdminController::class, 'showDocumentReview'])->name('proposals.document.review');
-    Route::post('/proposals/document-review/{event}/approve', [AdminController::class, 'approveDocument'])->name('proposals.document.approve');
-    Route::post('/proposals/document-review/{event}/reject', [AdminController::class, 'rejectDocument'])->name('proposals.document.reject');
-
-
-    Route::put('/events/{event}', [AdminController::class, 'updateEvent'])->name('events.update');
-    Route::delete('/events/{event}', [AdminController::class, 'destroyEvent'])->name('events.destroy');
-    Route::get('/events/{event}/participants', [AdminController::class, 'eventParticipants'])->name('events.participants');
-    Route::post('/registrations/{registration}/approve', [AdminController::class, 'approveRegistration'])->name('registrations.approve');
-    Route::post('/registrations/{registration}/reject', [AdminController::class, 'rejectRegistration'])->name('registrations.reject');
+    Route::get('/proposals/document-review/{event:hashid}', [AdminController::class, 'showDocumentReview'])->name('proposals.document.review');
+    Route::post('/proposals/document-review/{event:hashid}/approve', [AdminController::class, 'approveDocument'])->name('proposals.document.approve');
+    Route::post('/proposals/document-review/{event:hashid}/reject', [AdminController::class, 'rejectDocument'])->name('proposals.document.reject');
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::put('/events/{event:hashid}', [AdminController::class, 'updateEvent'])->name('events.update');
+    Route::delete('/events/{event:hashid}', [AdminController::class, 'destroyEvent'])->name('events.destroy');
+    Route::get('/events/{event:hashid}/participants', [AdminController::class, 'eventParticipants'])->name('events.participants');
+    Route::post('/registrations/{registration:hashid}/approve', [AdminController::class, 'approveRegistration'])->name('registrations.approve');
+    Route::post('/registrations/{registration:hashid}/reject', [AdminController::class, 'rejectRegistration'])->name('registrations.reject');
     Route::get('/proposals', [AdminController::class, 'listProposals'])->name('proposals.list');
-    Route::get('/proposals/{event}', [AdminController::class, 'showProposal'])->name('proposals.show');
-    Route::post('/proposals/{event}/approve', [AdminController::class, 'approveProposal'])->name('proposals.approve');
-    Route::post('/proposals/{event}/reject', [AdminController::class, 'rejectProposal'])->name('proposals.reject');
+    Route::get('/proposals/{event:hashid}', [AdminController::class, 'showProposal'])->name('proposals.show');
+    Route::post('/proposals/{event:hashid}/approve', [AdminController::class, 'approveProposal'])->name('proposals.approve');
+    Route::post('/proposals/{event:hashid}/reject', [AdminController::class, 'rejectProposal'])->name('proposals.reject');
     Route::get('/events/publish', [AdminController::class, 'showPublishForm'])->name('events.publish.form');
     Route::post('/events/publish', [AdminController::class, 'storeEventFromProposal'])->name('events.publish.store');
     Route::get('/umkm/verification', [AdminController::class, 'umkmVerification'])->name('umkm.verification');
-    Route::post('/umkm/{umkm}/verify', [AdminController::class, 'verifyUmkm'])->name('umkm.verify');
-    Route::post('/umkm/{umkm}/reject', [AdminController::class, 'rejectUmkm'])->name('umkm.reject');
-    Route::post('/registrations/{registration}/finalize', [AdminController::class, 'finalizeRegistration'])->name('registrations.finalize');
+    Route::post('/umkm/{umkm:hashid}/verify', [AdminController::class, 'verifyUmkm'])->name('umkm.verify');
+    Route::post('/umkm/{umkm:hashid}/reject', [AdminController::class, 'rejectUmkm'])->name('umkm.reject');
+    Route::post('/registrations/{registration:hashid}/finalize', [AdminController::class, 'finalizeRegistration'])->name('registrations.finalize');
     Route::get('/penyelenggara/verification', [AdminController::class, 'penyelenggaraVerification'])->name('penyelenggara.verification');
-    Route::post('/penyelenggara/{penyelenggara}/verify', [AdminController::class, 'verifyPenyelenggara'])->name('penyelenggara.verify');
-    Route::post('/penyelenggara/{penyelenggara}/reject', [AdminController::class, 'rejectPenyelenggara'])->name('penyelenggara.reject');
+    Route::post('/penyelenggara/{penyelenggara:hashid}/verify', [AdminController::class, 'verifyPenyelenggara'])->name('penyelenggara.verify');
+    Route::post('/penyelenggara/{penyelenggara:hashid}/reject', [AdminController::class, 'rejectPenyelenggara'])->name('penyelenggara.reject');
     Route::delete('/proposals/{id}/force-delete', [AdminController::class, 'permanentlyDeleteProposal'])->name('proposals.forceDelete');
-    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index'); // <-- TAMBAHKAN INI
 });
 
 // Penyelenggara Routes
@@ -172,19 +163,17 @@ Route::middleware(['auth', 'verified', 'penyelenggara'])->prefix('penyelenggara'
     Route::post('/profile/setup', [PenyelenggaraController::class, 'storeProfile'])->name('profile.store');
 
     // Rute untuk menampilkan wizard (bisa untuk step 1 atau step 2)
-    Route::get('/proposal/wizard/{event?}', [PenyelenggaraController::class, 'proposalWizard'])->name('proposal.wizard');
-    // Rute untuk menyimpan data dari step 1 (upload dokumen)
-    Route::post('/proposal/wizard/step1', [PenyelenggaraController::class, 'storeProposalStep1'])->name('proposal.wizard.step1');
-    // Rute untuk menyimpan data dari step 2 (detail event) - nama diubah agar jelas
-    Route::post('/proposal/wizard/step2/{event}', [PenyelenggaraController::class, 'storeProposalStep2'])->name('proposal.wizard.step2');
+    Route::get('/proposal/wizard/{event:hashid?}', [PenyelenggaraController::class, 'proposalWizard'])->name('proposal.wizard');    // Rute untuk menyimpan data dari step 1 (upload dokumen)
+    Route::post('/proposal/wizard/step1', [PenyelenggaraController::class, 'storeProposalStep1'])->name('proposal.wizard.step1');    // Rute untuk menyimpan data dari step 2 (detail event) - nama diubah agar jelas
+    Route::post('/proposal/wizard/step2/{event:hashid}', [PenyelenggaraController::class, 'storeProposalStep2'])->name('proposal.wizard.step2');
     Route::get('/proposal/download-template', [PenyelenggaraController::class, 'downloadTemplate'])->name('proposal.template.download');
 
     Route::get('/verifikasi-pendaftar', [PenyelenggaraController::class, 'listVerifikasi'])->name('pendaftar.verifikasi.list');
-    Route::get('/verifikasi-pendaftar/{registration}', [PenyelenggaraController::class, 'showVerifikasi'])->name('pendaftar.verifikasi.show');
-    Route::post('/verifikasi-pendaftar/{registration}/confirm', [PenyelenggaraController::class, 'confirmPayment'])->name('pendaftar.verifikasi.confirm');
-    Route::post('/verifikasi-pendaftar/{registration}/reject', [PenyelenggaraController::class, 'rejectPayment'])->name('pendaftar.verifikasi.reject');
-    Route::post('/verifikasi-pendaftar/{registration}/assign-stand', [PenyelenggaraController::class, 'assignStandNumber'])->name('pendaftar.verifikasi.assignStand');
-    Route::get('/proposals/{event}', [PenyelenggaraController::class, 'showProposal'])->name('proposals.show')->withTrashed();
+    Route::get('/verifikasi-pendaftar/{registration:hashid}', [PenyelenggaraController::class, 'showVerifikasi'])->name('pendaftar.verifikasi.show');
+    Route::post('/verifikasi-pendaftar/{registration:hashid}/confirm', [PenyelenggaraController::class, 'confirmPayment'])->name('pendaftar.verifikasi.confirm');
+    Route::post('/verifikasi-pendaftar/{registration:hashid}/reject', [PenyelenggaraController::class, 'rejectPayment'])->name('pendaftar.verifikasi.reject');
+    Route::post('/verifikasi-pendaftar/{registration:hashid}/assign-stand', [PenyelenggaraController::class, 'assignStandNumber'])->name('pendaftar.verifikasi.assignStand');
+    Route::get('/proposals/{event:hashid}', [PenyelenggaraController::class, 'showProposal'])->name('proposals.show')->withTrashed();
 });
 
 // PANITIA ROUTES

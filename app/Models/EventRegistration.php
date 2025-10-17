@@ -3,12 +3,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasHashids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class EventRegistration extends Model
 {
-    use HasFactory;
+    use HasFactory, HasHashids;
 
     protected $fillable = [
         'event_id',

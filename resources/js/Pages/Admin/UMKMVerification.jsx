@@ -29,10 +29,10 @@ export default function UMKMVerification({
         rejection_reason: "",
     });
 
-    const handleVerifyProfile = (id) => {
+    const handleVerifyProfile = (profile) => {
+        // Terima seluruh objek 'profile'
         if (confirm("Yakin ingin verifikasi profil UMKM ini?")) {
-            // Gunakan 'post' dari hook yang sama
-            post(route("admin.umkm.verify", id), {
+            post(route("admin.umkm.verify", profile.hashid), {
                 onSuccess: () => setViewingUmkm(null),
                 preserveScroll: true,
             });
@@ -53,8 +53,7 @@ export default function UMKMVerification({
     const handleRejectSubmit = (e) => {
         e.preventDefault();
         if (!viewingUmkm) return;
-        // Gunakan 'post' dari hook yang sama
-        post(route("admin.umkm.reject", viewingUmkm.id), {
+        post(route("admin.umkm.reject", viewingUmkm.hashid), {
             onSuccess: () => closeRejectModal(),
             preserveScroll: true,
         });
@@ -326,9 +325,9 @@ export default function UMKMVerification({
                                     </button>
                                     <button
                                         onClick={() =>
-                                            handleVerifyProfile(viewingUmkm.id)
+                                            handleVerifyProfile(viewingUmkm)
                                         }
-                                        disabled={processing} // Cukup periksa satu 'processing'
+                                        disabled={processing}
                                         className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
                                     >
                                         Verifikasi

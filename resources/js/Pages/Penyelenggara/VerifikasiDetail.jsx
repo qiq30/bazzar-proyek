@@ -50,11 +50,9 @@ export default function VerifikasiDetail({ auth, registration }) {
         postStand(
             route(
                 "penyelenggara.pendaftar.verifikasi.assignStand",
-                registration.id
+                registration.hashid
             ),
-            {
-                preserveScroll: true,
-            }
+            { preserveScroll: true }
         );
     };
 
@@ -68,7 +66,7 @@ export default function VerifikasiDetail({ auth, registration }) {
             postAction(
                 route(
                     "penyelenggara.pendaftar.verifikasi.confirm",
-                    registration.id
+                    registration.hashid
                 )
             );
         }
@@ -86,10 +84,11 @@ export default function VerifikasiDetail({ auth, registration }) {
     const handleRejectSubmit = (e) => {
         e.preventDefault();
         postAction(
-            route("penyelenggara.pendaftar.verifikasi.reject", registration.id),
-            {
-                onSuccess: () => closeRejectModal(),
-            }
+            route(
+                "penyelenggara.pendaftar.verifikasi.reject",
+                registration.hashid
+            ),
+            { onSuccess: () => closeRejectModal() }
         );
     };
 

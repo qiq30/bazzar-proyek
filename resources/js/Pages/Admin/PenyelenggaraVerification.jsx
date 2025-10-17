@@ -31,10 +31,10 @@ export default function PenyelenggaraVerification({
         rejection_reason: "",
     });
 
-    const handleVerify = (id) => {
+    const handleVerify = (profile) => {
+        // Terima objek profile
         if (confirm("Yakin ingin verifikasi profil ini?")) {
-            // Cukup panggil 'post' dari hook yang sama
-            post(route("admin.penyelenggara.verify", id), {
+            post(route("admin.penyelenggara.verify", profile.hashid), {
                 onSuccess: () => setViewingProfile(null),
             });
         }
@@ -54,8 +54,7 @@ export default function PenyelenggaraVerification({
     const handleRejectSubmit = (e) => {
         e.preventDefault();
         if (!viewingProfile) return;
-        // Gunakan 'post' dari hook yang sama
-        post(route("admin.penyelenggara.reject", viewingProfile.id), {
+        post(route("admin.penyelenggara.reject", viewingProfile.hashid), {
             onSuccess: () => closeRejectModal(),
         });
     };
@@ -294,7 +293,7 @@ export default function PenyelenggaraVerification({
                                     </button>
                                     <button
                                         onClick={() =>
-                                            handleVerify(viewingProfile.id)
+                                            handleVerify(viewingProfile)
                                         }
                                         disabled={processing}
                                         className="bg-green-600 text-white py-2 px-4 rounded"

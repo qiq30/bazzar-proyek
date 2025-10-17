@@ -103,7 +103,9 @@ export default function ProposalList({
                                                         <Link
                                                             href={route(
                                                                 "admin.proposals.document.review",
-                                                                p.id
+                                                                {
+                                                                    event: p.hashid,
+                                                                }
                                                             )}
                                                             className="w-full sm:w-auto px-3 py-2 bg-yellow-500 text-white text-xs font-semibold rounded-md hover:bg-yellow-600 text-center inline-block"
                                                         >
@@ -198,7 +200,9 @@ export default function ProposalList({
                                                         <Link
                                                             href={route(
                                                                 "admin.proposals.show",
-                                                                p.id
+                                                                {
+                                                                    event: p.hashid,
+                                                                }
                                                             )}
                                                             className="w-full sm:w-auto px-3 py-2 bg-blue-600 text-white text-xs font-semibold rounded-md hover:bg-blue-700 text-center inline-block"
                                                         >
@@ -319,7 +323,9 @@ export default function ProposalList({
                                                         <Link
                                                             href={route(
                                                                 "admin.proposals.show",
-                                                                p.id
+                                                                {
+                                                                    event: p.hashid,
+                                                                }
                                                             )}
                                                             className="w-full sm:w-auto px-3 py-2 bg-blue-600 text-white text-xs font-semibold rounded-md hover:bg-blue-700 text-center inline-block"
                                                         >

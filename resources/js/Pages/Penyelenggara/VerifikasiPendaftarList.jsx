@@ -113,7 +113,7 @@ export default function VerifikasiPendaftarList({
                                                     <Link
                                                         href={route(
                                                             "penyelenggara.pendaftar.verifikasi.show",
-                                                            reg.id
+                                                            reg.hashid
                                                         )}
                                                         className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-md hover:bg-blue-700"
                                                     >

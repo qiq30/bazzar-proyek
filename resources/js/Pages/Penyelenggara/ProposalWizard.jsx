@@ -320,9 +320,14 @@ const Step2Details = ({ event, isAccessible }) => {
         e.preventDefault();
         if (!isAccessible) return;
 
-        post(route("penyelenggara.proposal.wizard.step2", event.id), {
-            forceFormData: true,
-        });
+        post(
+            route("penyelenggara.proposal.wizard.step2", {
+                event: event.hashid,
+            }),
+            {
+                forceFormData: true,
+            }
+        );
     };
 
     const getMinDate = (dateString) => {

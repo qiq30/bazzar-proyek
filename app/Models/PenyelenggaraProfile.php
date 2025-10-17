@@ -3,13 +3,14 @@
 // app/Models/PenyelenggaraProfile.php
 namespace App\Models;
 
+use App\Models\Concerns\HasHashids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
 class PenyelenggaraProfile extends Model
 {
-    use HasFactory;
+    use HasFactory, HasHashids;
 
     protected $fillable = [
         'user_id',

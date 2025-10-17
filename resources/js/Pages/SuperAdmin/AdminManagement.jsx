@@ -22,9 +22,10 @@ export default function AdminManagement({ auth, admins }) {
         });
     };
 
-    const deleteAdmin = (adminId) => {
+    const deleteAdmin = (admin) => {
+        // Terima objek admin
         if (confirm("Apakah Anda yakin ingin menghapus admin ini?")) {
-            destroy(route("superadmin.admins.destroy", adminId));
+            destroy(route("superadmin.admins.destroy", admin.hashid));
         }
     };
 
@@ -155,7 +156,7 @@ export default function AdminManagement({ auth, admins }) {
                                             </div>
                                             <button
                                                 onClick={() =>
-                                                    deleteAdmin(admin.id)
+                                                    deleteAdmin(admin)
                                                 }
                                                 className="text-red-500 hover:text-red-700 text-sm font-semibold"
                                             >

@@ -31,7 +31,7 @@ export default function ProposalDetail({ auth, proposal }) {
     const handleApprove = () => {
         if (confirm(`Yakin ingin menyetujui event "${proposal.nama_event}"?`)) {
             // Cukup panggil 'post' dari hook yang sama
-            post(route("admin.proposals.approve", proposal.id));
+            post(route("admin.proposals.approve", proposal.hashid));
         }
     };
 
@@ -47,7 +47,7 @@ export default function ProposalDetail({ auth, proposal }) {
     const handleRejectSubmit = (e) => {
         e.preventDefault();
         // Gunakan 'post' dari hook yang sama
-        post(route("admin.proposals.reject", proposal.id), {
+        post(route("admin.proposals.reject", proposal.hashid), {
             onSuccess: () => closeRejectModal(),
         });
     };

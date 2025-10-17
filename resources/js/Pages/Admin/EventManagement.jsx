@@ -32,7 +32,8 @@ const EventEditForm = ({ event, onSuccess, onCancel }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        put(route("admin.events.update", event.id), {
+        // Menggunakan objek parameter untuk mencocokkan nama rute {event}
+        put(route("admin.events.update", { event: event.hashid }), {
             onSuccess: onSuccess,
         });
     };
@@ -136,13 +137,16 @@ export default function EventManagement({ auth, events }) {
         setIsModalOpen(true);
     };
 
-    const handleDelete = (id) => {
+    const handleDelete = (event) => {
         if (
             confirm(
                 "Apakah Anda yakin ingin menghapus event ini secara permanen?"
             )
         ) {
-            destroyEvent(route("admin.events.destroy", id));
+            // PERBAIKAN: Menggunakan objek parameter { event: event.hashid }
+            destroyEvent(
+                route("admin.events.destroy", { event: event.hashid })
+            );
         }
     };
 
@@ -238,9 +242,10 @@ export default function EventManagement({ auth, events }) {
                                             </td>
                                             <td className="py-2 px-4 whitespace-nowrap">
                                                 <Link
+                                                    // PERBAIKAN 1: Menggunakan objek parameter { event: event.hashid }
                                                     href={route(
                                                         "admin.events.participants",
-                                                        event.id
+                                                        { event: event.hashid }
                                                     )}
                                                     className="px-3 py-2 bg-green-600 text-white text-xs font-semibold rounded-md hover:bg-green-800 mr-3"
                                                 >
@@ -255,8 +260,9 @@ export default function EventManagement({ auth, events }) {
                                                     Edit
                                                 </button>
                                                 <button
+                                                    // PERBAIKAN 2: Mengirim seluruh objek 'event' ke fungsi
                                                     onClick={() =>
-                                                        handleDelete(event.id)
+                                                        handleDelete(event)
                                                     }
                                                     className="px-3 py-2 bg-red-600 text-white text-xs font-semibold rounded-md hover:bg-red-800 mr-3"
                                                     disabled={processing}

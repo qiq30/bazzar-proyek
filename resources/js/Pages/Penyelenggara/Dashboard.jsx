@@ -526,7 +526,9 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
                                                         <Link
                                                             href={route(
                                                                 "penyelenggara.proposal.wizard",
-                                                                event.id
+                                                                {
+                                                                    event: event.hashid,
+                                                                }
                                                             )}
                                                             className="px-4 py-2 bg-red-600 text-white text-xs font-semibold rounded-md hover:bg-red-700"
                                                         >
@@ -539,7 +541,9 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
                                                         <Link
                                                             href={route(
                                                                 "penyelenggara.proposal.wizard",
-                                                                event.id
+                                                                {
+                                                                    event: event.hashid,
+                                                                }
                                                             )}
                                                             className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-md hover:bg-blue-700"
                                                         >
@@ -549,7 +553,9 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
                                                         <Link
                                                             href={route(
                                                                 "penyelenggara.proposals.show",
-                                                                event.id
+                                                                {
+                                                                    event: event.hashid,
+                                                                }
                                                             )}
                                                             className="px-4 py-2 bg-gray-600 text-white text-xs font-semibold rounded-md hover:bg-gray-700"
                                                         >

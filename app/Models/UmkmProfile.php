@@ -3,6 +3,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasHashids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
@@ -10,7 +11,7 @@ use Illuminate\Support\Str;
 
 class UmkmProfile extends Model
 {
-    use HasFactory;
+    use HasFactory, HasHashids;
 
     protected $fillable = [
         'user_id',

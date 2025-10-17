@@ -113,6 +113,7 @@ class SuperAdminController extends Controller
                 ->map(function ($user) {
                     return [
                         'id' => $user->id,
+                        'hashid' => $user->hashid,
                         'name' => $user->name,
                         'email' => $user->email,
                         'role' => $user->is_admin ? 'Admin' : ($user->is_penyelenggara ? 'Penyelenggara' : 'UMKM'),
@@ -137,6 +138,7 @@ class SuperAdminController extends Controller
         return Inertia::render('SuperAdmin/EditUserProfile', [
             'user' => [
                 'id' => $user->id,
+                'hashid' => $user->hashid,
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->is_admin ? 'Admin' : ($user->is_penyelenggara ? 'Penyelenggara' : 'UMKM'),
