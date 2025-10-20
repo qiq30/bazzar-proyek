@@ -282,6 +282,7 @@ class RegistrationWizardController extends Controller
             return back()->withErrors(['otp' => 'Gagal mengirim ulang email verifikasi.']);
         }
 
+        $request->session()->save();
         return back();
     }
 }
