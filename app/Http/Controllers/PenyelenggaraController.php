@@ -68,7 +68,7 @@ class PenyelenggaraController extends Controller
     {
         $request->validate([
             'nama_event' => 'required|string|max:255',
-            'proposal_document' => 'required|file|mimes:pdf|max:5120', // PDF, max 5MB
+            'proposal_document' => ['required', 'file', 'mimes:pdf', 'max:5120'], // Max 5MB
         ]);
 
         $documentPath = $request->file('proposal_document')->store('proposals/documents', 'public');
@@ -111,8 +111,7 @@ class PenyelenggaraController extends Controller
 
         $request->validate([
             'deskripsi_event' => 'required|string',
-            'poster_event' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'pendaftaran_dibuka' => 'required|date|after_or_equal:today',
+            'poster_event' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'], // Max 2MB            'pendaftaran_dibuka' => 'required|date|after_or_equal:today',
             'pendaftaran_ditutup' => 'required|date|after_or_equal:pendaftaran_dibuka',
             'tanggal_mulai_acara' => 'required|date|after:pendaftaran_ditutup',
             'tanggal_selesai_acara' => 'required|date|after_or_equal:tanggal_mulai_acara',
@@ -196,9 +195,20 @@ class PenyelenggaraController extends Controller
                 'organizer_name' => 'required|string|max:255',
                 'description' => 'required|string',
                 'address' => 'required|string',
-                'verification_document' => [$profile ? 'nullable' : 'required', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
-                'logo' => 'nullable|image|mimes:jpeg,png,jpg',
-                'max:2048'
+                'verification_document' => [
+                    $profile ? 'nullable' : 'required', // Required only if profile doesn't exist
+                    'file',
+                    'image',
+                    'mimes:jpeg,png,jpg',
+                    'max:2048' // Max 2MB
+                ],
+                'logo' => [
+                    'nullable',
+                    'file',
+                    'image',
+                    'mimes:jpeg,png,jpg',
+                    'max:2048' // Max 2MB
+                ]
             ],
         );
 

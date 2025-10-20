@@ -161,7 +161,7 @@ class SuperAdminController extends Controller
                 'organizer_name' => 'required|string|max:255',
                 'description' => 'required|string',
                 'address' => 'required|string',
-                'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+                'logo' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'], // Max 2MB
             ]);
             $profileData = $request->only('organizer_name', 'description', 'address');
 
@@ -178,7 +178,7 @@ class SuperAdminController extends Controller
                 'description' => 'required|string',
                 'address' => 'required|string',
                 'business_type' => 'required|string',
-                'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+                'logo' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'], // Max 2MB
             ]);
             $profileData = $request->only('business_name', 'description', 'address', 'business_type');
 

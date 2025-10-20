@@ -67,8 +67,14 @@ class UmkmController extends Controller
             'description' => 'required|string',
             'address' => 'required|string',
             'business_type' => 'required|string',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'ktp' => [$profile ? 'nullable' : 'required', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
+            'logo' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg', 'max:2048'], // Max 2MB
+            'ktp' => [
+                $profile ? 'nullable' : 'required', // Required only if profile doesn't exist
+                'file',
+                'image',
+                'mimes:jpeg,png,jpg',
+                'max:2048' // Max 2MB
+            ],
         ]);
 
         $logoPath = $profile->logo_path ?? null;
@@ -155,7 +161,10 @@ class UmkmController extends Controller
 
     public function storeQris(Request $request)
     {
-        $request->validate(['qris' => 'required|image|mimes:jpeg,png,jpg|max:2048']);
+        $request->validate([
+            // Updated validation rule for qris
+            'qris' => ['required', 'file', 'image', 'mimes:jpeg,png,jpg', 'max:2048'] // Max 2MB
+        ]);
         $umkmProfile = auth()->user()->umkmProfile;
 
         if ($umkmProfile->qris_path) {
@@ -182,7 +191,7 @@ class UmkmController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'nullable|numeric|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'image' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg', 'max:2048'], // Max 2MB
         ]);
         $umkmProfile = auth()->user()->umkmProfile;
         $imagePath = $request->hasFile('image') ? $request->file('image')->store('products', 'public') : null;
@@ -197,7 +206,7 @@ class UmkmController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'nullable|numeric|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'image' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg', 'max:2048'], // Max 2MB
         ]);
         $data = $request->only(['name', 'description', 'price']);
         if ($request->hasFile('image')) {
@@ -302,8 +311,10 @@ class UmkmController extends Controller
     public function uploadPaymentProof(Request $request, EventRegistration $registration)
     {
         if ($registration->umkm_profile_id !== auth()->user()->umkmProfile->id) abort(403);
-        $request->validate(['bukti_pembayaran' => 'required|image|mimes:jpeg,png,jpg|max:2048']);
-
+        $request->validate([
+            // Updated validation rule for bukti_pembayaran
+            'bukti_pembayaran' => ['required', 'file', 'image', 'mimes:jpeg,png,jpg', 'max:2048'] // Max 2MB
+        ]);
         $buktiPath = $request->file('bukti_pembayaran')->store('payment_proofs', 'public');
 
         $registration->update([

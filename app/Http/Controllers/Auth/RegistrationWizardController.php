@@ -166,16 +166,16 @@ class RegistrationWizardController extends Controller
                 'description' => 'required|string',
                 'address' => 'required|string',
                 'business_type' => 'required|string',
-                'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-                'ktp' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
+                'logo' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'], // Max 2MB
+                'ktp' => ['required', 'file', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'], // Max 2MB
             ]);
         } else {
             $request->validate([
                 'organizer_name' => 'required|string|max:255',
                 'description' => 'required|string',
                 'address' => 'required|string',
-                'verification_document' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
-                'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+                'verification_document' => ['required', 'file', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'], // Max 2MB
+                'logo' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'], // Max 2MB
             ]);
         }
         $user = User::create([
