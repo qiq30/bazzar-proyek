@@ -286,6 +286,7 @@ const Step2UmkmProfile = ({
     logoPreview,
     ktpPreview,
     requiredFields,
+    token,
 }) => {
     const businessTypes = [
         "Kuliner",
@@ -478,6 +479,7 @@ const Step2PenyelenggaraProfile = ({
     logoPreview,
     docPreview,
     requiredFields,
+    token,
 }) => {
     const isFieldInvalid = (field) => {
         if (field === "verification_document") {
@@ -617,7 +619,7 @@ const Step2PenyelenggaraProfile = ({
 };
 
 // --- Komponen Wizard Utama ---
-export default function RegisterWizard({ role, initialStep }) {
+export default function RegisterWizard({ role, initialStep, token }) {
     const { recaptcha_v3_site_key, errors } = usePage().props;
     const [logoPreview, setLogoPreview] = useState(null);
     const [ktpPreview, setKtpPreview] = useState(null);
@@ -698,13 +700,25 @@ export default function RegisterWizard({ role, initialStep }) {
 
     const handleFormSubmit = (e) => {
         e.preventDefault();
-        window.grecaptcha.ready(() => {
-            window.grecaptcha
-                .execute(recaptcha_v3_site_key, { action: "submit" })
-                .then((token) => {
-                    setData("g-recaptcha-response", token);
-                });
-        });
+        // Hanya trigger reCAPTCHA, biarkan useEffect yang handle post
+        if (window.grecaptcha && recaptcha_v3_site_key) {
+            // Tambah cek recaptcha_v3_site_key
+            window.grecaptcha.ready(() => {
+                window.grecaptcha
+                    .execute(recaptcha_v3_site_key, { action: "submit" })
+                    .then((token) => {
+                        setData("g-recaptcha-response", token);
+                    })
+                    .catch((error) => {
+                        // Tambahkan error handling
+                        console.error("reCAPTCHA execution error:", error);
+                        // Mungkin tampilkan pesan error ke pengguna
+                    });
+            });
+        } else {
+            console.error("reCAPTCHA not ready or site key missing");
+            // Mungkin tampilkan pesan error ke pengguna
+        }
     };
 
     const StepIcon = ({ step, currentStep, icon, label }) => {
@@ -921,6 +935,7 @@ export default function RegisterWizard({ role, initialStep }) {
                                     logoPreview={logoPreview}
                                     ktpPreview={ktpPreview}
                                     requiredFields={requiredFields}
+                                    token={token}
                                 />
                             )}
                             {initialStep === 2 && role === "penyelenggara" && (
@@ -933,6 +948,7 @@ export default function RegisterWizard({ role, initialStep }) {
                                     logoPreview={logoPreview}
                                     docPreview={docPreview}
                                     requiredFields={requiredFields}
+                                    token={token}
                                 />
                             )}
                         </AnimatePresence>
@@ -1016,7 +1032,8 @@ export default function RegisterWizard({ role, initialStep }) {
                                 >
                                     <Link
                                         href={route("register.wizard", {
-                                            role,
+                                            token: token,
+                                            step: 1,
                                         })}
                                         className="text-sm text-gray-600 hover:text-blue-600 transition-colors duration-200"
                                     >

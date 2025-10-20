@@ -31,39 +31,57 @@ const Spinner = () => (
     </svg>
 );
 
-export default function VerifyOtp({ email }) {
+// Terima prop 'initialOtpExpiryTimestamp'
+export default function VerifyOtp({ email, token, initialOtpExpiryTimestamp }) {
     const { data, setData, post, processing, errors } = useForm({
         otp: "",
-    });
+    }); // Form helper baru & state untuk timer
 
-    // Form helper baru & state untuk timer
     const { post: resendPost, processing: resending } = useForm();
-    const [countdown, setCountdown] = useState(0);
+    const [countdown, setCountdown] = useState(0); // Tetap mulai dari 0
 
     const [otp, setOtp] = useState(new Array(6).fill(""));
-    const inputsRef = useRef([]);
+    const inputsRef = useRef([]); // Sinkronisasi state OTP lokal dengan state form helper
 
-    // Sinkronisasi state OTP lokal dengan state form helper
     useEffect(() => {
         setData("otp", otp.join(""));
     }, [otp]);
 
-    // Efek ini hanya berjalan sekali saat komponen dimuat untuk mengambil sisa waktu dari localStorage
+    // Efek ini sekarang menggunakan prop untuk inisialisasi pertama
     useEffect(() => {
-        const expiryTime = localStorage.getItem("otpExpiryTime");
+        let expiryTime = null; // Prioritaskan prop dari controller untuk inisialisasi pertama
+
+        if (initialOtpExpiryTimestamp) {
+            expiryTime = initialOtpExpiryTimestamp; // Simpan ke localStorage untuk refresh halaman
+            localStorage.setItem("otpExpiryTime", expiryTime);
+        } else {
+            // Jika tidak ada prop (misal: refresh), coba baca dari localStorage
+            expiryTime = localStorage.getItem("otpExpiryTime");
+        }
+
         if (expiryTime) {
             const remaining = Math.round(
                 (expiryTime - new Date().getTime()) / 1000
             );
             if (remaining > 0) {
                 setCountdown(remaining);
+            } else {
+                // Jika waktu dari storage sudah habis, hapus itemnya
+                localStorage.removeItem("otpExpiryTime");
+                setCountdown(0); // Pastikan countdown 0 jika waktu habis
             }
+        } else {
+            setCountdown(0); // Jika tidak ada expiry time, pastikan countdown 0
         }
-    }, []);
+    }, [initialOtpExpiryTimestamp]); // Tambahkan initialOtpExpiryTimestamp sebagai dependency
 
     // Efek ini berjalan setiap kali nilai countdown berubah untuk mengurangi waktu
     useEffect(() => {
-        if (countdown <= 0) return;
+        if (countdown <= 0) {
+            // Hapus localStorage jika timer habis
+            localStorage.removeItem("otpExpiryTime");
+            return;
+        }
 
         const timerId = setTimeout(() => {
             setCountdown(countdown - 1);
@@ -269,7 +287,8 @@ export default function VerifyOtp({ email }) {
                     <p className="text-gray-500">
                         Salah memasukkan email?{" "}
                         <Link
-                            href={route("register.wizard")}
+                            // Gunakan prop 'token' di sini
+                            href={route("register.wizard", { token: token })}
                             className="font-medium text-yellow-600 hover:text-yellow-500 transition-colors"
                         >
                             Kembali ke Pendaftaran

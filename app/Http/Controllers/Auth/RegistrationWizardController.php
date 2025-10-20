@@ -21,6 +21,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Log;
 
 class RegistrationWizardController extends Controller
 {
@@ -61,6 +63,7 @@ class RegistrationWizardController extends Controller
             'role' => $role,
             'initialStep' => $step,
             'wizardData' => $wizardData,
+            'token' => $token,
         ]);
     }
 
@@ -86,7 +89,7 @@ class RegistrationWizardController extends Controller
         $request->session()->put('wizard_data.step1', $request->only('name', 'email', 'password', 'role'));
         $request->session()->put('otp_details', [
             'otp' => $otp,
-            'expires_at' => Carbon::now()->addMinutes(10) // OTP valid for 10 minutes
+            'expires_at' => Carbon::now()->addMinutes(1)
         ]);
 
         // Send OTP email
@@ -97,22 +100,56 @@ class RegistrationWizardController extends Controller
             return back()->withErrors(['email' => 'Gagal mengirim email verifikasi. Pastikan anda terhubung ke internet dengan benar.']);
         }
 
-        // Redirect to OTP verification form
-        return redirect()->route('register.show.otp')->with('email', $request->email);
+        $request->session()->save();
+
+        // Ambil token dari sesi
+        $wizardToken = $request->session()->get('wizard_token');
+        Log::info('Session data before redirect:', $request->session()->all()); // Log semua data sesi
+        Log::info('Wizard data step1 exists:', ['exists' => $request->session()->has('wizard_data.step1')]); // Cek spesifik
+        // Redirect ke OTP verification form DENGAN TOKEN di URL
+        return redirect()->route('register.show.otp', ['token' => $wizardToken]) // Tambahkan parameter token
+            ->with('email', $request->email); // Tetap flash email untuk fallback jika perlu
     }
 
     /**
      * Show the OTP verification form.
      */
-    public function showOtpForm(Request $request)
+    public function showOtpForm(Request $request, $token) // Tambahkan $token
     {
-        // Make sure user comes from step 1
+        Log::info('Session data on showOtpForm load:', $request->session()->all()); // <-- Kode Anda
+        Log::info('Wizard data step1 exists on load:', ['exists' => $request->session()->has('wizard_data.step1')]); // <-- Kode Anda
+
+        // Validasi token sesi (PENTING)
+        if ($token !== $request->session()->get('wizard_token')) {
+            return redirect()->route('home')->with('error', 'Sesi registrasi tidak valid atau telah kedaluwarsa.');
+        }
+
+        // Pastikan pengguna datang dari langkah 1 (cek data sesi)
         if (!$request->session()->has('wizard_data.step1')) {
-            return redirect()->route('home');
+            return redirect()->route('home')->with('error', 'Silakan mulai registrasi dari awal.');
+        }
+
+        // Ambil email dari sesi yang disimpan di step 1
+        $emailFromSession = $request->session()->get('wizard_data.step1.email');
+
+        if (!$emailFromSession) {
+            return redirect()->route('home')->with('error', 'Email tidak ditemukan dalam sesi registrasi.');
+        }
+
+        // Ambil detail OTP dari sesi
+        $otpDetails = $request->session()->get('otp_details');
+
+        // Pastikan otpDetails ada dan memiliki expires_at
+        $otpExpiryTimestamp = null;
+        if ($otpDetails && isset($otpDetails['expires_at']) && $otpDetails['expires_at'] instanceof Carbon) {
+            // Ubah Carbon instance menjadi timestamp milidetik untuk JavaScript
+            $otpExpiryTimestamp = $otpDetails['expires_at']->valueOf();
         }
 
         return Inertia::render('Auth/VerifyOtp', [
-            'email' => $request->session()->get('wizard_data.step1.email')
+            'email' => $emailFromSession,
+            'token' => $token,
+            'initialOtpExpiryTimestamp' => $otpExpiryTimestamp
         ]);
     }
 
@@ -236,7 +273,7 @@ class RegistrationWizardController extends Controller
 
         $request->session()->put('otp_details', [
             'otp' => $otp,
-            'expires_at' => Carbon::now()->addMinutes(10)
+            'expires_at' => Carbon::now()->addMinutes(1)
         ]);
 
         try {

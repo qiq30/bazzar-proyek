@@ -50,6 +50,9 @@ Route::middleware('guest')->group(function () {
     Route::post('/register-finish', [RegistrationWizardController::class, 'storeFinal'])
         ->middleware('throttle:5,1')
         ->name('register.wizard.finish');
+
+    Route::get('/register/verify-otp/{token}', [RegistrationWizardController::class, 'showOtpForm']) // Tambahkan {token}
+        ->name('register.show.otp');
 });
 
 // SUPER ADMIN ROUTES
