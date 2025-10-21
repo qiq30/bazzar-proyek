@@ -90,7 +90,7 @@ class UmkmController extends Controller
             if ($profile && $profile->ktp_path) {
                 Storage::disk('public')->delete($profile->ktp_path);
             }
-            $ktpPath = $request->file('ktp')->store('umkm/ktp', 'public');
+            $ktpPath = $request->file('ktp')->store('umkm/ktp', 'local_secure');
         }
 
         $updatedProfile = UmkmProfile::updateOrCreate(

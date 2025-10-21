@@ -140,7 +140,12 @@ export default function ProposalDocumentReview({ auth, proposal }) {
                                         Dokumen Proposal
                                     </h4>
                                     <iframe
-                                        src={`/storage/${proposal.proposal_document_path}`}
+                                        src={route(
+                                            "admin.secure.proposal.doc",
+                                            {
+                                                event: proposal.hashid,
+                                            }
+                                        )}
                                         className="w-full h-[70vh] rounded-lg border"
                                         title="Dokumen Proposal"
                                     ></iframe>

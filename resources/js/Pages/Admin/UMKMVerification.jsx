@@ -296,7 +296,9 @@ export default function UMKMVerification({
                                     </a>
                                 )}
                                 <a
-                                    href={`/storage/${viewingUmkm.ktp_path}`}
+                                    href={route("admin.secure.ktp", {
+                                        umkm: viewingUmkm.hashid,
+                                    })}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-blue-600 hover:underline block"

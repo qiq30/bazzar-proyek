@@ -265,7 +265,9 @@ export default function PenyelenggaraVerification({
                         <div className="mt-4">
                             <h4 className="font-bold">Dokumen Verifikasi</h4>
                             <a
-                                href={`/storage/${viewingProfile.verification_document_path}`}
+                                href={route("admin.secure.penyelenggara.doc", {
+                                    penyelenggara: viewingProfile.hashid,
+                                })}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-blue-600 hover:underline"

@@ -20,6 +20,7 @@ use App\Http\Controllers\ImpersonationApprovalController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SuperAdmin\SystemReportController;
 use App\Http\Controllers\Auth\SocialiteController;
+use App\Http\Controllers\SecureFileController;
 
 // Rute untuk Google OAuth
 Route::get('/auth/google/redirect', [SocialiteController::class, 'redirect'])->name('auth.google.redirect');
@@ -161,6 +162,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/penyelenggara/{penyelenggara:hashid}/verify', [AdminController::class, 'verifyPenyelenggara'])->name('penyelenggara.verify');
     Route::post('/penyelenggara/{penyelenggara:hashid}/reject', [AdminController::class, 'rejectPenyelenggara'])->name('penyelenggara.reject');
     Route::delete('/proposals/{id}/force-delete', [AdminController::class, 'permanentlyDeleteProposal'])->name('proposals.forceDelete');
+
+    Route::get('/secure-files/ktp/{umkm:hashid}', [SecureFileController::class, 'showKtp'])->name('secure.ktp');
+    Route::get('/secure-files/penyelenggara-doc/{penyelenggara:hashid}', [SecureFileController::class, 'showPenyelenggaraDoc'])->name('secure.penyelenggara.doc');
+    Route::get('/secure-files/proposal-doc/{event:hashid}', [SecureFileController::class, 'showProposalDoc'])->name('secure.proposal.doc');
 });
 
 // Penyelenggara Routes

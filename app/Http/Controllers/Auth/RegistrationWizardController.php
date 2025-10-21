@@ -225,7 +225,7 @@ class RegistrationWizardController extends Controller
         $profile = null;
         if ($role === 'umkm') {
             $logoPath = $request->hasFile('logo') ? $request->file('logo')->store('umkm/logos', 'public') : null;
-            $ktpPath = $request->file('ktp')->store('umkm/ktp', 'public');
+            $ktpPath = $request->file('ktp')->store('umkm/ktp', 'local_secure');
             $profile = UmkmProfile::create([
                 'user_id' => $user->id,
                 'business_name' => $request->business_name,
@@ -238,7 +238,7 @@ class RegistrationWizardController extends Controller
             ]);
         } else {
             $logoPath = $request->hasFile('logo') ? $request->file('logo')->store('penyelenggara/logos', 'public') : null;
-            $docPath = $request->file('verification_document')->store('penyelenggara/documents', 'public');
+            $docPath = $request->file('verification_document')->store('penyelenggara/documents', 'local_secure');
             $profile = PenyelenggaraProfile::create([
                 'user_id' => $user->id,
                 'organizer_name' => $request->organizer_name,

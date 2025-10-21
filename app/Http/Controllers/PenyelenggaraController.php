@@ -71,7 +71,7 @@ class PenyelenggaraController extends Controller
             'proposal_document' => ['required', 'file', 'mimes:pdf', 'max:5120'], // Max 5MB
         ]);
 
-        $documentPath = $request->file('proposal_document')->store('proposals/documents', 'public');
+        $documentPath = $request->file('proposal_document')->store('proposals/documents', 'local_secure');
 
         $event = Event::create([
             'user_id' => Auth::id(),
@@ -217,7 +217,7 @@ class PenyelenggaraController extends Controller
             if ($profile && $profile->verification_document_path) {
                 Storage::disk('public')->delete($profile->verification_document_path);
             }
-            $documentPath = $request->file('verification_document')->store('penyelenggara/documents', 'public');
+            $documentPath = $request->file('verification_document')->store('penyelenggara/documents', 'local_secure');
         }
 
         $logoPath = $profile->logo_path ?? null;
