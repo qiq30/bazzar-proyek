@@ -219,9 +219,12 @@ class RegistrationWizardController extends Controller
             'name' => $step1Data['name'],
             'email' => $step1Data['email'],
             'password' => Hash::make($step1Data['password']),
-            'is_penyelenggara' => $role === 'penyelenggara',
             'email_verified_at' => now(), // Mark email as verified
         ]);
+
+        $user->is_penyelenggara = ($role === 'penyelenggara');
+        $user->save(); // Simpan perubahan peran
+
         $profile = null;
         if ($role === 'umkm') {
             $logoPath = $request->hasFile('logo') ? $request->file('logo')->store('umkm/logos', 'public') : null;

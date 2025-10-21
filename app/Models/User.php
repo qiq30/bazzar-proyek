@@ -21,9 +21,6 @@ class User extends Authenticatable
         'email',
         'password',
         'phone',
-        'is_admin',
-        'is_penyelenggara',
-        'is_super_admin',
         'google_id',
         'google_token',
     ];
