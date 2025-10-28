@@ -79,6 +79,7 @@ export default function ProposalDetail({ auth, proposal }) {
                                         src={`/storage/${proposal.poster_event}`}
                                         alt="Poster Event"
                                         className="rounded-lg w-full object-cover"
+                                        loading="lazy"
                                     />
                                 ) : (
                                     <div className="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">

@@ -1,10 +1,8 @@
 // File: resources/js/Pages/Admin/Reports/Index.jsx
 
+import React, { Suspense } from "react"; // Tambahkan Suspense
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
-import BarChart from "@/Components/BarChart";
-import PieChart from "@/Components/PieChart";
-import LineChart from "@/Components/LineChart";
 import { useSpring, animated } from "@react-spring/web";
 import {
     FiUsers,
@@ -19,7 +17,11 @@ import {
     FiBarChart2,
 } from "react-icons/fi";
 
-// Komponen Kartu Statistik dengan Ikon
+// Tambahkan import lazy untuk chart
+const BarChart = React.lazy(() => import("@/Components/BarChart"));
+const PieChart = React.lazy(() => import("@/Components/PieChart"));
+const LineChart = React.lazy(() => import("@/Components/LineChart"));
+
 const AnimatedStatCard = ({
     title,
     value,
@@ -127,7 +129,13 @@ const SectionHeader = ({ title, subtitle }) => (
     </div>
 );
 
-// MAIN COMPONENT
+// Fallback component saat chart loading
+const ChartLoadingFallback = () => (
+    <div className="flex items-center justify-center h-full text-gray-500">
+        Memuat data grafik...
+    </div>
+);
+
 export default function Reports({
     auth,
     umkmStats,
@@ -161,10 +169,13 @@ export default function Reports({
                         />
                         <div className="p-6">
                             <div className="bg-gray-50 rounded-lg p-4 h-80">
-                                <LineChart
-                                    data={umkmStats.monthly_growth}
-                                    label="UMKM Baru"
-                                />
+                                {/* Bungkus LineChart dengan Suspense */}
+                                <Suspense fallback={<ChartLoadingFallback />}>
+                                    <LineChart
+                                        data={umkmStats.monthly_growth}
+                                        label="UMKM Baru"
+                                    />
+                                </Suspense>
                             </div>
                         </div>
                     </div>
@@ -234,7 +245,10 @@ export default function Reports({
                                 Distribusi UMKM Berdasarkan Jenis Usaha
                             </h4>
                             <div className="bg-gray-50 rounded-lg p-4 h-80">
-                                <PieChart data={umkmStats.by_type} />
+                                {/* Bungkus PieChart dengan Suspense */}
+                                <Suspense fallback={<ChartLoadingFallback />}>
+                                    <PieChart data={umkmStats.by_type} />
+                                </Suspense>
                             </div>
                         </div>
                     </div>
@@ -368,17 +382,22 @@ export default function Reports({
                                     Top 10 Event Terpopuler
                                 </h4>
                                 <div className="bg-gray-50 rounded-lg p-4 h-96">
-                                    <BarChart
-                                        data={eventStats.participants_per_event.reduce(
-                                            (acc, event) => {
-                                                acc[event.nama_event] =
-                                                    event.event_registrations_count;
-                                                return acc;
-                                            },
-                                            {}
-                                        )}
-                                        label="Jumlah Peserta"
-                                    />
+                                    {/* Bungkus BarChart dengan Suspense */}
+                                    <Suspense
+                                        fallback={<ChartLoadingFallback />}
+                                    >
+                                        <BarChart
+                                            data={eventStats.participants_per_event.reduce(
+                                                (acc, event) => {
+                                                    acc[event.nama_event] =
+                                                        event.event_registrations_count;
+                                                    return acc;
+                                                },
+                                                {}
+                                            )}
+                                            label="Jumlah Peserta"
+                                        />
+                                    </Suspense>
                                 </div>
                             </div>
                             <div>
@@ -386,7 +405,12 @@ export default function Reports({
                                     Distribusi Status Event
                                 </h4>
                                 <div className="bg-gray-50 rounded-lg p-4 h-96">
-                                    <PieChart data={eventStatusData} />
+                                    {/* Bungkus PieChart dengan Suspense */}
+                                    <Suspense
+                                        fallback={<ChartLoadingFallback />}
+                                    >
+                                        <PieChart data={eventStatusData} />
+                                    </Suspense>
                                 </div>
                             </div>
                         </div>

@@ -1,11 +1,9 @@
 // File: resources/js/Pages/SuperAdmin/SystemReport/Index.jsx
 
+import React, { Suspense } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 import { useSpring, animated } from "@react-spring/web";
-import PieChart from "@/Components/PieChart";
-import BarChart from "@/Components/BarChart";
-import LineChart from "@/Components/LineChart";
 import {
     FiUsers,
     FiCheckSquare,
@@ -15,7 +13,10 @@ import {
     FiFileText,
 } from "react-icons/fi";
 
-// Komponen Kartu Statistik
+const PieChart = React.lazy(() => import("@/Components/PieChart"));
+const BarChart = React.lazy(() => import("@/Components/BarChart"));
+const LineChart = React.lazy(() => import("@/Components/LineChart"));
+
 const StatCard = ({ title, value, description, icon, color }) => {
     const isCurrency = String(value).startsWith("Rp");
     const numericValue = Number(String(value).replace(/[^0-9.-]+/g, "")) || 0;
@@ -76,7 +77,6 @@ const StatCard = ({ title, value, description, icon, color }) => {
     );
 };
 
-// Komponen Wrapper untuk Bagian Laporan
 const ReportSection = ({ title, subtitle, children }) => (
     <div className="bg-white overflow-hidden shadow-lg sm:rounded-xl border border-gray-100">
         <div className="p-6 border-b border-gray-200">
@@ -86,6 +86,13 @@ const ReportSection = ({ title, subtitle, children }) => (
             )}
         </div>
         <div className="p-6">{children}</div>
+    </div>
+);
+
+// Fallback component saat chart loading
+const ChartLoadingFallback = () => (
+    <div className="flex items-center justify-center h-full text-gray-500">
+        Memuat data grafik...
     </div>
 );
 
@@ -217,16 +224,22 @@ export default function SystemReport({
                                 <h4 className="text-lg font-semibold text-gray-800 mb-4">
                                     Pertumbuhan Pengguna Baru (6 Bulan)
                                 </h4>
-                                <LineChart
-                                    data={userStats.monthly_growth}
-                                    label="Pengguna Baru"
-                                />
+                                {/* Bungkus LineChart dengan Suspense */}
+                                <Suspense fallback={<ChartLoadingFallback />}>
+                                    <LineChart
+                                        data={userStats.monthly_growth}
+                                        label="Pengguna Baru"
+                                    />
+                                </Suspense>
                             </div>
                             <div className="lg:col-span-2 h-96">
                                 <h4 className="text-lg font-semibold text-gray-800 mb-4 text-center">
                                     Komposisi Peran
                                 </h4>
-                                <PieChart data={userRoleData} />
+                                {/* Bungkus PieChart dengan Suspense */}
+                                <Suspense fallback={<ChartLoadingFallback />}>
+                                    <PieChart data={userRoleData} />
+                                </Suspense>
                             </div>
                         </div>
                     </ReportSection>
@@ -237,10 +250,13 @@ export default function SystemReport({
                         subtitle="Perbandingan status profil antara UMKM dan Penyelenggara."
                     >
                         <div className="h-96">
-                            <BarChart
-                                data={profileComparisonData}
-                                useRawData={true}
-                            />
+                            {/* Bungkus BarChart dengan Suspense */}
+                            <Suspense fallback={<ChartLoadingFallback />}>
+                                <BarChart
+                                    data={profileComparisonData}
+                                    useRawData={true}
+                                />
+                            </Suspense>
                         </div>
                     </ReportSection>
 
@@ -300,7 +316,10 @@ export default function SystemReport({
                                 Status Proposal Event
                             </h4>
                             <div className="h-96">
-                                <PieChart data={proposalStatusData} />
+                                {/* Bungkus PieChart dengan Suspense */}
+                                <Suspense fallback={<ChartLoadingFallback />}>
+                                    <PieChart data={proposalStatusData} />
+                                </Suspense>
                             </div>
                         </div>
                     </ReportSection>

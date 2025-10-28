@@ -257,6 +257,7 @@ export default function VerifikasiDetail({ auth, registration }) {
                                             src={`/storage/${registration.bukti_pembayaran_path}`}
                                             alt="Bukti Pembayaran"
                                             className="rounded-lg w-full object-cover border"
+                                            loading="lazy"
                                         />
                                     </a>
                                     <p className="text-xs text-center mt-2 text-gray-500">

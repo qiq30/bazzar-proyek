@@ -33,6 +33,7 @@ export default function UMKMDetailPage({ umkm }) {
                                         src={umkm.logo_url}
                                         alt={umkm.business_name}
                                         className="w-full h-full object-cover rounded-lg"
+                                        loading="lazy"
                                     />
                                 ) : (
                                     <FiShoppingBag className="text-blue-500 text-5xl" />
@@ -103,6 +104,7 @@ export default function UMKMDetailPage({ umkm }) {
                                                         }
                                                         alt={product.name}
                                                         className="w-full h-48 object-cover bg-gray-100"
+                                                        loading="lazy"
                                                     />
                                                     <div className="p-4 flex flex-col flex-grow">
                                                         <h4 className="font-semibold text-gray-800 truncate">

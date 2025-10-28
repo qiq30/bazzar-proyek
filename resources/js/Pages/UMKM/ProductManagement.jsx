@@ -91,6 +91,7 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
                         src={product.image_url}
                         alt="Preview"
                         className="mt-2 h-20 w-auto rounded"
+                        loading="lazy"
                     />
                 )}
             </div>
@@ -190,6 +191,7 @@ export default function ProductManagement({ auth, products = [] }) {
                                                 }
                                                 alt={product.name}
                                                 className="w-20 h-20 object-cover rounded-md bg-gray-100"
+                                                loading="lazy"
                                             />
                                             <div>
                                                 <h4 className="font-bold text-gray-900">

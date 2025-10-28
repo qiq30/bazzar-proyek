@@ -43,6 +43,7 @@ export default function EventCard({ event }) {
                         src={`/storage/${event.poster_event}`}
                         alt={event.nama_event}
                         className="w-full h-full object-cover"
+                        loading="lazy"
                     />
                 ) : (
                     <FiCalendar className="text-white text-6xl opacity-50" />

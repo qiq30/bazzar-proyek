@@ -213,6 +213,7 @@ export default function UMKMDirectoryPage({ event, umkmProfiles }) {
                                                 src={umkm.logo_url}
                                                 alt={umkm.business_name}
                                                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                                loading="lazy"
                                             />
                                         ) : (
                                             <FiShoppingBag className="text-gray-300 text-6xl" />

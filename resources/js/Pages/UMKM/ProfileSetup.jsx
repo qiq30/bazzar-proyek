@@ -275,6 +275,7 @@ const ProfileForm = ({ umkmProfile }) => {
                                         src={logoPreview}
                                         alt="Logo"
                                         className="max-h-full max-w-full object-contain"
+                                        loading="lazy"
                                     />
                                 ) : (
                                     <span className="text-gray-500">
@@ -313,6 +314,7 @@ const ProfileForm = ({ umkmProfile }) => {
                                         src={ktpPreview}
                                         alt="KTP"
                                         className="max-h-full max-w-full object-contain"
+                                        loading="lazy"
                                     />
                                 ) : (
                                     <span className="text-gray-500">

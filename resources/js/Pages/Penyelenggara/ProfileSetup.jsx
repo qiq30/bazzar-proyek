@@ -155,6 +155,7 @@ export default function ProfileSetup({ auth, profile }) {
                                                         src={logoPreview}
                                                         alt="Logo Preview"
                                                         className="mx-auto h-24 w-24 object-cover rounded-lg"
+                                                        loading="lazy"
                                                     />
                                                 </div>
                                             ) : (
@@ -200,6 +201,7 @@ export default function ProfileSetup({ auth, profile }) {
                                                         src={documentPreview}
                                                         alt="Document Preview"
                                                         className="mx-auto h-24 w-auto object-cover rounded-lg"
+                                                        loading="lazy"
                                                     />
                                                 </div>
                                             ) : (

@@ -40,6 +40,7 @@ export default function QRISCard({ umkm }) {
                         src={umkm.qris_url}
                         alt={`QRIS ${umkm.business_name}`}
                         className="w-48 h-48 object-contain mx-auto"
+                        loading="lazy"
                     />
                 </div>
 
@@ -88,6 +89,7 @@ export default function QRISCard({ umkm }) {
                                 src={umkm.qris_url}
                                 alt={`QRIS ${umkm.business_name}`}
                                 className="w-72 h-72 object-contain"
+                                loading="lazy"
                             />
                         </div>
 
