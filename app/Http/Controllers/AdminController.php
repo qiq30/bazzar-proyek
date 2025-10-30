@@ -18,50 +18,55 @@ use Inertia\Inertia;
 use Carbon\Carbon;
 use App\Events\ProfileStatusUpdated;
 use App\Events\EventPublished;
+use Illuminate\Support\Facades\Cache;
 
 class AdminController extends Controller
 {
     public function dashboard()
     {
-        $pendingProposalsStep1Count = Event::where('document_verification_status', 'pending_document_verification')->count();
-        $pendingProposalsStep2Count = Event::where('status_proposal', 'menunggu_persetujuan')->count();
+        // Gabungkan semua data dashboard (stats & chartData) ke dalam satu cache
+        $dashboardData = Cache::remember('admin_dashboard_data', now()->addMinutes(10), function () {
+            $pendingProposalsStep1Count = Event::where('document_verification_status', 'pending_document_verification')->count();
+            $pendingProposalsStep2Count = Event::where('status_proposal', 'menunggu_persetujuan')->count();
 
-        $stats = [
-            'totalEvents' => Event::whereNotNull('status')->count(),
-            'activeEvents' => Event::where('status', 'active')->count(),
-            'totalUmkm' => UmkmProfile::count(),
-            'verifiedUmkm' => UmkmProfile::where('status', 'verified')->count(),
-            'pendingUmkm' => UmkmProfile::where('status', 'pending')->count(),
-            'totalPenyelenggara' => PenyelenggaraProfile::count(),
-            'verifiedPenyelenggara' => PenyelenggaraProfile::where('status', 'verified')->count(),
-            'pendingPenyelenggara' => PenyelenggaraProfile::where('status', 'pending')->count(),
-            'pendingProposalsStep1' => $pendingProposalsStep1Count, // Proposal Tahap 1
-            'pendingProposalsStep2' => $pendingProposalsStep2Count, // Proposal Tahap 2
-        ];
+            $stats = [
+                'totalEvents' => Event::whereNotNull('status')->count(),
+                'activeEvents' => Event::where('status', 'active')->count(),
+                'totalUmkm' => UmkmProfile::count(),
+                'verifiedUmkm' => UmkmProfile::where('status', 'verified')->count(),
+                'pendingUmkm' => UmkmProfile::where('status', 'pending')->count(),
+                'totalPenyelenggara' => PenyelenggaraProfile::count(),
+                'verifiedPenyelenggara' => PenyelenggaraProfile::where('status', 'verified')->count(),
+                'pendingPenyelenggara' => PenyelenggaraProfile::where('status', 'pending')->count(),
+                'pendingProposalsStep1' => $pendingProposalsStep1Count,
+                'pendingProposalsStep2' => $pendingProposalsStep2Count,
+            ];
 
-        $chartData = [
-            'userComposition' => [
-                'UMKM' => UmkmProfile::count(),
-                'Penyelenggara' => PenyelenggaraProfile::count(),
-            ],
-            'popularEvents' => Event::withCount(['eventRegistrations' => function ($query) {
-                $query->whereIn('status', ['approved', 'sudah_check_in', 'pembayaran_terkonfirmasi']);
-            }])
-                ->whereIn('status', ['active', 'upcoming'])
-                ->orderBy('event_registrations_count', 'desc')
-                ->limit(5)
-                ->get(['nama_event', 'event_registrations_count'])
-                ->mapWithKeys(function ($event) {
-                    return [$event->nama_event => $event->event_registrations_count];
-                }),
-        ];
+            $chartData = [
+                'userComposition' => [
+                    'UMKM' => $stats['totalUmkm'], // Gunakan data yang sudah di-query
+                    'Penyelenggara' => $stats['totalPenyelenggara'], // Gunakan data yang sudah di-query
+                ],
+                'popularEvents' => Event::withCount(['eventRegistrations' => function ($query) {
+                    $query->whereIn('status', ['approved', 'sudah_check_in', 'pembayaran_terkonfirmasi']);
+                }])
+                    ->whereIn('status', ['active', 'upcoming'])
+                    ->orderBy('event_registrations_count', 'desc')
+                    ->limit(5)
+                    ->get(['nama_event', 'event_registrations_count'])
+                    ->mapWithKeys(function ($event) {
+                        return [$event->nama_event => $event->event_registrations_count];
+                    }),
+            ];
+
+            return ['stats' => $stats, 'chartData' => $chartData];
+        });
 
         return Inertia::render('Admin/AdminDashboard', [
-            'stats' => $stats,
-            'chartData' => $chartData,
+            'stats' => $dashboardData['stats'],
+            'chartData' => $dashboardData['chartData'],
         ]);
     }
-
 
     public function events()
     {

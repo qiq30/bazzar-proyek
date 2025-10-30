@@ -8,6 +8,7 @@ use App\Models\UmkmProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Cache;
 
 class PublicController extends Controller
 {
@@ -16,15 +17,20 @@ class PublicController extends Controller
 
         $filters = $request->only('search', 'status');
 
-        $events = Event::query()
-            // Hanya ambil event yang belum selesai
-            ->whereIn('status', ['active', 'upcoming'])
-            // Terapkan filter dari request
-            ->filter($filters)
-            // Ganti 'tanggal_mulai' menjadi 'tanggal_mulai_acara'
-            ->orderBy('tanggal_mulai_acara', 'asc')
-            ->take(12)
-            ->get();
+        // Buat cache key unik berdasarkan filter
+        $cacheKey = 'public_home_events_' . md5(json_encode($filters));
+
+        $events = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($filters) {
+            return Event::query()
+                // Hanya ambil event yang belum selesai
+                ->whereIn('status', ['active', 'upcoming'])
+                // Terapkan filter dari request
+                ->filter($filters)
+                // Ganti 'tanggal_mulai' menjadi 'tanggal_mulai_acara'
+                ->orderBy('tanggal_mulai_acara', 'asc')
+                ->take(12)
+                ->get();
+        });
 
         return Inertia::render('Public/HomePage', [
             'events' => $events,
