@@ -11,6 +11,9 @@ use Illuminate\Queue\InteractsWithQueue;
 
 class StoreRegistrationFinalizedNotification
 {
+
+    use InteractsWithQueue;
+
     /**
      * Create the event listener.
      */

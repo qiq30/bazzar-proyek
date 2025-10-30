@@ -201,6 +201,23 @@ class AdminController extends Controller
         ]);
     }
 
+    public function verifyUmkm(UmkmProfile $umkm)
+    {
+        // Ambil user yang berelasi dengan profil
+        $user = $umkm->user;
+
+        // Update kolom email_verified_at jika belum terisi
+        if ($user && !$user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+        }
+
+        $umkm->update(['status' => 'verified', 'rejection_reason' => null]);
+        $umkm->refresh();
+        ProfileStatusUpdated::dispatch($umkm);
+        return back()->with('success', 'UMKM berhasil diverifikasi!');
+    }
+
+
     public function rejectUmkm(Request $request, UmkmProfile $umkm)
     {
         $request->validate(['rejection_reason' => 'required|string|min:10']);

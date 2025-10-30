@@ -11,6 +11,9 @@ use Illuminate\Queue\InteractsWithQueue;
 
 class StoreNewUserRegisteredNotification
 {
+
+    use InteractsWithQueue;
+
     /**
      * Create the event listener.
      */

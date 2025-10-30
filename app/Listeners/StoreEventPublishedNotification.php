@@ -10,6 +10,9 @@ use Illuminate\Queue\InteractsWithQueue;
 
 class StoreEventPublishedNotification
 {
+
+    use InteractsWithQueue;
+
     /**
      * Create the event listener.
      */

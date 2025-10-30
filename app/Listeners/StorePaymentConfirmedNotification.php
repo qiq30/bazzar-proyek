@@ -10,6 +10,9 @@ use Illuminate\Queue\InteractsWithQueue;
 
 class StorePaymentConfirmedNotification
 {
+
+    use InteractsWithQueue;
+
     /**
      * Create the event listener.
      */

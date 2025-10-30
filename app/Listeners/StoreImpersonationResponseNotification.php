@@ -10,6 +10,9 @@ use Illuminate\Queue\InteractsWithQueue;
 
 class StoreImpersonationResponseNotification
 {
+
+    use InteractsWithQueue;
+
     /**
      * Create the event listener.
      */

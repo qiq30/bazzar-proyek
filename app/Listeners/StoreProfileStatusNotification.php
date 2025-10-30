@@ -12,6 +12,9 @@ use Illuminate\Queue\InteractsWithQueue;
 
 class StoreProfileStatusNotification
 {
+
+    use InteractsWithQueue;
+
     /**
      * Create the event listener.
      */

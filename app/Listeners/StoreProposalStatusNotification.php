@@ -11,6 +11,9 @@ use Illuminate\Queue\InteractsWithQueue;
 
 class StoreProposalStatusNotification
 {
+
+    use InteractsWithQueue;
+
     /**
      * Create the event listener.
      */
