@@ -27,8 +27,8 @@ class UmkmController extends Controller
 {
     public function dashboard()
     {
-        $user = auth()->user();
-        $umkmProfile = $user->umkmProfile()->with('user')->first();
+        $user = Auth::user();
+        $umkmProfile = $user->umkmProfile;
 
         $data = [
             'hasProfile' => !is_null($umkmProfile),
@@ -48,7 +48,9 @@ class UmkmController extends Controller
 
     public function profileSetup()
     {
-        $umkmProfile = Auth::user()->umkmProfile;
+        $user = Auth::user();
+        $umkmProfile = $user->umkmProfile;
+
         if ($umkmProfile && $umkmProfile->status === 'verified') {
             return redirect()->route('umkm.dashboard')->with('info', 'Profil yang sudah terverifikasi tidak dapat diubah.');
         }
@@ -67,13 +69,13 @@ class UmkmController extends Controller
             'description' => 'required|string',
             'address' => 'required|string',
             'business_type' => 'required|string',
-            'logo' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg', 'max:2048'], // Max 2MB
+            'logo' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
             'ktp' => [
-                $profile ? 'nullable' : 'required', // Required only if profile doesn't exist
+                $profile ? 'nullable' : 'required',
                 'file',
                 'image',
                 'mimes:jpeg,png,jpg',
-                'max:2048' // Max 2MB
+                'max:2048'
             ],
         ]);
 
@@ -88,13 +90,13 @@ class UmkmController extends Controller
         $ktpPath = $profile->ktp_path ?? null;
         if ($request->hasFile('ktp')) {
             if ($profile && $profile->ktp_path) {
-                Storage::disk('public')->delete($profile->ktp_path);
+                Storage::disk('local_secure')->delete($profile->ktp_path);
             }
             $ktpPath = $request->file('ktp')->store('umkm/ktp', 'local_secure');
         }
 
         $updatedProfile = UmkmProfile::updateOrCreate(
-            ['user_id' => auth()->id()],
+            ['user_id' => $user->id],
             [
                 'business_name' => $request->business_name,
                 'description' => $request->description,
@@ -115,7 +117,8 @@ class UmkmController extends Controller
 
     public function events()
     {
-        $umkmProfile = auth()->user()->umkmProfile;
+        $user = Auth::user();
+        $umkmProfile = $user->umkmProfile;
         $umkmProfileId = $umkmProfile?->id;
 
         $events = Event::withCount(['eventRegistrations' => function ($query) {
@@ -138,7 +141,7 @@ class UmkmController extends Controller
                 // Mengirim hashid, bukan id biasa
                 $registrationStatus[$reg->event_id] = [
                     'status' => $reg->status,
-                    'id' => $reg->hashid, // Menggunakan hashid accessor
+                    'id' => $reg->hashid,
                     'rejection_reason' => $reg->rejection_reason,
                 ];
             }
@@ -155,17 +158,19 @@ class UmkmController extends Controller
 
     public function uploadQris()
     {
-        $umkmProfile = auth()->user()->umkmProfile;
+        $user = Auth::user();
+        $umkmProfile = $user->umkmProfile;
         return Inertia::render('UMKM/UploadQRIS', ['umkmProfile' => $umkmProfile]);
     }
 
     public function storeQris(Request $request)
     {
         $request->validate([
-            // Updated validation rule for qris
-            'qris' => ['required', 'file', 'image', 'mimes:jpeg,png,jpg', 'max:2048'] // Max 2MB
+            'qris' => ['required', 'file', 'image', 'mimes:jpeg,png,jpg', 'max:2048']
         ]);
-        $umkmProfile = auth()->user()->umkmProfile;
+
+        $user = Auth::user();
+        $umkmProfile = $user->umkmProfile;
 
         if ($umkmProfile->qris_path) {
             Storage::disk('public')->delete($umkmProfile->qris_path);
@@ -181,7 +186,8 @@ class UmkmController extends Controller
 
     public function products()
     {
-        $umkmProfile = auth()->user()->umkmProfile()->with('products')->first();
+        $user = Auth::user();
+        $umkmProfile = $user->umkmProfile->load('products');
         return Inertia::render('UMKM/ProductManagement', ['products' => $umkmProfile->products]);
     }
 
@@ -191,9 +197,11 @@ class UmkmController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'nullable|numeric|min:0',
-            'image' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg', 'max:2048'], // Max 2MB
+            'image' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
         ]);
-        $umkmProfile = auth()->user()->umkmProfile;
+
+        $user = Auth::user();
+        $umkmProfile = $user->umkmProfile;
         $imagePath = $request->hasFile('image') ? $request->file('image')->store('products', 'public') : null;
         $umkmProfile->products()->create(array_merge($request->only(['name', 'description', 'price']), ['image_path' => $imagePath]));
         return back()->with('success', 'Produk berhasil ditambahkan!');
@@ -201,12 +209,14 @@ class UmkmController extends Controller
 
     public function updateProduct(Request $request, Product $product)
     {
-        if ($product->umkm_profile_id !== auth()->user()->umkmProfile->id) abort(403);
+        $user = Auth::user();
+        if ($product->umkm_profile_id !== $user->umkmProfile->id) abort(403);
+
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'nullable|numeric|min:0',
-            'image' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg', 'max:2048'], // Max 2MB
+            'image' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
         ]);
         $data = $request->only(['name', 'description', 'price']);
         if ($request->hasFile('image')) {
@@ -219,7 +229,9 @@ class UmkmController extends Controller
 
     public function destroyProduct(Product $product)
     {
-        if ($product->umkm_profile_id !== auth()->user()->umkmProfile->id) abort(403);
+        $user = Auth::user();
+        if ($product->umkm_profile_id !== $user->umkmProfile->id) abort(403);
+
         if ($product->image_path) Storage::disk('public')->delete($product->image_path);
         $product->delete();
         return back()->with('success', 'Produk berhasil dihapus!');
@@ -244,7 +256,8 @@ class UmkmController extends Controller
             return redirect()->route('umkm.events')->with('error', 'Pendaftaran untuk event ini sedang tidak dibuka.');
         }
 
-        $umkmProfile = auth()->user()->umkmProfile;
+        $user = Auth::user();
+        $umkmProfile = $user->umkmProfile;
 
         $existingRegistration = EventRegistration::where('event_id', $event->id)
             ->where('umkm_profile_id', $umkmProfile->id)
@@ -290,7 +303,8 @@ class UmkmController extends Controller
 
     public function showPaymentPage(EventRegistration $registration)
     {
-        if ($registration->umkm_profile_id !== auth()->user()->umkmProfile->id) {
+        $user = Auth::user();
+        if ($registration->umkm_profile_id !== $user->umkmProfile->id) {
             abort(403);
         }
 
@@ -310,10 +324,11 @@ class UmkmController extends Controller
 
     public function uploadPaymentProof(Request $request, EventRegistration $registration)
     {
-        if ($registration->umkm_profile_id !== auth()->user()->umkmProfile->id) abort(403);
+        $user = Auth::user();
+        if ($registration->umkm_profile_id !== $user->umkmProfile->id) abort(403);
+
         $request->validate([
-            // Updated validation rule for bukti_pembayaran
-            'bukti_pembayaran' => ['required', 'file', 'image', 'mimes:jpeg,png,jpg', 'max:2048'] // Max 2MB
+            'bukti_pembayaran' => ['required', 'file', 'image', 'mimes:jpeg,png,jpg', 'max:2048']
         ]);
         $buktiPath = $request->file('bukti_pembayaran')->store('payment_proofs', 'public');
 
@@ -332,7 +347,9 @@ class UmkmController extends Controller
 
     public function myTickets()
     {
-        $umkmProfile = Auth::user()->umkmProfile;
+        $user = Auth::user();
+        $umkmProfile = $user->umkmProfile;
+
         if (!$umkmProfile) {
             return redirect()->route('umkm.dashboard')->with('error', 'Anda harus melengkapi profil UMKM terlebih dahulu.');
         }
@@ -365,7 +382,8 @@ class UmkmController extends Controller
 
     public function downloadTicket(EventRegistration $registration)
     {
-        if ($registration->umkm_profile_id !== auth()->user()->umkmProfile->id) {
+        $user = Auth::user();
+        if ($registration->umkm_profile_id !== $user->umkmProfile->id) {
             abort(403);
         }
 
