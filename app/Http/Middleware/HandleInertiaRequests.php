@@ -36,7 +36,9 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
                 // Ambil semua notifikasi dari relasi di model User
-                'notifications' => $request->user() ? $request->user()->notifications : [],
+                'notifications' => $request->user()
+                    ? $request->user()->notifications()->take(20)->get()
+                    : [],
                 // Ambil jumlah notifikasi yang belum dibaca
                 'unreadNotifications' => $request->user() ? $request->user()->unreadNotifications()->count() : 0,
             ],
