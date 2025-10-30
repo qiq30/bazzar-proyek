@@ -147,38 +147,53 @@ class AdminController extends Controller
         return back()->with('success', 'Event berhasil dihapus!');
     }
 
-    public function umkmVerification()
+    public function umkmVerification(Request $request)
     {
+        $filters = $request->only('search', 'start_date', 'end_date');
+
         $pendingUmkmProfiles = UmkmProfile::with('user')
             ->where('status', 'pending')
+            ->when($filters['search'] ?? null, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('business_name', 'like', '%' . $search . '%')
+                        ->orWhereHas('user', function ($userQuery) use ($search) {
+                            $userQuery->where('name', 'like', '%' . $search . '%');
+                        });
+                });
+            })
+            ->when($filters['start_date'] ?? null, function ($query, $startDate) {
+                $query->whereDate('created_at', '>=', $startDate);
+            })
+            ->when($filters['end_date'] ?? null, function ($query, $endDate) {
+                $query->whereDate('created_at', '<=', $endDate);
+            })
             ->orderBy('created_at', 'desc')
             ->get();
 
         $verifiedUmkmProfiles = UmkmProfile::with('user')
             ->whereIn('status', ['verified', 'rejected'])
+            ->when($filters['search'] ?? null, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('business_name', 'like', '%' . $search . '%')
+                        ->orWhereHas('user', function ($userQuery) use ($search) {
+                            $userQuery->where('name', 'like', '%' . $search . '%');
+                        });
+                });
+            })
+            ->when($filters['start_date'] ?? null, function ($query, $startDate) {
+                $query->whereDate('created_at', '>=', $startDate);
+            })
+            ->when($filters['end_date'] ?? null, function ($query, $endDate) {
+                $query->whereDate('created_at', '<=', $endDate);
+            })
             ->orderBy('updated_at', 'desc')
             ->get();
 
         return Inertia::render('Admin/UMKMVerification', [
             'pendingUmkmProfiles' => $pendingUmkmProfiles,
             'verifiedUmkmProfiles' => $verifiedUmkmProfiles,
+            'filters' => $filters,
         ]);
-    }
-
-    public function verifyUmkm(UmkmProfile $umkm)
-    {
-        // Ambil user yang berelasi dengan profil
-        $user = $umkm->user;
-
-        // Update kolom email_verified_at jika belum terisi
-        if ($user && !$user->hasVerifiedEmail()) {
-            $user->markEmailAsVerified();
-        }
-
-        $umkm->update(['status' => 'verified', 'rejection_reason' => null]);
-        $umkm->refresh();
-        ProfileStatusUpdated::dispatch($umkm);
-        return back()->with('success', 'UMKM berhasil diverifikasi!');
     }
 
     public function rejectUmkm(Request $request, UmkmProfile $umkm)
@@ -196,21 +211,52 @@ class AdminController extends Controller
         return back()->with('success', 'UMKM ditolak.');
     }
 
-    public function penyelenggaraVerification()
+    public function penyelenggaraVerification(Request $request)
     {
+        $filters = $request->only('search', 'start_date', 'end_date');
+
         $pendingPenyelenggara = PenyelenggaraProfile::with('user')
             ->where('status', 'pending')
+            ->when($filters['search'] ?? null, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('organizer_name', 'like', '%' . $search . '%')
+                        ->orWhereHas('user', function ($userQuery) use ($search) {
+                            $userQuery->where('name', 'like', '%' . $search . '%');
+                        });
+                });
+            })
+            ->when($filters['start_date'] ?? null, function ($query, $startDate) {
+                $query->whereDate('created_at', '>=', $startDate);
+            })
+            ->when($filters['end_date'] ?? null, function ($query, $endDate) {
+                $query->whereDate('created_at', '<=', $endDate);
+            })
             ->orderBy('created_at', 'desc')
             ->get();
 
         $verifiedPenyelenggara = PenyelenggaraProfile::with('user')
             ->whereIn('status', ['verified', 'rejected'])
+            ->when($filters['search'] ?? null, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('organizer_name', 'like', '%' . $search . '%')
+                        ->orWhereHas('user', function ($userQuery) use ($search) {
+                            $userQuery->where('name', 'like', '%' . $search . '%');
+                        });
+                });
+            })
+            ->when($filters['start_date'] ?? null, function ($query, $startDate) {
+                $query->whereDate('created_at', '>=', $startDate);
+            })
+            ->when($filters['end_date'] ?? null, function ($query, $endDate) {
+                $query->whereDate('created_at', '<=', $endDate);
+            })
             ->orderBy('updated_at', 'desc')
             ->get();
 
         return Inertia::render('Admin/PenyelenggaraVerification', [
             'pendingPenyelenggara' => $pendingPenyelenggara,
             'verifiedPenyelenggara' => $verifiedPenyelenggara,
+            'filters' => $filters,
         ]);
     }
 
@@ -245,20 +291,43 @@ class AdminController extends Controller
         return back()->with('success', 'Profil Penyelenggara ditolak.');
     }
 
-    public function listProposals()
+    public function listProposals(Request $request)
     {
+        $filters = $request->only('search', 'start_date', 'end_date');
+
+        // Helper function untuk menerapkan filter
+        $applyFilters = function ($query) use ($filters) {
+            $query->when($filters['search'] ?? null, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('nama_event', 'like', '%' . $search . '%')
+                        ->orWhereHas('user', function ($userQuery) use ($search) {
+                            $userQuery->where('name', 'like', '%' . $search . '%');
+                        });
+                });
+            })
+                ->when($filters['start_date'] ?? null, function ($query, $startDate) {
+                    $query->whereDate('created_at', '>=', $startDate);
+                })
+                ->when($filters['end_date'] ?? null, function ($query, $endDate) {
+                    $query->whereDate('created_at', '<=', $endDate);
+                });
+        };
+
         $pendingDocumentProposals = Event::with('user')
             ->where('document_verification_status', 'pending_document_verification')
+            ->tap($applyFilters)
             ->orderBy('created_at', 'desc')
             ->get();
 
         $pendingProposals = Event::with('user')
             ->where('status_proposal', 'menunggu_persetujuan')
+            ->tap($applyFilters)
             ->orderBy('created_at', 'desc')
             ->get();
 
         $approvedProposals = Event::with('user')
             ->where('status_proposal', 'disetujui')
+            ->tap($applyFilters)
             ->orderBy('updated_at', 'desc')
             ->get();
 
@@ -267,14 +336,16 @@ class AdminController extends Controller
                 $query->where('status_proposal', 'ditolak')
                     ->orWhere('document_verification_status', 'document_rejected');
             })
+            ->tap($applyFilters)
             ->orderBy('deleted_at', 'desc')
             ->get();
 
         return Inertia::render('Admin/ProposalList', [
-            'pendingDocumentProposals' => $pendingDocumentProposals, // Kirim data baru
+            'pendingDocumentProposals' => $pendingDocumentProposals,
             'pendingProposals' => $pendingProposals,
             'approvedProposals' => $approvedProposals,
             'rejectedProposals' => $rejectedProposals,
+            'filters' => $filters,
         ]);
     }
 
