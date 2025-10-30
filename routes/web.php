@@ -104,18 +104,18 @@ require __DIR__ . '/auth.php';
 Route::middleware(['auth', 'verified', 'umkm'])->group(function () {
     Route::get('/dashboard', [UmkmController::class, 'dashboard'])->name('umkm.dashboard');
     Route::get('/profile/setup', [UmkmController::class, 'profileSetup'])->name('umkm.profile.setup');
-    Route::post('/profile/setup', [UmkmController::class, 'storeProfile'])->name('umkm.profile.store');
+    Route::post('/profile', [UmkmController::class, 'storeProfile'])->name('umkm.profile.store')->middleware('throttle:10,1');
     Route::get('/events', [UmkmController::class, 'events'])->name('umkm.events');
-    Route::post('/events/{event:hashid}/register', [UmkmController::class, 'startRegistration'])->name('umkm.events.register');
+    Route::post('/events/{event:hashid}/register', [UmkmController::class, 'startRegistration'])->name('umkm.events.register')->middleware('throttle:10,1');
     Route::get('/payment/{registration:hashid}', [UmkmController::class, 'showPaymentPage'])->name('umkm.events.pay');
-    Route::post('/payment/{registration:hashid}', [UmkmController::class, 'uploadPaymentProof'])->name('umkm.events.uploadProof');
+    Route::post('/payment/{registration:hashid}', [UmkmController::class, 'uploadPaymentProof'])->name('umkm.events.uploadProof')->middleware('throttle:10,1');
     Route::get('/my-tickets', [UmkmController::class, 'myTickets'])->name('umkm.tickets');
     Route::get('/my-tickets/{registration}/download', [UmkmController::class, 'downloadTicket'])->name('umkm.tickets.download')->middleware('signed');
     Route::get('/qris/upload', [UmkmController::class, 'uploadQris'])->name('umkm.qris.upload');
-    Route::post('/qris/upload', [UmkmController::class, 'storeQris'])->name('umkm.qris.store');
+    Route::post('/qris/upload', [UmkmController::class, 'storeQris'])->name('umkm.qris.store')->middleware('throttle:10,1');
     Route::get('/products', [UmkmController::class, 'products'])->name('umkm.products');
-    Route::post('/products', [UmkmController::class, 'storeProduct'])->name('umkm.products.store');
-    Route::post('/products/{product:hashid}', [UmkmController::class, 'updateProduct'])->name('umkm.products.update');
+    Route::post('/products', [UmkmController::class, 'storeProduct'])->name('umkm.products.store')->middleware('throttle:10,1');
+    Route::post('/products/{product:hashid}', [UmkmController::class, 'updateProduct'])->name('umkm.products.update')->middleware('throttle:10,1');
     Route::delete('/products/{product:hashid}', [UmkmController::class, 'destroyProduct'])->name('umkm.products.destroy');
 });
 
@@ -172,18 +172,18 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 Route::middleware(['auth', 'verified', 'penyelenggara'])->prefix('penyelenggara')->name('penyelenggara.')->group(function () {
     Route::get('/dashboard', [PenyelenggaraController::class, 'dashboard'])->name('dashboard');
     Route::get('/profile/setup', [PenyelenggaraController::class, 'createProfile'])->name('profile.setup');
-    Route::post('/profile/setup', [PenyelenggaraController::class, 'storeProfile'])->name('profile.store');
+    Route::post('/profile/setup', [PenyelenggaraController::class, 'storeProfile'])->name('profile.store')->middleware('throttle:10,1');
 
     // Rute untuk menampilkan wizard (bisa untuk step 1 atau step 2)
     Route::get('/proposal/wizard/{event:hashid?}', [PenyelenggaraController::class, 'proposalWizard'])->name('proposal.wizard');    // Rute untuk menyimpan data dari step 1 (upload dokumen)
-    Route::post('/proposal/wizard/step1', [PenyelenggaraController::class, 'storeProposalStep1'])->name('proposal.wizard.step1');    // Rute untuk menyimpan data dari step 2 (detail event) - nama diubah agar jelas
-    Route::post('/proposal/wizard/step2/{event:hashid}', [PenyelenggaraController::class, 'storeProposalStep2'])->name('proposal.wizard.step2');
+    Route::post('/proposal/wizard/step1', [PenyelenggaraController::class, 'storeProposalStep1'])->name('proposal.wizard.step1')->middleware('throttle:10,1');   // Rute untuk menyimpan data dari step 2 (detail event) - nama diubah agar jelas
+    Route::post('/proposal/wizard/step2/{event:hashid}', [PenyelenggaraController::class, 'storeProposalStep2'])->name('proposal.wizard.step2')->middleware('throttle:10,1');
     Route::get('/proposal/download-template', [PenyelenggaraController::class, 'downloadTemplate'])->name('proposal.template.download');
 
     Route::get('/verifikasi-pendaftar', [PenyelenggaraController::class, 'listVerifikasi'])->name('pendaftar.verifikasi.list');
     Route::get('/verifikasi-pendaftar/{registration:hashid}', [PenyelenggaraController::class, 'showVerifikasi'])->name('pendaftar.verifikasi.show');
-    Route::post('/verifikasi-pendaftar/{registration:hashid}/confirm', [PenyelenggaraController::class, 'confirmPayment'])->name('pendaftar.verifikasi.confirm');
-    Route::post('/verifikasi-pendaftar/{registration:hashid}/reject', [PenyelenggaraController::class, 'rejectPayment'])->name('pendaftar.verifikasi.reject');
+    Route::post('/verifikasi-pendaftar/{registration:hashid}/confirm', [PenyelenggaraController::class, 'confirmPayment'])->name('pendaftar.verifikasi.confirm')->middleware('throttle:10,1');
+    Route::post('/verifikasi-pendaftar/{registration:hashid}/reject', [PenyelenggaraController::class, 'rejectPayment'])->name('pendaftar.verifikasi.reject')->middleware('throttle:10,1');
     Route::post('/verifikasi-pendaftar/{registration:hashid}/assign-stand', [PenyelenggaraController::class, 'assignStandNumber'])->name('pendaftar.verifikasi.assignStand');
     Route::get('/proposals/{event}', [PenyelenggaraController::class, 'showProposal'])->name('proposals.show')->withTrashed();
 });
