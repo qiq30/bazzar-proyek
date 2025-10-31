@@ -283,13 +283,13 @@ class UltimateTestSeeder extends Seeder
             EventRegistration::insert($chunk);
         }
 
-        $this->command->info('🎉 SEEDER SKALA KECIL BERHASIL DIJALANKAN! 🎉');
-        $this->command->info('📊 RINGKASAN DATA:');
+        $this->command->info('SEEDER SKALA KECIL BERHASIL DIJALANKAN! ');
+        $this->command->info('RINGKASAN DATA:');
         $this->command->info('- Penyelenggara: ' . PenyelenggaraProfile::count());
         $this->command->info('- UMKM: ' . UmkmProfile::count());
         $this->command->info('- Produk: ' . Product::count());
         $this->command->info('- Event: ' . Event::count());
         $this->command->info('- Registrasi Event: ' . EventRegistration::count());
-        $this->command->info('✅ Data siap untuk development dan testing ringan.');
+        $this->command->info('Data siap untuk development dan testing ringan.');
     }
 }
