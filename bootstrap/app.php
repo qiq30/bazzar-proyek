@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
-use Throwable;
 
 // 1. Buat aplikasi dan simpan dalam variabel $app
 $app = Application::configure(basePath: dirname(__DIR__))
