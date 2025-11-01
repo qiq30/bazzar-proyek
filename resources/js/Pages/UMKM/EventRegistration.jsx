@@ -5,6 +5,8 @@ import { Head, Link, usePage, router, useForm } from "@inertiajs/react";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import Modal from "@/Components/Modal";
 import ReCAPTCHA from "react-google-recaptcha";
+import CountdownTimer from "@/Components/CountdownTimer";
+import { FiAlertTriangle, FiCalendar, FiMapPin, FiUsers } from "react-icons/fi";
 
 const TimeMismatchWarning = ({ onDismiss }) => (
     <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-md shadow-sm relative">
@@ -45,7 +47,7 @@ const TimeMismatchWarning = ({ onDismiss }) => (
 // Komponen ProfileActionNotice
 const ProfileActionNotice = ({ hasProfile }) => (
     <div className="bg-white rounded-lg shadow-sm text-center p-8">
-        <div className="text-yellow-500 text-6xl mb-4">⚠️</div>
+        <FiAlertTriangle className="text-yellow-500 text-6xl mb-4" />{" "}
         <h3 className="text-2xl font-bold text-gray-800">
             {hasProfile
                 ? "Profil Sedang Ditinjau"
@@ -224,6 +226,14 @@ export default function EventRegistration({
             };
         }
     }, [auth.user]);
+
+    const handleCountdownComplete = () => {
+        router.reload({
+            preserveState: true,
+            preserveScroll: true,
+            only: ["events", "registrationStatus"],
+        });
+    };
 
     const handleRegisterClick = (event) => {
         if (isTimeMismatched) {
@@ -423,9 +433,7 @@ export default function EventRegistration({
                                                             Jadwal Pendaftaran:
                                                         </p>
                                                         <div className="flex items-center">
-                                                            <span className="mr-2">
-                                                                📅
-                                                            </span>
+                                                            <FiCalendar className="w-4 h-4 mr-2 text-gray-500" />
                                                             <span>
                                                                 {formatDate(
                                                                     event.pendaftaran_dibuka
@@ -442,9 +450,7 @@ export default function EventRegistration({
                                                             Jadwal Acara:
                                                         </p>
                                                         <div className="flex items-center">
-                                                            <span className="mr-2">
-                                                                🗓️
-                                                            </span>
+                                                            <FiCalendar className="w-4 h-4 mr-2 text-gray-500" />
                                                             <span>
                                                                 {formatDate(
                                                                     event.tanggal_mulai_acara
@@ -457,17 +463,13 @@ export default function EventRegistration({
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center">
-                                                        <span className="mr-2">
-                                                            📍
-                                                        </span>
+                                                        <FiMapPin className="w-4 h-4 mr-2 text-gray-500" />
                                                         <span>
                                                             {event.lokasi_event}
                                                         </span>
                                                     </div>
                                                     <div className="flex items-center">
-                                                        <span className="mr-2">
-                                                            👥
-                                                        </span>
+                                                        <FiUsers className="w-4 h-4 mr-2 text-gray-500" />
                                                         <span>
                                                             Sisa Kuota:{" "}
                                                             {Math.max(
@@ -537,10 +539,30 @@ export default function EventRegistration({
                                                             </button>
                                                         ) : isRegistrationUpcoming ? (
                                                             <div className="w-full block px-4 py-2 bg-gray-100 text-gray-700 text-center rounded-lg">
-                                                                <p className="text-sm font-semibold">
+                                                                <CountdownTimer
+                                                                    targetDate={
+                                                                        event.pendaftaran_dibuka // <-- DIPERBAIKI
+                                                                    }
+                                                                    onComplete={
+                                                                        handleCountdownComplete
+                                                                    }
+                                                                />
+
+                                                                <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
                                                                     Pendaftaran
                                                                     akan dibuka
-                                                                    pada:
+                                                                    pada:{" "}
+                                                                    {new Date(
+                                                                        event.pendaftaran_dibuka // <-- DIPERBAIKI
+                                                                    ).toLocaleString(
+                                                                        "id-ID",
+                                                                        {
+                                                                            dateStyle:
+                                                                                "full",
+                                                                            timeStyle:
+                                                                                "short",
+                                                                        }
+                                                                    )}
                                                                 </p>
                                                                 <p className="text-xs">
                                                                     {formatDate(
@@ -566,7 +588,7 @@ export default function EventRegistration({
                             ) : (
                                 <div className="lg:col-span-2 bg-white rounded-lg shadow-sm p-12 text-center">
                                     <div className="text-gray-400 text-6xl mb-4">
-                                        📅
+                                        <FiCalendar className="inline-block" />
                                     </div>
                                     <h4 className="text-xl font-semibold text-gray-600 mb-2">
                                         Belum Ada Event Tersedia

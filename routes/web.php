@@ -195,7 +195,7 @@ Route::prefix('panitia')->name('panitia.')->group(function () {
     Route::post('/logout', [PanitiaController::class, 'handleLogout'])->name('logout');
     Route::middleware('web')->group(function () {
         Route::get('/dashboard', [PanitiaController::class, 'showDashboard'])->name('dashboard');
-        Route::post('/{event}/search', [PanitiaController::class, 'search'])->name('search');
-        Route::post('/check-in/{registration}', [PanitiaController::class, 'processCheckIn'])->name('processCheckIn');
+        Route::post('/{event:hashid}/search', [PanitiaController::class, 'search'])->name('search');
+        Route::post('/check-in/{registration:hashid}', [PanitiaController::class, 'processCheckIn'])->name('processCheckIn');
     });
 });

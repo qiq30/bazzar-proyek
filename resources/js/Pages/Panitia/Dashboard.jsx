@@ -101,7 +101,7 @@ const CheckInSection = ({ event }) => {
         setMessage({ type: "info", text: "Mencari data..." });
 
         axios
-            .post(route("panitia.search", { event: event.id }), { term })
+            .post(route("panitia.search", { event: event.hashid }), { term })
             .then((response) => {
                 setResult(response.data || null);
                 setMessage(
@@ -128,7 +128,9 @@ const CheckInSection = ({ event }) => {
         setMessage({ type: "info", text: "Memproses check-in..." });
 
         axios
-            .post(route("panitia.processCheckIn", { registration: result.id }))
+            .post(
+                route("panitia.processCheckIn", { registration: result.hashid })
+            )
             .then(() => {
                 setResult((prev) => ({ ...prev, status: "sudah_check_in" }));
                 setMessage({ type: "success", text: "Check-in Berhasil!" });
