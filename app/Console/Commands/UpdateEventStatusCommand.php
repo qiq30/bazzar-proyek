@@ -34,11 +34,6 @@ class UpdateEventStatusCommand extends Command
         $now = now();
         $totalUpdated = 0;
 
-        // Kita jalankan kueri ini secara berurutan.
-        // Urutan penting agar status event "mengalir" dengan benar dalam satu kali run.
-
-        // 1. Event yang sedang berlangsung (active) -> finished
-        // Cek event 'active' yang tanggal selesainya sudah lewat.
         $updated = Event::where('status', 'active')
             ->where('tanggal_selesai_acara', '<', $now)
             ->update(['status' => 'finished']);
@@ -47,9 +42,6 @@ class UpdateEventStatusCommand extends Command
             $totalUpdated += $updated;
         }
 
-        // 2. Event yang registrasinya terbuka/tertutup -> active (sedang berlangsung)
-        // Cek event yang (masih 'registration_open' atau 'registration_closed') 
-        // namun tanggal mulai acaranya sudah tiba.
         $updated = Event::whereIn('status', ['registration_open', 'registration_closed'])
             ->where('tanggal_mulai_acara', '<=', $now)
             // Pastikan tidak mengubah yang seharusnya sudah 'finished' (jika tanggal selesai juga lewat)
@@ -60,11 +52,8 @@ class UpdateEventStatusCommand extends Command
             $totalUpdated += $updated;
         }
 
-        // 3. Event yang 'upcoming' (tanpa registrasi) -> 'active'
-        // Event yang 'upcoming' TAPI tidak punya jadwal registrasi,
-        // akan langsung 'active' jika tanggal mulai acaranya tiba.
         $updated = Event::where('status', 'upcoming')
-            ->whereNull('registration_start') // Tidak ada jadwal registrasi
+            ->whereNull('pendaftaran_dibuka')
             ->where('tanggal_mulai_acara', '<=', $now)
             ->where('tanggal_selesai_acara', '>', $now)
             ->update(['status' => 'active']);
@@ -73,26 +62,22 @@ class UpdateEventStatusCommand extends Command
             $totalUpdated += $updated;
         }
 
-        // 4. Event 'registration_open' -> 'registration_closed'
-        // Cek event yang 'registration_open' dan tanggal akhir registrasinya sudah lewat.
         $updated = Event::where('status', 'registration_open')
-            ->whereNotNull('registration_end')
-            ->where('registration_end', '<', $now)
+            ->whereNotNull('pendaftaran_ditutup')
+            ->where('pendaftaran_ditutup', '<', $now)
             ->update(['status' => 'registration_closed']);
         if ($updated > 0) {
             $this->line("{$updated} events updated from 'registration_open' to 'registration_closed'.");
             $totalUpdated += $updated;
         }
 
-        // 5. Event 'upcoming' -> 'registration_open'
-        // Cek event 'upcoming' yang tanggal mulai registrasinya sudah tiba.
         $updated = Event::where('status', 'upcoming')
-            ->whereNotNull('registration_start')
-            ->where('registration_start', '<=', $now)
+            ->whereNotNull('pendaftaran_dibuka')
+            ->where('pendaftaran_dibuka', '<=', $now)
             // Pastikan registrasi belum ditutup (jika tanggal mulai dan selesai sama)
             ->where(function ($query) use ($now) {
-                $query->whereNull('registration_end')
-                    ->orWhere('registration_end', '>', $now);
+                $query->whereNull('pendaftaran_ditutup')
+                    ->orWhere('pendaftaran_ditutup', '>', $now);
             })
             ->update(['status' => 'registration_open']);
         if ($updated > 0) {
@@ -100,12 +85,9 @@ class UpdateEventStatusCommand extends Command
             $totalUpdated += $updated;
         }
 
-        // 6. (Pembersihan) 'upcoming' -> 'registration_closed'
-        // Kasus langka: Event 'upcoming' yang tanggal mulai DAN akhir registrasinya sudah lewat
-        // tapi tanggal acaranya belum mulai.
         $updated = Event::where('status', 'upcoming')
-            ->whereNotNull('registration_end')
-            ->where('registration_end', '<', $now)
+            ->whereNotNull('pendaftaran_ditutup')
+            ->where('pendaftaran_ditutup', '<', $now)
             ->where('tanggal_mulai_acara', '>', $now)
             ->update(['status' => 'registration_closed']);
         if ($updated > 0) {
