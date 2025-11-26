@@ -34,4 +34,5 @@ Artisan::command('inspire', function () {
 // 2. Ganti 'events:update-status' dengan class command yang benar
 //    dan ubah dari daily() (sekali sehari) menjadi hourly() (setiap jam)
 //    agar status lebih cepat ter-update.
-Schedule::command(UpdateEventStatusCommand::class)->hourly();
+// Kodenya jadi begini:
+Schedule::command('app:update-event-status')->everyMinute();
