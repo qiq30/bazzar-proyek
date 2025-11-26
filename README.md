@@ -64,6 +64,24 @@ Aplikasi ini memiliki sistem multi-peran yang kompleks, di mana setiap peran mem
     -   Security: `react-google-recaptcha`
 
 ---
+### Fitur Unggulan Baru (New Highlights)
+
+-   **Keamanan Tingkat Lanjut**:
+    -   **Google OAuth**: Login cepat dan aman menggunakan akun Google.
+    -   **OTP Verification**: Verifikasi pendaftaran menggunakan kode OTP real-time via email.
+
+-   **Privasi Pengguna (Secure Impersonation)**:
+    -   Super Admin dapat melakukan troubleshooting akun user dengan fitur Impersonate.
+    -   **Privacy-First**: Menggunakan mekanisme *Request-Approval*, di mana admin harus meminta izin dan user harus menyetujui sebelum akun dapat diakses.
+
+-   **Manajemen Lokasi Cerdas**:
+    -   Integrasi peta interaktif untuk penentuan titik koordinat lokasi bazar yang akurat.
+    -   Visualisasi lokasi bagi pengunjung.
+
+-   **Validasi Proposal Bertahap**:
+    -   Sistem review proposal terpisah antara kelengkapan dokumen legalitas dan detail acara, memudahkan proses audit bagi Admin.
+
+---
 
 ## Instalasi & Setup
 
