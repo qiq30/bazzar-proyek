@@ -117,6 +117,12 @@ class AdminController extends Controller
             'kuota_umkm' => $event->kuota_umkm,
         ]);
 
+        // Hapus cache homepage untuk memastikan data terbaru muncul.
+        // Ini akan membersihkan cache untuk tampilan default (tanpa filter pencarian).
+        $defaultFilters = [];
+        $cacheKey = 'public_home_events_' . md5(json_encode($defaultFilters));
+        Cache::forget($cacheKey);
+
         EventPublished::dispatch($event);
 
         return redirect()->route('admin.events')->with('success', 'Event berhasil diterbitkan!');
