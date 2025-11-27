@@ -37,7 +37,7 @@ class StoreNewRegistrantNotification
             'data'    => [
                 'title'   => 'Pendaftar Baru!',
                 'message' => "{$registration->umkmProfile->business_name} telah mendaftar ke event '{$registration->event->nama_event}' dan menunggu konfirmasi pembayaran Anda.",
-                'url'     => route('penyelenggara.pendaftar.verifikasi.show', $registration->id),
+                'url'     => route('penyelenggara.pendaftar.verifikasi.show', $registration->hashid),
             ]
         ]);
 

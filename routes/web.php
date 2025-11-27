@@ -97,6 +97,10 @@ Route::get('/', [PublicController::class, 'home'])->name('home');
 Route::get('/events/{event:slug}/umkm', [PublicController::class, 'umkmDirectory'])->name('public.umkm.directory');
 Route::get('/umkm/{umkm:slug}', [PublicController::class, 'umkmDetail'])->name('public.umkm.detail');
 
+Route::get('/public-files/event-poster/{event:hashid}', [SecureFileController::class, 'showEventPoster'])->name('public.event.poster');
+Route::get('/public-files/umkm-logo/{umkm:hashid}', [SecureFileController::class, 'showUmkmLogo'])->name('public.umkm.logo');
+Route::get('/public-files/product-image/{product:hashid}', [SecureFileController::class, 'showProductImage'])->name('public.product.image');
+Route::get('/public-files/qris/{umkm:hashid}', [SecureFileController::class, 'showQrisImage'])->name('public.umkm.qris');
 // Authentication Routes (Laravel Breeze)
 require __DIR__ . '/auth.php';
 
@@ -164,6 +168,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/proposals/{id}/force-delete', [AdminController::class, 'permanentlyDeleteProposal'])->name('proposals.forceDelete');
 
     Route::get('/secure-files/ktp/{umkm:hashid}', [SecureFileController::class, 'showKtp'])->name('secure.ktp');
+    Route::get('/secure-files/umkm-logo/{umkm:hashid}', [SecureFileController::class, 'showUmkmLogo'])->name('secure.umkm.logo');
+    Route::get('/secure-files/event-poster/{event:hashid}', [SecureFileController::class, 'showEventPoster'])->name('secure.event.poster');
     Route::get('/secure-files/penyelenggara-doc/{penyelenggara:hashid}', [SecureFileController::class, 'showPenyelenggaraDoc'])->name('secure.penyelenggara.doc');
     Route::get('/secure-files/proposal-doc/{event:hashid}', [SecureFileController::class, 'showProposalDoc'])->name('secure.proposal.doc');
 });
@@ -186,6 +192,9 @@ Route::middleware(['auth', 'verified', 'penyelenggara'])->prefix('penyelenggara'
     Route::post('/verifikasi-pendaftar/{registration:hashid}/reject', [PenyelenggaraController::class, 'rejectPayment'])->name('pendaftar.verifikasi.reject')->middleware('throttle:10,1');
     Route::post('/verifikasi-pendaftar/{registration:hashid}/assign-stand', [PenyelenggaraController::class, 'assignStandNumber'])->name('pendaftar.verifikasi.assignStand');
     Route::get('/proposals/{event}', [PenyelenggaraController::class, 'showProposal'])->name('proposals.show')->withTrashed();
+
+    Route::get('/secure-files/event-poster/{event:hashid}', [SecureFileController::class, 'showEventPoster'])->name('secure.event.poster');
+    Route::get('/secure-files/payment-proof/{registration:hashid}', [SecureFileController::class, 'showPaymentProof'])->name('secure.payment.proof');
 });
 
 // PANITIA ROUTES

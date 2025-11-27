@@ -37,7 +37,7 @@ export default function QRISCard({ umkm }) {
                     onClick={() => setIsFullscreen(true)}
                 >
                     <img
-                        src={umkm.qris_url}
+                        src={route("public.umkm.qris", { umkm: umkm.hashid })}
                         alt={`QRIS ${umkm.business_name}`}
                         className="w-48 h-48 object-contain mx-auto"
                         loading="lazy"
@@ -86,7 +86,9 @@ export default function QRISCard({ umkm }) {
 
                         <div className="flex justify-center mb-4">
                             <img
-                                src={umkm.qris_url}
+                                src={route("public.umkm.qris", {
+                                    umkm: umkm.hashid,
+                                })}
                                 alt={`QRIS ${umkm.business_name}`}
                                 className="w-72 h-72 object-contain"
                                 loading="lazy"

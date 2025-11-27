@@ -395,7 +395,9 @@ export default function UMKMVerification({
                             <div className="space-y-1">
                                 {viewingUmkm.logo_path && (
                                     <a
-                                        href={`/storage/${viewingUmkm.logo_path}`}
+                                        href={route("admin.secure.umkm.logo", {
+                                            umkm: viewingUmkm.hashid,
+                                        })}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="text-blue-600 hover:underline block"

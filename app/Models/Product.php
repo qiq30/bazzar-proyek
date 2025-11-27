@@ -26,7 +26,7 @@ class Product extends Model
     public function getImageUrlAttribute()
     {
         if ($this->image_path) {
-            return Storage::url($this->image_path);
+            return route('public.product.image', ['product' => $this->hashid]);
         }
         return null;
     }

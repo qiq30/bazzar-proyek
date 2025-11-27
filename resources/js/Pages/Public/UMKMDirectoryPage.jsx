@@ -210,7 +210,9 @@ export default function UMKMDirectoryPage({ event, umkmProfiles }) {
                                     <div className="h-40 bg-gray-100 flex items-center justify-center overflow-hidden">
                                         {umkm.logo_url ? (
                                             <img
-                                                src={umkm.logo_url}
+                                                src={route("public.umkm.logo", {
+                                                    umkm: umkm.hashid,
+                                                })}
                                                 alt={umkm.business_name}
                                                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                                 loading="lazy"

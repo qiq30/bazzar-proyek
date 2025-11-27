@@ -36,7 +36,7 @@ class StoreProposalNotification
                 'data' => [
                     'title' => 'Proposal Baru Diterima!',
                     'message' => "Proposal event '{$event->proposal->nama_event}' dari {$event->proposal->user->name} menunggu persetujuan Anda.",
-                    'url' => route('admin.proposals.show', $event->proposal->id),
+                    'url' => route('admin.proposals.show', $event->proposal->hashid),
                 ]
             ]);
 

@@ -102,7 +102,10 @@ class Event extends Model
      */
     public function getImageUrlAttribute()
     {
-        return $this->poster_event ? Storage::url($this->poster_event) : null;
+        if ($this->poster_event) {
+            return route('public.event.poster', ['event' => $this->hashid]);
+        }
+        return null;
     }
 
     /**

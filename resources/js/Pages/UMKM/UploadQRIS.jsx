@@ -5,8 +5,11 @@ import { Head, useForm, Link } from "@inertiajs/react";
 import { useState } from "react";
 
 export default function UploadQRIS({ auth, umkmProfile }) {
+    // PERBAIKAN: Gunakan route 'public.umkm.qris' agar gambar dimuat lewat controller
     const [qrisPreview, setQrisPreview] = useState(
-        umkmProfile?.qris_url || null
+        umkmProfile?.qris_path
+            ? route("public.umkm.qris", { umkm: umkmProfile.hashid })
+            : null
     );
 
     const { data, setData, post, processing, errors, progress } = useForm({
@@ -134,9 +137,16 @@ export default function UploadQRIS({ auth, umkmProfile }) {
                                                         <button
                                                             type="button"
                                                             onClick={() => {
+                                                                // PERBAIKAN: Reset ke gambar lama menggunakan route secure
                                                                 setQrisPreview(
-                                                                    umkmProfile?.qris_url ||
-                                                                        null
+                                                                    umkmProfile?.qris_path
+                                                                        ? route(
+                                                                              "public.umkm.qris",
+                                                                              {
+                                                                                  umkm: umkmProfile.hashid,
+                                                                              }
+                                                                          )
+                                                                        : null
                                                                 );
                                                                 setData(
                                                                     "qris",

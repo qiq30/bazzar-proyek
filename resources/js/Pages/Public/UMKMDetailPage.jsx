@@ -30,7 +30,9 @@ export default function UMKMDetailPage({ umkm }) {
                             <div className="w-24 h-24 bg-white rounded-xl flex items-center justify-center p-1 shadow-md flex-shrink-0">
                                 {umkm.logo_url ? (
                                     <img
-                                        src={umkm.logo_url}
+                                        src={route("public.umkm.logo", {
+                                            umkm: umkm.hashid,
+                                        })}
                                         alt={umkm.business_name}
                                         className="w-full h-full object-cover rounded-lg"
                                         loading="lazy"
@@ -99,8 +101,15 @@ export default function UMKMDetailPage({ umkm }) {
                                                 >
                                                     <img
                                                         src={
-                                                            product.image_url ||
-                                                            "https://via.placeholder.com/300x200?text=Produk"
+                                                            product.image_path
+                                                                ? route(
+                                                                      "public.product.image",
+                                                                      {
+                                                                          product:
+                                                                              product.hashid,
+                                                                      }
+                                                                  )
+                                                                : "https://via.placeholder.com/300x200?text=Produk"
                                                         }
                                                         alt={product.name}
                                                         className="w-full h-48 object-cover bg-gray-100"

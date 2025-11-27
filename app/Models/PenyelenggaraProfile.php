@@ -27,7 +27,10 @@ class PenyelenggaraProfile extends Model
 
     public function getLogoUrlAttribute()
     {
-        return $this->logo_path ? Storage::url($this->logo_path) : null;
+        if ($this->logo_path) {
+            return $this->logo_path ? Storage::url($this->logo_path) : null;
+        }
+        return null;
     }
 
     public function user()

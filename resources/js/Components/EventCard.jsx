@@ -40,7 +40,9 @@ export default function EventCard({ event }) {
             <div className="h-48 bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
                 {event.poster_event ? (
                     <img
-                        src={`/storage/${event.poster_event}`}
+                        src={route("public.event.poster", {
+                            event: event.hashid,
+                        })}
                         alt={event.nama_event}
                         className="w-full h-full object-cover"
                         loading="lazy"

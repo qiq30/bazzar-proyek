@@ -43,7 +43,7 @@ class StoreProposalStatusNotification
             'data'    => [
                 'title'   => $isApproved ? 'Proposal Disetujui!' : 'Proposal Ditolak',
                 'message' => $message, // Gunakan pesan yang sudah dimodifikasi
-                'url'     => route('penyelenggara.proposals.show', $proposal->id),
+                'url'     => route('penyelenggara.proposals.show', $proposal->hashid),
             ]
         ]);
 

@@ -36,7 +36,7 @@ class StoreEventPublishedNotification
             'data'    => [
                 'title'   => 'Event Diterbitkan!',
                 'message' => "Kabar baik! Event Anda '{$publishedEvent->nama_event}' telah berhasil diterbitkan dan sekarang dapat dilihat oleh publik.",
-                'url'     => route('penyelenggara.proposals.show', $publishedEvent->id),
+                'url'     => route('penyelenggara.proposals.show', $publishedEvent->hashid),
             ]
         ]);
 

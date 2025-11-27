@@ -63,12 +63,18 @@ class UmkmProfile extends Model
 
     public function getLogoUrlAttribute()
     {
-        return $this->logo_path ? Storage::url($this->logo_path) : null;
+        if ($this->logo_path) {
+            return route('public.umkm.logo', ['umkm' => $this->hashid]);
+        }
+        return null;
     }
 
     public function getQrisUrlAttribute()
     {
-        return $this->qris_path ? Storage::url($this->qris_path) : null;
+        if ($this->qris_path) {
+            return route('public.umkm.qris', ['umkm' => $this->hashid]);
+        }
+        return null;
     }
 
     /**

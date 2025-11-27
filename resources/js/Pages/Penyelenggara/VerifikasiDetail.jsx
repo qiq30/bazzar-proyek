@@ -249,12 +249,24 @@ export default function VerifikasiDetail({ auth, registration }) {
                                         Bukti Transfer yang Diunggah
                                     </h4>
                                     <a
-                                        href={`/storage/${registration.bukti_pembayaran_path}`}
+                                        href={route(
+                                            "penyelenggara.secure.payment.proof",
+                                            {
+                                                registration:
+                                                    registration.hashid,
+                                            }
+                                        )}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >
                                         <img
-                                            src={`/storage/${registration.bukti_pembayaran_path}`}
+                                            src={route(
+                                                "penyelenggara.secure.payment.proof",
+                                                {
+                                                    registration:
+                                                        registration.hashid,
+                                                }
+                                            )}
                                             alt="Bukti Pembayaran"
                                             className="rounded-lg w-full object-cover border"
                                             loading="lazy"

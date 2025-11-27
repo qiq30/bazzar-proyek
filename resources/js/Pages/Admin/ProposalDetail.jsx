@@ -76,7 +76,12 @@ export default function ProposalDetail({ auth, proposal }) {
                             <div className="md:col-span-1">
                                 {proposal.poster_event ? (
                                     <img
-                                        src={`/storage/${proposal.poster_event}`}
+                                        src={route(
+                                            "admin.secure.event.poster",
+                                            {
+                                                event: proposal.hashid,
+                                            }
+                                        )}
                                         alt="Poster Event"
                                         className="rounded-lg w-full object-cover"
                                         loading="lazy"
