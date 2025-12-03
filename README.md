@@ -27,6 +27,7 @@ Aplikasi ini memiliki sistem multi-peran yang kompleks, di mana setiap peran mem
     -   Memantau status persetujuan proposal.
     -   Memverifikasi pembayaran dari UMKM yang mendaftar.
     -   Menetapkan nomor stand/lapak untuk peserta.
+    -   Mengunduh laporan kegiatan dan data peserta dalam format PDF atau Excel.
 
 -   **Admin**
 
@@ -34,7 +35,7 @@ Aplikasi ini memiliki sistem multi-peran yang kompleks, di mana setiap peran mem
     -   Meninjau, menyetujui, atau menolak proposal acara.
     -   Mempublikasikan acara agar dapat dilihat oleh UMKM.
     -   Memantau dan memverifikasi semua transaksi keuangan.
-    -   Mengakses laporan dan analitik dasar.
+    -   Mengakses laporan dan analitik dasar serta mengekspornya ke PDF/Excel.
 
 -   **Panitia Lapangan**
 
@@ -64,22 +65,30 @@ Aplikasi ini memiliki sistem multi-peran yang kompleks, di mana setiap peran mem
     -   Security: `react-google-recaptcha`
 
 ---
+
 ### Fitur Unggulan Baru (New Highlights)
 
 -   **Keamanan Tingkat Lanjut**:
+
     -   **Google OAuth**: Login cepat dan aman menggunakan akun Google.
     -   **OTP Verification**: Verifikasi pendaftaran menggunakan kode OTP real-time via email.
 
 -   **Privasi Pengguna (Secure Impersonation)**:
+
     -   Super Admin dapat melakukan troubleshooting akun user dengan fitur Impersonate.
-    -   **Privacy-First**: Menggunakan mekanisme *Request-Approval*, di mana admin harus meminta izin dan user harus menyetujui sebelum akun dapat diakses.
+    -   **Privacy-First**: Menggunakan mekanisme _Request-Approval_, di mana admin harus meminta izin dan user harus menyetujui sebelum akun dapat diakses.
 
 -   **Manajemen Lokasi Cerdas**:
+
     -   Integrasi peta interaktif untuk penentuan titik koordinat lokasi bazar yang akurat.
     -   Visualisasi lokasi bagi pengunjung.
 
 -   **Validasi Proposal Bertahap**:
+
     -   Sistem review proposal terpisah antara kelengkapan dokumen legalitas dan detail acara, memudahkan proses audit bagi Admin.
+
+-   **Pelaporan & Ekspor Data**:
+    -   Kemudahan unduh laporan pertanggungjawaban dan data peserta dalam format standar industri (PDF & Excel) untuk kebutuhan administrasi.
 
 ---
 
