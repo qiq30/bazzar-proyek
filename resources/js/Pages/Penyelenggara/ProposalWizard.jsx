@@ -728,7 +728,7 @@ const Step2Details = ({ event, isAccessible }) => {
                                         Nomor Rekening *
                                     </label>
                                     <input
-                                        type="text"
+                                        type="number"
                                         value={
                                             data.nomor_rekening_penyelenggara
                                         }
