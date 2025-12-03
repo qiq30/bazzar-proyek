@@ -221,7 +221,16 @@ export default function ReportIndex({ auth, stats }) {
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="text-sm text-gray-500">
-                                                            {event.date}
+                                                            {new Date(
+                                                                event.date
+                                                            ).toLocaleDateString(
+                                                                "id-ID",
+                                                                {
+                                                                    day: "numeric",
+                                                                    month: "long",
+                                                                    year: "numeric",
+                                                                }
+                                                            )}
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
