@@ -30,7 +30,7 @@ class StoreProposalStatusNotification
 
         $message = '';
         if ($isApproved) {
-            $message = "Proposal Anda untuk event '{$proposal->nama_event}' telah disetujui oleh admin. Anda sekarang bisa menerbitkannya.";
+            $message = "Proposal Anda untuk event '{$proposal->nama_event}' telah disetujui oleh admin. Menunggu admin untuk menerbitkannya.";
         } else {
             $rejectionReason = $proposal->rejection_reason ?? 'Tidak ada alasan spesifik.';
             $message = "Proposal Anda untuk event '{$proposal->nama_event}' telah ditolak. Alasan: \"{$rejectionReason}\"";

@@ -15,6 +15,29 @@ use Illuminate\Support\Str;
 class Event extends Model
 {
     use HasFactory, SoftDeletes, Prunable, HasHashids;
+
+    const STATUS_UPCOMING = 'upcoming';
+    const STATUS_REGISTRATION_OPEN = 'registration_open';
+    const STATUS_REGISTRATION_CLOSED = 'registration_closed';
+    const STATUS_ACTIVE = 'active';
+    const STATUS_FINISHED = 'finished';
+
+    const PROPOSAL_DRAFT = 'draft';
+    const PROPOSAL_PENDING = 'menunggu_persetujuan';
+    const PROPOSAL_APPROVED = 'disetujui';
+    const PROPOSAL_REJECTED = 'ditolak';
+
+    const DOC_STATUS_PENDING = 'pending_document_verification';
+    const DOC_STATUS_APPROVED = 'document_approved';
+    const DOC_STATUS_REJECTED = 'document_rejected';
+
+    /**
+     * Check if registration is currently open.
+     */
+    public function isRegistrationOpen()
+    {
+        return Carbon::now()->between($this->pendaftaran_dibuka, $this->pendaftaran_ditutup->endOfDay());
+    }
     /**
      * The attributes that are mass assignable.
      *
@@ -170,7 +193,11 @@ class Event extends Model
         });
 
         $query->when($filters['status'] ?? false, function ($query, $status) {
-            $query->where('status', $status);
+            if ($status === 'upcoming') {
+                $query->whereIn('status', ['upcoming', 'registration_open', 'registration_closed']);
+            } else {
+                $query->where('status', $status);
+            }
         });
 
         return $query;

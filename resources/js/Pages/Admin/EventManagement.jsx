@@ -27,7 +27,6 @@ const EventEditForm = ({ event, onSuccess, onCancel }) => {
             ? event.tanggal_selesai_acara.split("T")[0]
             : "",
         lokasi_event: event?.lokasi_event || "",
-        status: event?.status || "upcoming",
     });
 
     const handleSubmit = (e) => {
@@ -92,20 +91,7 @@ const EventEditForm = ({ event, onSuccess, onCancel }) => {
                     className="w-full p-2 border rounded mt-1"
                 />
             </div>
-            <div>
-                <label className="block text-sm font-medium">
-                    Status Event
-                </label>
-                <select
-                    value={data.status}
-                    onChange={(e) => setData("status", e.target.value)}
-                    className="w-full p-2 border rounded mt-1"
-                >
-                    <option value="upcoming">Akan Datang</option>
-                    <option value="active">Aktif</option>
-                    <option value="finished">Selesai</option>
-                </select>
-            </div>
+
             <div className="flex justify-end space-x-2 pt-4">
                 <button
                     type="button"

@@ -51,7 +51,7 @@ class UmkmController extends Controller
         $user = Auth::user();
         $umkmProfile = $user->umkmProfile;
 
-        if ($umkmProfile && $umkmProfile->status === 'verified') {
+        if ($umkmProfile && $umkmProfile->status === UmkmProfile::STATUS_VERIFIED) {
             return redirect()->route('umkm.dashboard')->with('info', 'Profil yang sudah terverifikasi tidak dapat diubah.');
         }
         return Inertia::render('UMKM/ProfileSetup', [
@@ -122,14 +122,15 @@ class UmkmController extends Controller
         $umkmProfileId = $umkmProfile?->id;
 
         $events = Event::withCount(['eventRegistrations' => function ($query) {
-            $query->where('status', '!=', 'rejected');
+            $query->where('status', '!=', EventRegistration::STATUS_REJECTED);
         }])
             ->with(['eventRegistrations' => function ($query) use ($umkmProfileId) {
                 if ($umkmProfileId) {
                     $query->where('umkm_profile_id', $umkmProfileId);
                 }
             }])
-            ->where('status', '!=', 'finished')
+            ->where('status', '!=', Event::STATUS_FINISHED)
+            ->where('status_proposal', Event::PROPOSAL_APPROVED)
             ->whereDate('pendaftaran_ditutup', '>=', now())
             ->orderBy('tanggal_mulai_acara', 'asc')
             ->get();
@@ -252,7 +253,7 @@ class UmkmController extends Controller
             'g-recaptcha-response' => ['required', new RecaptchaV2],
         ]);
 
-        if (!Carbon::now()->between($event->pendaftaran_dibuka, $event->pendaftaran_ditutup->endOfDay())) {
+        if (!$event->isRegistrationOpen()) {
             return redirect()->route('umkm.events')->with('error', 'Pendaftaran untuk event ini sedang tidak dibuka.');
         }
 
@@ -261,7 +262,7 @@ class UmkmController extends Controller
 
         $existingRegistration = EventRegistration::where('event_id', $event->id)
             ->where('umkm_profile_id', $umkmProfile->id)
-            ->where('status', '!=', 'rejected')
+            ->where('status', '!=', EventRegistration::STATUS_REJECTED)
             ->first();
 
         if ($existingRegistration && (!$existingRegistration->payment_due || now()->isAfter($existingRegistration->payment_due))) {
@@ -274,7 +275,7 @@ class UmkmController extends Controller
         }
 
         $participantCount = $event->eventRegistrations()
-            ->where('status', '!=', 'rejected')
+            ->where('status', '!=', EventRegistration::STATUS_REJECTED)
             ->count();
 
         if ($participantCount >= $event->kuota_umkm) {
@@ -290,7 +291,7 @@ class UmkmController extends Controller
                 'umkm_profile_id' => $umkmProfile->id,
             ],
             [
-                'status' => 'menunggu_pembayaran',
+                'status' => EventRegistration::STATUS_PENDING_PAYMENT,
                 'kode_pendaftaran' => $uniqueCode,
                 'payment_due' => now()->addHour(),
                 'rejection_reason' => null,
@@ -308,7 +309,7 @@ class UmkmController extends Controller
             abort(403);
         }
 
-        if ($registration->status === 'menunggu_pembayaran' && $registration->payment_due && Carbon::now()->isAfter($registration->payment_due)) {
+        if ($registration->status === EventRegistration::STATUS_PENDING_PAYMENT && $registration->payment_due && Carbon::now()->isAfter($registration->payment_due)) {
             $registration->delete();
             return redirect()->route('umkm.events')->with('error', 'Waktu pembayaran Anda telah habis. Slot Anda telah dibatalkan. Silakan daftar kembali.');
         }
@@ -334,7 +335,7 @@ class UmkmController extends Controller
 
         $registration->update([
             'bukti_pembayaran_path' => $buktiPath,
-            'status' => 'menunggu_konfirmasi_pembayaran',
+            'status' => EventRegistration::STATUS_WAITING_CONFIRMATION,
             'rejection_reason' => null,
         ]);
 
@@ -355,7 +356,7 @@ class UmkmController extends Controller
         }
         $tickets = EventRegistration::with(['event', 'umkmProfile'])
             ->where('umkm_profile_id', $umkmProfile->id)
-            ->whereIn('status', ['approved', 'sudah_check_in'])
+            ->whereIn('status', [EventRegistration::STATUS_APPROVED, EventRegistration::STATUS_CHECKED_IN])
             ->orderBy('created_at', 'desc')
             ->get();
 

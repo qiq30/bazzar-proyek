@@ -25,6 +25,20 @@ class UltimateTestSeeder extends Seeder
         $this->command->info('Menyiapkan data seeder skala kecil...');
 
         // =================================================================
+        // == 0. DATA ADMIN
+        // =================================================================
+        $this->command->info('0. Membuat data Admin...');
+        if (!User::where('email', 'admin@example.com')->exists()) {
+            User::create([
+                'name' => 'Super Admin',
+                'email' => 'admin@example.com',
+                'password' => Hash::make('password'),
+                'is_admin' => true,
+                'email_verified_at' => now(),
+            ]);
+        }
+
+        // =================================================================
         // == 1. DATA PENYELENGGARA (EVENT ORGANIZER) - KONSISTEN
         // =================================================================
         $this->command->info('1. Membuat data Penyelenggara (konsisten)...');
@@ -37,8 +51,14 @@ class UltimateTestSeeder extends Seeder
         ];
 
         $penyelenggaraProfiles = collect($eoList)->map(function ($eo) {
-            $user = User::create(['name' => $eo[0], 'email' => $eo[1], 'password' => Hash::make('password'), 'is_penyelenggara' => true, 'email_verified_at' => now(), 'created_at' => Carbon::now()->subMonths(rand(0, 12))]);
-            return PenyelenggaraProfile::create(['user_id' => $user->id, 'organizer_name' => $eo[0], 'description' => $eo[5], 'address' => $eo[4], 'verification_document_path' => 'seeders/doc_placeholder.jpg', 'logo_path' => $eo[3] ? "seeders/{$eo[3]}" : null, 'status' => $eo[2]]);
+            $user = User::firstOrCreate(
+                ['email' => $eo[1]],
+                ['name' => $eo[0], 'password' => Hash::make('password'), 'is_penyelenggara' => true, 'email_verified_at' => now(), 'created_at' => Carbon::now()->subMonths(rand(0, 12))]
+            );
+            return PenyelenggaraProfile::firstOrCreate(
+                ['user_id' => $user->id],
+                ['organizer_name' => $eo[0], 'description' => $eo[5], 'address' => $eo[4], 'verification_document_path' => 'seeders/doc_placeholder.jpg', 'logo_path' => $eo[3] ? "seeders/{$eo[3]}" : null, 'status' => $eo[2]]
+            );
         });
         $allVerifiedEOs = $penyelenggaraProfiles->where('status', 'verified')->values();
 
@@ -58,26 +78,30 @@ class UltimateTestSeeder extends Seeder
         ];
 
         $umkmProfiles = collect($umkmList)->map(function ($umkm) {
-            $user = User::create([
-                'name' => 'Pemilik ' . $umkm[0],
-                'email' => $umkm[1],
-                'password' => Hash::make('password'),
-                'is_penyelenggara' => false,
-                'email_verified_at' => now(),
-                'created_at' => Carbon::now()->subMonths(rand(0, 24)),
-            ]);
+            $user = User::firstOrCreate(
+                ['email' => $umkm[1]],
+                [
+                    'name' => 'Pemilik ' . $umkm[0],
+                    'password' => Hash::make('password'),
+                    'is_penyelenggara' => false,
+                    'email_verified_at' => now(),
+                    'created_at' => Carbon::now()->subMonths(rand(0, 24)),
+                ]
+            );
 
-            return UmkmProfile::create([
-                'user_id' => $user->id,
-                'business_name' => $umkm[0],
-                'description' => "UMKM {$umkm[0]} menyediakan produk dan layanan berkualitas di bidang {$umkm[3]}.",
-                'address' => $umkm[4],
-                'business_type' => $umkm[3],
-                'ktp_path' => 'seeders/ktp_placeholder.jpg',
-                'logo_path' => $umkm[5],
-                'qris_path' => $umkm[6],
-                'status' => $umkm[2],
-            ]);
+            return UmkmProfile::firstOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'business_name' => $umkm[0],
+                    'description' => "UMKM {$umkm[0]} menyediakan produk dan layanan berkualitas di bidang {$umkm[3]}.",
+                    'address' => $umkm[4],
+                    'business_type' => $umkm[3],
+                    'ktp_path' => 'seeders/ktp_placeholder.jpg',
+                    'logo_path' => $umkm[5],
+                    'qris_path' => $umkm[6],
+                    'status' => $umkm[2],
+                ]
+            );
         });
         $umkmVerified = $umkmProfiles->where('status', 'verified')->values();
 
@@ -139,55 +163,66 @@ class UltimateTestSeeder extends Seeder
             $coords = $locations[$lokasi];
 
 
-            if ($index % 7 == 0) { // Skenario Konsep Awal
-                Event::create([
-                    'user_id' => $eo->user_id,
-                    'status_proposal' => 'draft',
-                    'nama_event' => $eventName . ' (Konsep Awal)',
-                    'deskripsi_event' => 'Deskripsi akan diisi.',
-                    'lokasi_event' => 'Akan ditentukan',
-                    'latitude' => null,
-                    'longitude' => null,
-                    'tanggal_mulai_acara' => now()->addYear(),
-                    'tanggal_selesai_acara' => now()->addYear()->addDay(),
-                    'kuota_umkm' => 0,
-                    'pendaftaran_dibuka' => now()->addYear(),
-                    'pendaftaran_ditutup' => now()->addYear(),
-                    'nama_bank_penyelenggara' => 'Akan ditentukan',
-                    'nomor_rekening_penyelenggara' => '0000000000',
-                    'nama_pemilik_rekening' => 'Akan ditentukan',
-                ]);
+            if ($index % 7 == 0) { // Skenario Konsep Awal (Step 1 Submitted)
+                Event::firstOrCreate(
+                    ['nama_event' => $eventName . ' (Konsep Awal)'],
+                    [
+                        'user_id' => $eo->user_id,
+                        'status_proposal' => 'draft',
+                        'status' => null, // Status belum aktif
+                        'document_verification_status' => 'pending_document_verification', // Menunggu verifikasi dokumen admin
+                        'proposal_document_path' => 'seeders/proposal_placeholder.pdf',
+                        'deskripsi_event' => 'Deskripsi akan diisi setelah dokumen disetujui.',
+                        'lokasi_event' => 'Akan ditentukan',
+                        'latitude' => null,
+                        'longitude' => null,
+                        'tanggal_mulai_acara' => now()->addYear(),
+                        'tanggal_selesai_acara' => now()->addYear()->addDay(),
+                        'kuota_umkm' => 0,
+                        'pendaftaran_dibuka' => now()->addYear(),
+                        'pendaftaran_ditutup' => now()->addYear(),
+                        'nama_bank_penyelenggara' => 'Akan ditentukan',
+                        'nomor_rekening_penyelenggara' => '0000000000',
+                        'nama_pemilik_rekening' => 'Akan ditentukan',
+                    ]
+                );
                 continue;
             }
 
-            if ($index % 7 == 1) { // Skenario Menunggu Persetujuan
-                Event::create([
-                    'user_id' => $eo->user_id,
-                    'nama_event' => $eventName,
-                    'deskripsi_event' => "Proposal lengkap untuk event '{$eventName}'.",
-                    'lokasi_event' => $lokasi,
-                    'latitude' => $coords['latitude'],
-                    'longitude' => $coords['longitude'],
-                    'tanggal_mulai_acara' => now()->addDays(rand(45, 90)),
-                    'tanggal_selesai_acara' => now()->addDays(rand(91, 100)),
-                    'status_proposal' => 'menunggu_persetujuan',
-                    'proposal_document_path' => 'seeders/proposal_placeholder.pdf',
-                    'kuota_umkm' => rand(20, 50),
-                    'pendaftaran_dibuka' => now()->addDays(rand(15, 30)),
-                    'pendaftaran_ditutup' => now()->addDays(rand(31, 44)),
-                    'nama_bank_penyelenggara' => 'Bank Kalsel Syariah',
-                    'nomor_rekening_penyelenggara' => '0210012345678',
-                    'nama_pemilik_rekening' => $eo->organizer_name,
-                ]);
+            if ($index % 7 == 1) { // Skenario Menunggu Persetujuan (Step 2 Submitted)
+                Event::firstOrCreate(
+                    ['nama_event' => $eventName],
+                    [
+                        'user_id' => $eo->user_id,
+                        'deskripsi_event' => "Proposal lengkap untuk event '{$eventName}'.",
+                        'lokasi_event' => $lokasi,
+                        'latitude' => $coords['latitude'],
+                        'longitude' => $coords['longitude'],
+                        'tanggal_mulai_acara' => now()->addDays(rand(45, 90)),
+                        'tanggal_selesai_acara' => now()->addDays(rand(91, 100)),
+                        'status_proposal' => 'menunggu_persetujuan',
+                        'status' => null, // Status belum aktif
+                        'document_verification_status' => 'document_approved', // Dokumen sudah disetujui
+                        'proposal_document_path' => 'seeders/proposal_placeholder.pdf',
+                        'kuota_umkm' => rand(20, 50),
+                        'pendaftaran_dibuka' => now()->addDays(rand(15, 30)),
+                        'pendaftaran_ditutup' => now()->addDays(rand(31, 44)),
+                        'nama_bank_penyelenggara' => 'Bank Kalsel Syariah',
+                        'nomor_rekening_penyelenggara' => '0210012345678',
+                        'nama_pemilik_rekening' => $eo->organizer_name,
+                    ]
+                );
                 continue;
             }
 
-            $status = ['active', 'upcoming', 'upcoming', 'finished', 'finished'][rand(0, 4)];
+            // Tentukan tipe event dasar
+            $type = ['active', 'future', 'future', 'finished', 'finished'][rand(0, 4)];
+
             $eventData = [
                 'user_id' => $eo->user_id,
                 'nama_event' => $eventName,
                 'deskripsi_event' => "Event meriah untuk para UMKM dan masyarakat Banjarmasin.",
-                'poster_event' => 'seeders/poster_event_' . rand(1, 4) . '.jpg',
+                'poster_event' => collect(['🎉', '🎤', '🎨', '🍲', '👗', '🎵', '🏆', '🎪', '🛍️', '🎭'])->random(),
                 'lokasi_event' => $lokasi,
                 'latitude' => $coords['latitude'],
                 'longitude' => $coords['longitude'],
@@ -198,27 +233,56 @@ class UltimateTestSeeder extends Seeder
                 'nama_pemilik_rekening' => $eo->organizer_name,
                 'panitia_pin' => rand(111111, 999999),
                 'status_proposal' => 'disetujui',
-                'status' => $status,
+                'document_verification_status' => 'document_approved', // Dokumen sudah disetujui
                 'proposal_document_path' => 'seeders/proposal_placeholder.pdf',
             ];
 
-            if ($status === 'finished') {
-                $eventData['tanggal_selesai_acara'] = now()->subDays(rand(10, 180));
+            if ($type === 'finished') {
+                // Event selesai: End Date < Now
+                $eventData['status'] = 'finished';
+                $eventData['tanggal_selesai_acara'] = now()->subDays(rand(1, 30));
                 $eventData['tanggal_mulai_acara'] = $eventData['tanggal_selesai_acara']->copy()->subDays(rand(2, 5));
+
+                // Pendaftaran pasti sudah tutup
                 $eventData['pendaftaran_ditutup'] = $eventData['tanggal_mulai_acara']->copy()->subDays(rand(5, 10));
                 $eventData['pendaftaran_dibuka'] = $eventData['pendaftaran_ditutup']->copy()->subDays(rand(10, 20));
-            } elseif ($status === 'active') {
-                $eventData['tanggal_mulai_acara'] = now()->subDays(rand(1, 2));
-                $eventData['tanggal_selesai_acara'] = now()->addDays(rand(3, 7));
-                $eventData['pendaftaran_ditutup'] = $eventData['tanggal_mulai_acara']->copy()->subDays(rand(1, 2));
-                $eventData['pendaftaran_dibuka'] = $eventData['pendaftaran_ditutup']->copy()->subDays(rand(10, 20));
-            } else { // upcoming
-                $eventData['tanggal_mulai_acara'] = now()->addDays(rand(20, 90));
+            } elseif ($type === 'active') {
+                // Event aktif: Start <= Now < End
+                $eventData['status'] = 'active';
+                $eventData['tanggal_mulai_acara'] = now()->subDays(rand(0, 2));
+                $eventData['tanggal_selesai_acara'] = now()->addDays(rand(1, 5));
+
+                // Pendaftaran biasanya sudah tutup saat event mulai
+                $eventData['pendaftaran_ditutup'] = $eventData['tanggal_mulai_acara']->copy()->subDays(rand(1, 3));
+                $eventData['pendaftaran_dibuka'] = $eventData['pendaftaran_ditutup']->copy()->subDays(rand(7, 14));
+            } else { // future (upcoming)
+                // Event akan datang: Start > Now
+                $eventData['tanggal_mulai_acara'] = now()->addDays(rand(10, 60));
                 $eventData['tanggal_selesai_acara'] = $eventData['tanggal_mulai_acara']->copy()->addDays(rand(2, 5));
-                $eventData['pendaftaran_ditutup'] = $eventData['tanggal_mulai_acara']->copy()->subDays(rand(5, 10));
-                $eventData['pendaftaran_dibuka'] = $eventData['pendaftaran_ditutup']->copy()->subDays(rand(10, 20));
+
+                // Tentukan status pendaftaran
+                $randScenario = rand(1, 3);
+                if ($randScenario == 1) {
+                    // Registration Open: Open <= Now < Close
+                    $eventData['status'] = 'registration_open';
+                    $eventData['pendaftaran_dibuka'] = now()->subDays(rand(1, 5));
+                    $eventData['pendaftaran_ditutup'] = now()->addDays(rand(5, 10));
+                } elseif ($randScenario == 2) {
+                    // Registration Upcoming (Not yet open): Open > Now
+                    $eventData['status'] = 'upcoming';
+                    $eventData['pendaftaran_dibuka'] = now()->addDays(rand(1, 5));
+                    $eventData['pendaftaran_ditutup'] = $eventData['pendaftaran_dibuka']->copy()->addDays(rand(7, 14));
+                } else {
+                    // Registration Closed: Close < Now
+                    $eventData['status'] = 'registration_closed';
+                    $eventData['pendaftaran_dibuka'] = now()->subDays(rand(15, 20));
+                    $eventData['pendaftaran_ditutup'] = now()->subDays(rand(1, 5));
+                }
             }
-            Event::create($eventData);
+            Event::firstOrCreate(
+                ['nama_event' => $eventName],
+                $eventData
+            );
         }
 
         // =================================================================
@@ -280,7 +344,11 @@ class UltimateTestSeeder extends Seeder
         }
 
         foreach (array_chunk($registrations, 500) as $chunk) {
-            EventRegistration::insert($chunk);
+            EventRegistration::upsert(
+                $chunk,
+                ['event_id', 'umkm_profile_id'],
+                ['status', 'kode_pendaftaran', 'bukti_pembayaran_path', 'nomor_stand', 'kode_pin', 'payment_due', 'updated_at']
+            );
         }
 
         $this->command->info('SEEDER SKALA KECIL BERHASIL DIJALANKAN! ');

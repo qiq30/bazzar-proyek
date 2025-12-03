@@ -12,7 +12,6 @@ export default function PublishEventForm({ auth, proposals }) {
         proposal_id: "",
         nama_event: "",
         deskripsi_event: "",
-        status: "upcoming",
         // Field lain akan ditambahkan secara dinamis
     });
 
@@ -30,7 +29,6 @@ export default function PublishEventForm({ auth, proposals }) {
                 lokasi_event: selectedProposal.lokasi_event,
                 biaya_pendaftaran_umkm: selectedProposal.biaya_pendaftaran_umkm,
                 kuota_umkm: selectedProposal.kuota_umkm,
-                status: "upcoming", // Default status saat terbit
             });
         } else {
             reset();
@@ -183,29 +181,6 @@ export default function PublishEventForm({ auth, proposals }) {
                                                 {selectedProposal.kuota_umkm}{" "}
                                                 UMKM
                                             </p>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium">
-                                                Status Saat Terbit *
-                                            </label>
-                                            <select
-                                                value={data.status}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        "status",
-                                                        e.target.value
-                                                    )
-                                                }
-                                                className="mt-1 w-full rounded-md"
-                                            >
-                                                <option value="upcoming">
-                                                    Akan Datang
-                                                </option>
-                                                <option value="active">
-                                                    Langsung Aktif
-                                                </option>
-                                            </select>
                                         </div>
                                     </div>
                                     <div className="flex justify-end">

@@ -59,7 +59,7 @@ class PanitiaController extends Controller
         $term = $request->input('term');
 
         $registration = EventRegistration::where('event_id', $event->id)
-            ->where('status', '!=', 'rejected') // Tetap tolak yang sudah ditolak
+            ->where('status', '!=', EventRegistration::STATUS_REJECTED) // Tetap tolak yang sudah ditolak
             ->where(function ($query) use ($term) {
                 $query->where('kode_pendaftaran', $term) // Prioritaskan pencarian berdasarkan kode pendaftaran (hasil scan)
                     ->orWhere('kode_pin', $term)
@@ -80,8 +80,8 @@ class PanitiaController extends Controller
             abort(403);
         }
 
-        if ($registration->status === 'approved') {
-            $registration->update(['status' => 'sudah_check_in']);
+        if ($registration->status === EventRegistration::STATUS_APPROVED) {
+            $registration->update(['status' => EventRegistration::STATUS_CHECKED_IN]);
             return response()->json(['success' => true, 'message' => 'Check-in Berhasil!']);
         }
 

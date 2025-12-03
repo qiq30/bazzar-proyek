@@ -12,6 +12,10 @@ class PenyelenggaraProfile extends Model
 {
     use HasFactory, HasHashids;
 
+    const STATUS_VERIFIED = 'verified';
+    const STATUS_PENDING = 'pending';
+    const STATUS_REJECTED = 'rejected';
+
     protected $fillable = [
         'user_id',
         'organizer_name',

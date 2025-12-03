@@ -49,7 +49,7 @@ class PenyelenggaraController extends Controller
         // Kondisi 1: Lanjutkan ke Step 2 jika dokumen disetujui ATAU proposal ditolak (untuk diperbaiki)
         if (
             $event && $event->user_id === Auth::id() &&
-            ($event->document_verification_status === 'document_approved' || $event->status_proposal === 'ditolak')
+            ($event->document_verification_status === Event::DOC_STATUS_APPROVED || $event->status_proposal === Event::PROPOSAL_REJECTED)
         ) {
             return Inertia::render('Penyelenggara/ProposalWizard', [
                 'step' => 2,
@@ -77,8 +77,8 @@ class PenyelenggaraController extends Controller
             'user_id' => Auth::id(),
             'nama_event' => $request->nama_event,
             'proposal_document_path' => $documentPath,
-            'document_verification_status' => 'pending_document_verification',
-            'status_proposal' => 'draft', // Status awal sebagai draft
+            'document_verification_status' => Event::DOC_STATUS_PENDING,
+            'status_proposal' => Event::PROPOSAL_DRAFT, // Status awal sebagai draft
         ]);
 
         $event->load('user');
@@ -105,7 +105,7 @@ class PenyelenggaraController extends Controller
     public function storeProposalStep2(Request $request, Event $event)
     {
         // Boleh diakses jika dokumen disetujui ATAU proposalnya ditolak
-        if ($event->user_id !== Auth::id() || !in_array($event->document_verification_status, ['document_approved', 'ditolak'])) {
+        if ($event->user_id !== Auth::id() || !in_array($event->document_verification_status, [Event::DOC_STATUS_APPROVED, Event::PROPOSAL_REJECTED])) {
             abort(403, 'Aksi tidak diizinkan.');
         }
 
@@ -161,7 +161,7 @@ class PenyelenggaraController extends Controller
         }
 
         // Set status kembali menjadi 'menunggu_persetujuan'
-        $updateData['status_proposal'] = 'menunggu_persetujuan';
+        $updateData['status_proposal'] = Event::PROPOSAL_PENDING;
 
         $event->update($updateData); // Data koordinat akan tersimpan di sini
 
@@ -176,7 +176,7 @@ class PenyelenggaraController extends Controller
     {
         $profile = Auth::user()->penyelenggaraProfile;
 
-        if ($profile && $profile->status === 'verified') {
+        if ($profile && $profile->status === PenyelenggaraProfile::STATUS_VERIFIED) {
             return redirect()->route('penyelenggara.dashboard')->with('info', 'Profil yang sudah terverifikasi tidak dapat diubah.');
         }
 
@@ -236,7 +236,7 @@ class PenyelenggaraController extends Controller
                 'address' => $request->address,
                 'verification_document_path' => $documentPath,
                 'logo_path' => $logoPath,
-                'status' => 'pending',
+                'status' => PenyelenggaraProfile::STATUS_PENDING,
                 'rejection_reason' => null,
             ]
         );
@@ -256,7 +256,7 @@ class PenyelenggaraController extends Controller
             $query->where('user_id', $user->id);
         })
             ->with(['umkmProfile', 'event'])
-            ->where('status', 'menunggu_konfirmasi_pembayaran')
+            ->where('status', EventRegistration::STATUS_WAITING_CONFIRMATION)
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -264,7 +264,7 @@ class PenyelenggaraController extends Controller
             $query->where('user_id', $user->id);
         })
             ->with(['umkmProfile', 'event'])
-            ->whereIn('status', ['pembayaran_terkonfirmasi', 'approved', 'rejected', 'sudah_check_in'])
+            ->whereIn('status', ['pembayaran_terkonfirmasi', EventRegistration::STATUS_APPROVED, EventRegistration::STATUS_REJECTED, EventRegistration::STATUS_CHECKED_IN])
             ->orderBy('updated_at', 'desc')
             ->get();
 
@@ -301,7 +301,7 @@ class PenyelenggaraController extends Controller
         $kodePin = rand(100000, 999999);
 
         $registration->update([
-            'status'      => 'approved',
+            'status'      => EventRegistration::STATUS_APPROVED,
             'kode_pin'    => $kodePin,
             'rejection_reason' => null
         ]);
@@ -328,7 +328,7 @@ class PenyelenggaraController extends Controller
         }
 
         $registration->update([
-            'status' => 'rejected',
+            'status' => EventRegistration::STATUS_REJECTED,
             'bukti_pembayaran_path' => null,
             'rejection_reason' => $request->rejection_reason,
         ]);

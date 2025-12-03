@@ -9,12 +9,16 @@ export default function EventCard({ event }) {
             upcoming: "bg-yellow-100 text-yellow-800",
             active: "bg-green-100 text-green-800",
             finished: "bg-gray-100 text-gray-800",
+            registration_open: "bg-blue-100 text-blue-800",
+            registration_closed: "bg-red-100 text-red-800",
         };
 
         const statusText = {
             upcoming: "Akan Datang",
             active: "Sedang Berlangsung",
             finished: "Selesai",
+            registration_open: "Pendaftaran Buka",
+            registration_closed: "Pendaftaran Tutup",
         };
 
         return (
@@ -35,18 +39,29 @@ export default function EventCard({ event }) {
         });
     };
 
+    // Helper untuk cek apakah poster adalah emoji (bukan path file)
+    const isEmoji = (str) => {
+        return str && !str.includes("/") && !str.includes(".");
+    };
+
     return (
         <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
             <div className="h-48 bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
                 {event.poster_event ? (
-                    <img
-                        src={route("public.event.poster", {
-                            event: event.hashid,
-                        })}
-                        alt={event.nama_event}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                    />
+                    isEmoji(event.poster_event) ? (
+                        <div className="w-full h-full flex items-center justify-center bg-gray-100 text-6xl">
+                            {event.poster_event}
+                        </div>
+                    ) : (
+                        <img
+                            src={route("public.event.poster", {
+                                event: event.hashid,
+                            })}
+                            alt={event.nama_event}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                        />
+                    )
                 ) : (
                     <FiCalendar className="text-white text-6xl opacity-50" />
                 )}

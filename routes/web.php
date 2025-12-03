@@ -70,8 +70,7 @@ Route::middleware(['auth', 'super_admin'])->prefix('superadmin')->name('superadm
     Route::get('/admins', [SuperAdminController::class, 'manageAdmins'])->name('admins.manage');
     Route::post('/admins', [SuperAdminController::class, 'storeAdmin'])->name('admins.store');
 
-    Route::get('/admins', [SuperAdminController::class, 'manageAdmins'])->name('admins.manage');
-    Route::post('/admins', [SuperAdminController::class, 'storeAdmin'])->name('admins.store');
+
     Route::delete('/admins/{admin:hashid}', [SuperAdminController::class, 'destroyAdmin'])->name('admins.destroy');
     Route::post('/impersonate/request/{user:hashid}', [ImpersonateController::class, 'request'])->name('impersonate.request');
     Route::post('/impersonate/stop', [ImpersonateController::class, 'stop'])

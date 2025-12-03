@@ -26,18 +26,18 @@ class AdminController extends Controller
     {
         // Gabungkan semua data dashboard (stats & chartData) ke dalam satu cache
         $dashboardData = Cache::remember('admin_dashboard_data', now()->addMinutes(10), function () {
-            $pendingProposalsStep1Count = Event::where('document_verification_status', 'pending_document_verification')->count();
-            $pendingProposalsStep2Count = Event::where('status_proposal', 'menunggu_persetujuan')->count();
+            $pendingProposalsStep1Count = Event::where('document_verification_status', Event::DOC_STATUS_PENDING)->count();
+            $pendingProposalsStep2Count = Event::where('status_proposal', Event::PROPOSAL_PENDING)->count();
 
             $stats = [
                 'totalEvents' => Event::whereNotNull('status')->count(),
-                'activeEvents' => Event::where('status', 'active')->count(),
+                'activeEvents' => Event::where('status', Event::STATUS_ACTIVE)->count(),
                 'totalUmkm' => UmkmProfile::count(),
-                'verifiedUmkm' => UmkmProfile::where('status', 'verified')->count(),
-                'pendingUmkm' => UmkmProfile::where('status', 'pending')->count(),
+                'verifiedUmkm' => UmkmProfile::where('status', UmkmProfile::STATUS_VERIFIED)->count(),
+                'pendingUmkm' => UmkmProfile::where('status', UmkmProfile::STATUS_PENDING)->count(),
                 'totalPenyelenggara' => PenyelenggaraProfile::count(),
-                'verifiedPenyelenggara' => PenyelenggaraProfile::where('status', 'verified')->count(),
-                'pendingPenyelenggara' => PenyelenggaraProfile::where('status', 'pending')->count(),
+                'verifiedPenyelenggara' => PenyelenggaraProfile::where('status', PenyelenggaraProfile::STATUS_VERIFIED)->count(),
+                'pendingPenyelenggara' => PenyelenggaraProfile::where('status', PenyelenggaraProfile::STATUS_PENDING)->count(),
                 'pendingProposalsStep1' => $pendingProposalsStep1Count,
                 'pendingProposalsStep2' => $pendingProposalsStep2Count,
             ];
@@ -48,9 +48,9 @@ class AdminController extends Controller
                     'Penyelenggara' => $stats['totalPenyelenggara'], // Gunakan data yang sudah di-query
                 ],
                 'popularEvents' => Event::withCount(['eventRegistrations' => function ($query) {
-                    $query->whereIn('status', ['approved', 'sudah_check_in', 'pembayaran_terkonfirmasi']);
+                    $query->whereIn('status', [EventRegistration::STATUS_APPROVED, EventRegistration::STATUS_CHECKED_IN, 'pembayaran_terkonfirmasi']);
                 }])
-                    ->whereIn('status', ['active', 'upcoming'])
+                    ->whereIn('status', [Event::STATUS_ACTIVE, Event::STATUS_UPCOMING])
                     ->orderBy('event_registrations_count', 'desc')
                     ->limit(5)
                     ->get(['nama_event', 'event_registrations_count'])
@@ -82,7 +82,7 @@ class AdminController extends Controller
     public function showPublishForm()
     {
         $approvedProposals = Event::with('user')
-            ->where('status_proposal', 'disetujui')
+            ->where('status_proposal', Event::PROPOSAL_APPROVED)
             ->whereNull('status')
             ->get();
 
@@ -91,22 +91,60 @@ class AdminController extends Controller
         ]);
     }
 
+    private function determineEventStatus($startDate, $endDate, $regOpen, $regClose)
+    {
+        $now = now();
+
+        // 1. Event sudah selesai
+        if (Carbon::parse($endDate)->lt($now)) {
+            return Event::STATUS_FINISHED;
+        }
+
+        // 2. Event sedang berlangsung
+        if (Carbon::parse($startDate)->lte($now) && Carbon::parse($endDate)->gt($now)) {
+            return Event::STATUS_ACTIVE;
+        }
+
+        // 3. Pendaftaran ditutup (tapi event belum mulai/selesai)
+        if ($regClose && Carbon::parse($regClose)->lt($now)) {
+            return Event::STATUS_REGISTRATION_CLOSED;
+        }
+
+        // 4. Pendaftaran sedang dibuka
+        if ($regOpen && Carbon::parse($regOpen)->lte($now)) {
+            // Pastikan belum tutup (jika ada tanggal tutup)
+            if (!$regClose || Carbon::parse($regClose)->gt($now)) {
+                return Event::STATUS_REGISTRATION_OPEN;
+            }
+        }
+
+        // 5. Default: Akan datang
+        return Event::STATUS_UPCOMING;
+    }
+
     public function storeEventFromProposal(Request $request)
     {
         $request->validate([
             'proposal_id' => 'required|exists:events,id',
             'nama_event' => 'required|string|max:255',
             'deskripsi_event' => 'required|string',
-            'status' => 'required|in:upcoming,active',
         ]);
 
         $event = Event::findOrFail($request->proposal_id);
         $panitiaPin = rand(100000, 999999);
 
+        // Hitung status otomatis
+        $status = $this->determineEventStatus(
+            $event->tanggal_mulai_acara,
+            $event->tanggal_selesai_acara,
+            $event->pendaftaran_dibuka,
+            $event->pendaftaran_ditutup
+        );
+
         $event->update([
             'nama_event' => $request->nama_event,
             'deskripsi_event' => $request->deskripsi_event,
-            'status' => $request->status,
+            'status' => $status,
             'panitia_pin' => $panitiaPin,
             'pendaftaran_dibuka' => $event->pendaftaran_dibuka,
             'pendaftaran_ditutup' => $event->pendaftaran_ditutup,
@@ -135,16 +173,23 @@ class AdminController extends Controller
             'tanggal_mulai_acara' => 'required|date',
             'tanggal_selesai_acara' => 'required|date|after_or_equal:tanggal_mulai_acara',
             'lokasi_event' => 'required|string|max:255',
-            'status' => 'required|in:upcoming,active,finished',
         ]);
 
-        $event->update($request->only([
-            'nama_event',
-            'tanggal_mulai_acara',
-            'tanggal_selesai_acara',
-            'lokasi_event',
-            'status'
-        ]));
+        // Hitung status otomatis berdasarkan input baru
+        $status = $this->determineEventStatus(
+            $request->tanggal_mulai_acara,
+            $request->tanggal_selesai_acara,
+            $event->pendaftaran_dibuka, // Asumsi pendaftaran tidak diubah di form ini (sesuai kode awal)
+            $event->pendaftaran_ditutup
+        );
+
+        $event->update([
+            'nama_event' => $request->nama_event,
+            'tanggal_mulai_acara' => $request->tanggal_mulai_acara,
+            'tanggal_selesai_acara' => $request->tanggal_selesai_acara,
+            'lokasi_event' => $request->lokasi_event,
+            'status' => $status,
+        ]);
 
         return back()->with('success', 'Event berhasil diupdate!');
     }
@@ -163,7 +208,7 @@ class AdminController extends Controller
         $filters = $request->only('search', 'start_date', 'end_date');
 
         $pendingUmkmProfiles = UmkmProfile::with('user')
-            ->where('status', 'pending')
+            ->where('status', UmkmProfile::STATUS_PENDING)
             ->when($filters['search'] ?? null, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('business_name', 'like', '%' . $search . '%')
@@ -182,7 +227,7 @@ class AdminController extends Controller
             ->get();
 
         $verifiedUmkmProfiles = UmkmProfile::with('user')
-            ->whereIn('status', ['verified', 'rejected'])
+            ->whereIn('status', [UmkmProfile::STATUS_VERIFIED, 'rejected'])
             ->when($filters['search'] ?? null, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('business_name', 'like', '%' . $search . '%')
@@ -217,7 +262,7 @@ class AdminController extends Controller
             $user->markEmailAsVerified();
         }
 
-        $umkm->update(['status' => 'verified', 'rejection_reason' => null]);
+        $umkm->update(['status' => UmkmProfile::STATUS_VERIFIED, 'rejection_reason' => null]);
         $umkm->refresh();
         ProfileStatusUpdated::dispatch($umkm);
         return back()->with('success', 'UMKM berhasil diverifikasi!');
@@ -244,7 +289,7 @@ class AdminController extends Controller
         $filters = $request->only('search', 'start_date', 'end_date');
 
         $pendingPenyelenggara = PenyelenggaraProfile::with('user')
-            ->where('status', 'pending')
+            ->where('status', PenyelenggaraProfile::STATUS_PENDING)
             ->when($filters['search'] ?? null, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('organizer_name', 'like', '%' . $search . '%')
@@ -263,7 +308,7 @@ class AdminController extends Controller
             ->get();
 
         $verifiedPenyelenggara = PenyelenggaraProfile::with('user')
-            ->whereIn('status', ['verified', 'rejected'])
+            ->whereIn('status', [PenyelenggaraProfile::STATUS_VERIFIED, PenyelenggaraProfile::STATUS_REJECTED])
             ->when($filters['search'] ?? null, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('organizer_name', 'like', '%' . $search . '%')
@@ -298,7 +343,7 @@ class AdminController extends Controller
             $user->markEmailAsVerified();
         }
 
-        $penyelenggara->update(['status' => 'verified', 'rejection_reason' => null]);
+        $penyelenggara->update(['status' => PenyelenggaraProfile::STATUS_VERIFIED, 'rejection_reason' => null]);
         $penyelenggara->refresh();
         ProfileStatusUpdated::dispatch($penyelenggara);
         return back()->with('success', 'Profil Penyelenggara berhasil diverifikasi!');
@@ -309,7 +354,7 @@ class AdminController extends Controller
         $request->validate(['rejection_reason' => 'required|string|min:10']);
 
         $penyelenggara->update([
-            'status' => 'rejected',
+            'status' => PenyelenggaraProfile::STATUS_REJECTED,
             'rejection_reason' => $request->rejection_reason,
         ]);
 
@@ -342,13 +387,13 @@ class AdminController extends Controller
         };
 
         $pendingDocumentProposals = Event::with('user')
-            ->where('document_verification_status', 'pending_document_verification')
+            ->where('document_verification_status', Event::DOC_STATUS_PENDING)
             ->tap($applyFilters)
             ->orderBy('created_at', 'desc')
             ->get();
 
         $pendingProposals = Event::with('user')
-            ->where('status_proposal', 'menunggu_persetujuan')
+            ->where('status_proposal', Event::PROPOSAL_PENDING)
             ->tap($applyFilters)
             ->orderBy('created_at', 'desc')
             ->get();
@@ -361,8 +406,8 @@ class AdminController extends Controller
 
         $rejectedProposals = Event::withTrashed()->with('user')
             ->where(function ($query) {
-                $query->where('status_proposal', 'ditolak')
-                    ->orWhere('document_verification_status', 'document_rejected');
+                $query->where('status_proposal', Event::PROPOSAL_REJECTED)
+                    ->orWhere('document_verification_status', Event::DOC_STATUS_REJECTED);
             })
             ->tap($applyFilters)
             ->orderBy('deleted_at', 'desc')
@@ -386,7 +431,7 @@ class AdminController extends Controller
     public function approveProposal(Request $request, Event $event)
     {
         $event->update([
-            'status_proposal' => 'disetujui',
+            'status_proposal' => Event::PROPOSAL_APPROVED,
             'status'          => null,
             'rejection_reason' => null,
         ]);
@@ -402,7 +447,7 @@ class AdminController extends Controller
         $request->validate(['rejection_reason' => 'required|string|min:10']);
 
         $event->update([
-            'status_proposal' => 'ditolak',
+            'status_proposal' => Event::PROPOSAL_REJECTED,
             'rejection_reason' => $request->rejection_reason,
         ]);
 
@@ -437,7 +482,7 @@ class AdminController extends Controller
 
     public function approveRegistration(EventRegistration $registration)
     {
-        $registration->update(['status' => 'approved', 'rejection_reason' => null]);
+        $registration->update(['status' => EventRegistration::STATUS_APPROVED, 'rejection_reason' => null]);
         return back()->with('success', 'Pendaftaran UMKM disetujui.');
     }
 
@@ -446,7 +491,7 @@ class AdminController extends Controller
         $request->validate(['rejection_reason' => 'required|string|min:10']);
 
         $registration->update([
-            'status' => 'rejected',
+            'status' => EventRegistration::STATUS_REJECTED,
             'rejection_reason' => $request->rejection_reason
         ]);
 
@@ -462,7 +507,7 @@ class AdminController extends Controller
     public function approveDocument(Event $event)
     {
         $event->update([
-            'document_verification_status' => 'document_approved',
+            'document_verification_status' => Event::DOC_STATUS_APPROVED,
             'document_rejection_reason' => null,
         ]);
 
@@ -480,7 +525,7 @@ class AdminController extends Controller
         ]);
 
         $event->update([
-            'document_verification_status' => 'document_rejected',
+            'document_verification_status' => Event::DOC_STATUS_REJECTED,
             'document_rejection_reason' => $request->document_rejection_reason,
         ]);
 

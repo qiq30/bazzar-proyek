@@ -13,6 +13,9 @@ class UmkmProfile extends Model
 {
     use HasFactory, HasHashids;
 
+    const STATUS_VERIFIED = 'verified';
+    const STATUS_PENDING = 'pending';
+
     protected $fillable = [
         'user_id',
         'business_name',
@@ -58,7 +61,7 @@ class UmkmProfile extends Model
 
     public function isVerified()
     {
-        return $this->status === 'verified';
+        return $this->status === self::STATUS_VERIFIED;
     }
 
     public function getLogoUrlAttribute()

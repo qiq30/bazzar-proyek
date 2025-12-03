@@ -11,6 +11,12 @@ class EventRegistration extends Model
 {
     use HasFactory, HasHashids;
 
+    const STATUS_PENDING_PAYMENT = 'menunggu_pembayaran';
+    const STATUS_WAITING_CONFIRMATION = 'menunggu_konfirmasi_pembayaran';
+    const STATUS_APPROVED = 'approved';
+    const STATUS_REJECTED = 'rejected';
+    const STATUS_CHECKED_IN = 'sudah_check_in';
+
     protected $fillable = [
         'event_id',
         'umkm_profile_id',
@@ -54,6 +60,6 @@ class EventRegistration extends Model
     // Check if registration is pending
     public function isPending()
     {
-        return $this->status === 'registered';
+        return in_array($this->status, [self::STATUS_PENDING_PAYMENT, self::STATUS_WAITING_CONFIRMATION]);
     }
 }
