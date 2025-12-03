@@ -405,6 +405,31 @@ class PenyelenggaraController extends Controller
 
     public function report()
     {
+        $stats = $this->getReportData();
+
+        return Inertia::render('Penyelenggara/Report/Index', [
+            'stats' => $stats
+        ]);
+    }
+
+    public function export(Request $request)
+    {
+        $format = $request->query('format', 'pdf');
+        $stats = $this->getReportData();
+
+        if ($format === 'pdf') {
+            $pdf = app('dompdf.wrapper');
+            $pdf->loadView('reports.penyelenggara_pdf', ['stats' => $stats]);
+            return $pdf->download('laporan-penyelenggara-' . now()->format('Y-m-d') . '.pdf');
+        } elseif ($format === 'excel') {
+            return $this->exportCsv($stats);
+        }
+
+        abort(404);
+    }
+
+    private function getReportData()
+    {
         $user = Auth::user();
 
         // Ambil semua event milik penyelenggara (termasuk yang sudah selesai)
@@ -437,7 +462,7 @@ class PenyelenggaraController extends Controller
             ];
         }
 
-        $stats = [
+        return [
             'total_revenue' => [
                 'value' => $totalRevenue,
                 'description' => 'Total pendapatan dari semua event yang diselenggarakan.'
@@ -452,9 +477,46 @@ class PenyelenggaraController extends Controller
             ],
             'revenue_per_event' => $revenuePerEvent,
         ];
+    }
 
-        return Inertia::render('Penyelenggara/Report/Index', [
-            'stats' => $stats
-        ]);
+    private function exportCsv($data)
+    {
+        $fileName = 'laporan-penyelenggara-' . now()->format('Y-m-d') . '.csv';
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$fileName",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $callback = function () use ($data) {
+            $file = fopen('php://output', 'w');
+
+            // Summary Stats
+            fputcsv($file, ['RINGKASAN LAPORAN']);
+            fputcsv($file, ['Metric', 'Value', 'Description']);
+            fputcsv($file, ['Total Revenue', 'Rp ' . number_format($data['total_revenue']['value'], 0, ',', '.'), $data['total_revenue']['description']]);
+            fputcsv($file, ['Total Events', $data['total_events']['value'], $data['total_events']['description']]);
+            fputcsv($file, ['Total Registrants', $data['total_registrants']['value'], $data['total_registrants']['description']]);
+            fputcsv($file, []);
+
+            // Detail Per Event
+            fputcsv($file, ['DETAIL PER EVENT']);
+            fputcsv($file, ['Nama Event', 'Tanggal', 'Status', 'Partisipan', 'Pendapatan']);
+            foreach ($data['revenue_per_event'] as $event) {
+                fputcsv($file, [
+                    $event['nama_event'],
+                    $event['date'],
+                    $event['status'],
+                    $event['registrants'],
+                    'Rp ' . number_format($event['revenue'], 0, ',', '.')
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

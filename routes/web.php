@@ -146,6 +146,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/proposals/document-review/{event:hashid}/approve', [AdminController::class, 'approveDocument'])->name('proposals.document.approve');
     Route::post('/proposals/document-review/{event:hashid}/reject', [AdminController::class, 'rejectDocument'])->name('proposals.document.reject');
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
     Route::put('/events/{event:hashid}', [AdminController::class, 'updateEvent'])->name('events.update');
     Route::delete('/events/{event:hashid}', [AdminController::class, 'destroyEvent'])->name('events.destroy');
     Route::get('/events/{event:hashid}/participants', [AdminController::class, 'eventParticipants'])->name('events.participants');
@@ -196,6 +197,7 @@ Route::middleware(['auth', 'verified', 'penyelenggara'])->prefix('penyelenggara'
     Route::get('/secure-files/payment-proof/{registration:hashid}', [SecureFileController::class, 'showPaymentProof'])->name('secure.payment.proof');
 
     Route::get('/report', [PenyelenggaraController::class, 'report'])->name('report');
+    Route::get('/report/export', [PenyelenggaraController::class, 'export'])->name('report.export');
 });
 
 // PANITIA ROUTES

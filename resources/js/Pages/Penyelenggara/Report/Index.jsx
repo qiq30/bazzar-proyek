@@ -1,10 +1,18 @@
 // File: resources/js/Pages/Penyelenggara/Report/Index.jsx
 
-import React, { Suspense } from "react";
+import React, { Suspense, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 import { useSpring, animated } from "@react-spring/web";
-import { FiDollarSign, FiArchive, FiUsers, FiBarChart2 } from "react-icons/fi";
+import {
+    FiDollarSign,
+    FiArchive,
+    FiUsers,
+    FiBarChart2,
+    FiDownload,
+} from "react-icons/fi";
+import PrimaryButton from "@/Components/PrimaryButton";
+import ReportExportModal from "@/Components/ReportExportModal";
 
 const BarChart = React.lazy(() => import("@/Components/BarChart"));
 
@@ -98,6 +106,8 @@ const ChartLoadingFallback = () => (
 );
 
 export default function ReportIndex({ auth, stats }) {
+    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+
     const revenueChartData = stats.revenue_per_event.reduce((acc, event) => {
         acc[event.nama_event] = event.revenue;
         return acc;
@@ -116,6 +126,16 @@ export default function ReportIndex({ auth, stats }) {
 
             <div className="py-12 bg-gray-50">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+                    {/* Action Button */}
+                    <div className="flex justify-end">
+                        <PrimaryButton
+                            onClick={() => setIsExportModalOpen(true)}
+                            className="bg-indigo-600 hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 shadow-lg transform hover:-translate-y-0.5 transition-all duration-150 px-6 py-3 text-base"
+                        >
+                            <FiDownload className="mr-2 h-5 w-5" />
+                            Download Laporan Lengkap
+                        </PrimaryButton>
+                    </div>
                     {/* Ringkasan Statistik */}
                     <div className="bg-white overflow-hidden shadow-lg sm:rounded-xl">
                         <SectionHeader
@@ -266,6 +286,12 @@ export default function ReportIndex({ auth, stats }) {
                     </div>
                 </div>
             </div>
+
+            <ReportExportModal
+                isOpen={isExportModalOpen}
+                onClose={() => setIsExportModalOpen(false)}
+                exportUrl={route("penyelenggara.report.export")}
+            />
         </AuthenticatedLayout>
     );
 }
