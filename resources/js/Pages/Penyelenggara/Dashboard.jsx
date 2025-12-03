@@ -11,6 +11,7 @@ import {
     FiCheckSquare,
     FiHome,
     FiAlertTriangle,
+    FiBarChart2,
 } from "react-icons/fi";
 
 // Hook untuk animasi angka
@@ -451,6 +452,14 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
                                 disabled={!profileStatus.isVerified}
                             />
                             <HubCard
+                                href={route("penyelenggara.report")}
+                                icon={<FiBarChart2 className="w-8 h-8" />}
+                                title="Laporan Pendapatan"
+                                description="Statistik event & keuangan"
+                                color="text-purple-600"
+                                disabled={!profileStatus.isVerified}
+                            />
+                            <HubCard
                                 href="/"
                                 icon={<FiHome className="w-8 h-8" />}
                                 title="Lihat Public"
@@ -557,7 +566,7 @@ export default function Dashboard({ auth, hasProfile, profile, events = [] }) {
                                                                     event: event.hashid,
                                                                 }
                                                             )}
-                                                            className="px-4 py-2 bg-gray-600 text-white text-xs font-semibold rounded-md hover:bg-gray-700"
+                                                            className="w-full sm:w-auto px-3 py-2 bg-gray-600 text-white text-xs font-semibold rounded-md hover:bg-gray-700 text-center inline-block"
                                                         >
                                                             Lihat Detail
                                                         </Link>

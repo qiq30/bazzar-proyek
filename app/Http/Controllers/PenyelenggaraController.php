@@ -402,4 +402,59 @@ class PenyelenggaraController extends Controller
         // Kirimkan file untuk di-download menggunakan path absolutnya
         return response()->download($fullPath, $fileName);
     }
+
+    public function report()
+    {
+        $user = Auth::user();
+
+        // Ambil semua event milik penyelenggara (termasuk yang sudah selesai)
+        $events = Event::where('user_id', $user->id)
+            ->whereNotNull('status') // Hanya event yang sudah dipublish/aktif/selesai
+            ->withCount(['eventRegistrations' => function ($query) {
+                $query->whereIn('status', ['approved', 'sudah_check_in']);
+            }])
+            ->get();
+
+        $totalRevenue = 0;
+        $totalRegistrants = 0;
+        $revenuePerEvent = [];
+
+        foreach ($events as $event) {
+            // Hitung pendapatan per event
+            $eventRevenue = EventRegistration::where('event_id', $event->id)
+                ->whereIn('status', ['pembayaran_terkonfirmasi', 'approved', 'sudah_check_in'])
+                ->count() * ($event->biaya_pendaftaran_umkm ?? 0);
+
+            $totalRevenue += $eventRevenue;
+            $totalRegistrants += $event->event_registrations_count;
+
+            $revenuePerEvent[] = [
+                'nama_event' => $event->nama_event,
+                'revenue' => $eventRevenue,
+                'registrants' => $event->event_registrations_count,
+                'status' => $event->status,
+                'date' => $event->tanggal_mulai_acara,
+            ];
+        }
+
+        $stats = [
+            'total_revenue' => [
+                'value' => $totalRevenue,
+                'description' => 'Total pendapatan dari semua event yang diselenggarakan.'
+            ],
+            'total_events' => [
+                'value' => $events->count(),
+                'description' => 'Jumlah event yang telah dipublikasikan.'
+            ],
+            'total_registrants' => [
+                'value' => $totalRegistrants,
+                'description' => 'Total partisipan UMKM yang terverifikasi.'
+            ],
+            'revenue_per_event' => $revenuePerEvent,
+        ];
+
+        return Inertia::render('Penyelenggara/Report/Index', [
+            'stats' => $stats
+        ]);
+    }
 }

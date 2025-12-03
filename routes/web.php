@@ -194,6 +194,8 @@ Route::middleware(['auth', 'verified', 'penyelenggara'])->prefix('penyelenggara'
 
     Route::get('/secure-files/event-poster/{event:hashid}', [SecureFileController::class, 'showEventPoster'])->name('secure.event.poster');
     Route::get('/secure-files/payment-proof/{registration:hashid}', [SecureFileController::class, 'showPaymentProof'])->name('secure.payment.proof');
+
+    Route::get('/report', [PenyelenggaraController::class, 'report'])->name('report');
 });
 
 // PANITIA ROUTES
