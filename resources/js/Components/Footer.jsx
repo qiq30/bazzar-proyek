@@ -319,9 +319,11 @@ export default function Footer({ user = null }) {
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {/* Bottom Footer */}
-                <div className="border-t border-gray-300 bg-white">
+            {/* Bottom Footer */}
+            <div className="border-t border-gray-300 bg-white">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="py-6">
                         <div className="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0">
                             <div className="text-center lg:text-left">
