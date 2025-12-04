@@ -18,10 +18,27 @@ class PublicController extends Controller
         $filters = $request->only('search', 'status');
 
         // Buat cache key unik berdasarkan filter
-        $cacheKey = 'public_home_events_' . md5(json_encode($filters));
+        $cacheKey = 'public_home_events_v2_' . md5(json_encode($filters));
 
         $events = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($filters) {
             return Event::query()
+                ->select([
+                    'id',
+                    'nama_event',
+                    'slug',
+                    'deskripsi_event',
+                    'poster_event',
+                    'tanggal_mulai_acara',
+                    'tanggal_selesai_acara',
+                    'lokasi_event',
+                    'status',
+                    'pendaftaran_dibuka',
+                    'pendaftaran_ditutup',
+                    'biaya_pendaftaran_umkm',
+                    'kuota_umkm',
+                    'latitude',
+                    'longitude'
+                ])
                 // Hanya ambil event yang belum selesai (termasuk pendaftaran buka/tutup)
                 ->whereIn('status', [Event::STATUS_ACTIVE, Event::STATUS_UPCOMING, Event::STATUS_REGISTRATION_OPEN, Event::STATUS_REGISTRATION_CLOSED])
                 ->where('status_proposal', Event::PROPOSAL_APPROVED)
